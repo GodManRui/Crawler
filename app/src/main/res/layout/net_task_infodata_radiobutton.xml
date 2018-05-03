@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioButton xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="190px"
+    android:layout_height="60px"
+    android:layout_marginLeft="20px"
+    android:layout_marginTop="20px"
+    android:background="@drawable/daily_screen_type_radiobutton"
+    android:button="@null"
+    android:checked="false"
+    android:gravity="center"
+    android:text="网络"
+    android:textColor="@color/daily_result_parameter_operator_button_color"
+    android:textSize="15sp" />

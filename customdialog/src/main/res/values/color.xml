@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<resources>
+    <color name="menu_userName">#cce3fe</color><!--侧滑用户名 -->
+    <color name="menu_personal">#73baff</color><!--侧滑个人颜色 -->
+    <!--侧滑企业颜色 -->
+    <!--我的颜色 -->
+    <color name="register_line">#999999</color><!--我的颜色 -->
+    <color name="mine_liu">#666666</color><!--我的颜色 666666 -->
+    <color name="mine_color">#333333</color><!--我的颜色 -->
+    <color name="mine_personal">#0082ff</color><!--我的颜色 -->
+    <!--阴影颜色 -->
+
+    <color name="edit_color1">#999999</color><!--我的颜色 -->
+    <color name="edit_color">#333333</color><!--我的颜色 -->
+
+    <!--我的颜色 -->
+
+    <color name="vouchers_select">#0082ff</color><!--被选中颜色 -->
+    <color name="list_divider">#dcdcdc</color><!--list里面的分割线 -->
+    <!--list里面的分割线 -->
+    <color name="white">#FFFFFF</color><!--白色 -->
+    <color name="colourless">#00000000</color><!--白色 -->
+    <color name="black">#000000</color><!--黑色 -->
+    <color name="front_black">#666666</color><!--黑色 -->
+    <color name="bg_black">#333333</color><!--黑色 -->
+    <color name="list_bg_color">#f6f7fa</color>
+    <color name="yellow">#ff992d</color>
+    <color name="alert_important">#FF0000</color>
+    <color name="alert_desc">#666666</color>
+
+</resources>  

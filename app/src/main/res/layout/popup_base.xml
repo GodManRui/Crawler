@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.autolayout.AutoRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:paddingBottom="10px"
+    android:paddingLeft="30px"
+    android:paddingRight="30px"
+    android:paddingTop="20px">
+
+    <com.zhy.autolayout.AutoLinearLayout
+        android:id="@+id/root"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <com.zhy.autolayout.AutoLinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="110px"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:orientation="horizontal">
+
+        <com.zhy.autolayout.AutoLinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/base_confirm"
+                android:layout_width="210px"
+                android:layout_height="90px"
+                android:layout_marginLeft="20px"
+                android:background="@mipmap/daily_check_button"
+                android:gravity="center"
+                android:text="确认"
+                android:textColor="@android:color/white"
+                android:textSize="36px" />
+        </com.zhy.autolayout.AutoLinearLayout>
+
+        <com.zhy.autolayout.AutoLinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/base_dismiss"
+                android:layout_width="210px"
+                android:layout_height="90px"
+                android:layout_marginLeft="20px"
+                android:background="@mipmap/daily_uncheck_button"
+                android:gravity="center"
+                android:text="取消"
+                android:textColor="#008eff"
+                android:textSize="36px" />
+        </com.zhy.autolayout.AutoLinearLayout>
+    </com.zhy.autolayout.AutoLinearLayout>
+
+</com.zhy.autolayout.AutoRelativeLayout>

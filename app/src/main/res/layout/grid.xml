@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.autolayout.AutoRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:ndroid="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <GridView
+        android:id="@+id/gridview"
+        android:layout_width="495px"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="50px"
+        android:background="@drawable/daily_result_parameter_operator"
+        android:columnWidth="320px"
+        android:gravity="center"
+        android:horizontalSpacing="30px"
+        android:numColumns="2"
+        android:paddingBottom="20px"
+        android:paddingLeft="20px"
+        android:paddingRight="20px"
+        android:paddingTop="20px"
+        android:stretchMode="spacingWidthUniform"
+        android:verticalSpacing="30px" />
+
+    <ImageView
+        android:id="@+id/im_gri_title"
+        android:layout_width="210px"
+        android:layout_height="34px"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="31px"
+        android:src="@mipmap/net_product_type" />
+</com.zhy.autolayout.AutoRelativeLayout>

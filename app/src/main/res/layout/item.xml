@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingBottom="10dp"
+    android:paddingLeft="5dp"
+    android:paddingTop="10dp">
+
+    <ImageView
+        android:id="@+id/im_user_head"
+        android:layout_width="66dp"
+        android:layout_height="66dp" />
+
+    <TextView
+        android:id="@+id/tv_node"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:text="活动沙龙"
+        android:textColor="@color/gray" />
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:text="上海测试沙龙"
+        android:textColor="@android:color/black" />
+</LinearLayout>

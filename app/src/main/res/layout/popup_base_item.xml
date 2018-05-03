@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.zhy.autolayout.AutoRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_centerInParent="true">
+
+
+    <reeiss.bonree.crawler.testdialog.RsRadioGroup
+        android:id="@+id/item_rs"
+        android:layout_width="495px"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="8px"
+        android:layout_marginTop="50px"
+        android:background="@drawable/daily_result_parameter_operator"
+        android:orientation="horizontal"
+        android:paddingBottom="40px"
+        android:paddingLeft="25px"
+        android:paddingRight="25px"
+        android:paddingTop="40px" />
+
+    <ImageView
+        android:id="@+id/im_title"
+        android:layout_width="210px"
+        android:layout_height="34px"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="31px"
+        android:src="@mipmap/net_product_type" />
+</com.zhy.autolayout.AutoRelativeLayout>
