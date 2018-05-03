@@ -1,4 +1,0 @@
-#Wed May 02 18:09:08 CST 2018
-base.0=D\:\\QQFile\\854463112\\FileRecv\\jitsi-meet-master\\Crawler\\stock_data_transmission\\build\\intermediates\\transforms\\dexMerger\\debug\\0
-path.0=classes.dex
-renamed.0=classes.dex
