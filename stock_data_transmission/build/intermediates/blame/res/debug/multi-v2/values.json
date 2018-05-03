@@ -1,0 +1,62 @@
+{
+    "logs": [
+        {
+            "outputFile": "D:\\QQFile\\854463112\\FileRecv\\jitsi-meet-master\\Crawler\\stock_data_transmission\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
+            "map": [
+                {
+                    "source": "D:\\QQFile\\854463112\\FileRecv\\jitsi-meet-master\\Crawler\\stock_data_transmission\\src\\main\\res\\values\\styles.xml",
+                    "from": {
+                        "startLines": "6,15",
+                        "startColumns": "4,4",
+                        "startOffsets": "186,510",
+                        "endLines": "12,17",
+                        "endColumns": "12,12",
+                        "endOffsets": "472,665"
+                    },
+                    "to": {
+                        "startLines": "9,16",
+                        "startColumns": "4,4",
+                        "startOffsets": "417,708",
+                        "endLines": "15,18",
+                        "endColumns": "12,12",
+                        "endOffsets": "703,863"
+                    }
+                },
+                {
+                    "source": "D:\\QQFile\\854463112\\FileRecv\\jitsi-meet-master\\Crawler\\stock_data_transmission\\src\\main\\res\\values\\strings.xml",
+                    "from": {
+                        "startLines": "4,3,9,6,7",
+                        "startColumns": "4,4,4,4,4",
+                        "startOffsets": "98,56,273,156,220",
+                        "endColumns": "52,41,36,63,51",
+                        "endOffsets": "146,93,305,215,267"
+                    },
+                    "to": {
+                        "startLines": "4,5,6,7,8",
+                        "startColumns": "4,4,4,4,4",
+                        "startOffsets": "169,222,264,301,365",
+                        "endColumns": "52,41,36,63,51",
+                        "endOffsets": "217,259,296,360,412"
+                    }
+                },
+                {
+                    "source": "D:\\QQFile\\854463112\\FileRecv\\jitsi-meet-master\\Crawler\\stock_data_transmission\\src\\main\\res\\values\\dimens.xml",
+                    "from": {
+                        "startLines": "3,4",
+                        "startColumns": "4,4",
+                        "startOffsets": "89,147",
+                        "endColumns": "57,55",
+                        "endOffsets": "142,198"
+                    },
+                    "to": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,113",
+                        "endColumns": "57,55",
+                        "endOffsets": "108,164"
+                    }
+                }
+            ]
+        }
+    ]
+}
