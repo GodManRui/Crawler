@@ -1,20 +1,25 @@
 package reeiss.bonree.customdialog;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
-
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
-import android.widget.RadioButton;
 import android.widget.RelativeLayout;
 
-import reeiss.bonree.customdialog.Rotate3dAnimation;
+//3D反转 解决 反转后界面颠倒
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
-  //  private AutoDisplayChildViewContainers auto;
+    //  private AutoDisplayChildViewContainers auto;
     private RelativeLayout layout1;
+    private ImageView first_btn;
+    private ImageView second_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,8 +27,10 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
         setContentView(R.layout.first);
 
         layout1 = (RelativeLayout) findViewById(R.id.layout1);
-        ImageView first_btn = (ImageView) findViewById(R.id.first_btn);
+        first_btn = (ImageView) findViewById(R.id.first_btn);
+        second_btn = (ImageView) findViewById(R.id.second_btn);
         first_btn.setOnClickListener(this);
+        second_btn.setOnClickListener(this);
        /* auto = findViewById(R.id.vg);
         for (int i = 0; i < 1; i++) {
             RadioButton radioButton = (RadioButton) LayoutInflater.from(this).inflate(R.layout.net_task_infodata_radiobutton, null);
@@ -34,39 +41,6 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
 
     }
 
-    public void start(View view) {
-        //rotateOnXCoordinate(0, 180, Rotate3dAnimation.ROTATE_X_AXIS);
-        rotateOnYCoordinate();
-
-           /* RadioButton radioButton = (RadioButton) LayoutInflater.from(this).inflate(R.layout.net_task_infodata_radiobutton, null);
-
-            radioButton.setText("Button "  );
-            auto.addView(radioButton);*/
-    }
-
-    // 以X轴为轴心旋转
-    private void rotateOnYCoordinate() {
-        rotateOnXCoordinate(0, 180, Rotate3dAnimation.ROTATE_Y_AXIS);
-    }
-
-    private void rotateOnXCoordinate(int fromDegrees, int toDegrees, Byte rotateXAxis) {
-        float centerX = layout1.getWidth() / 2.0f;
-        float centerY = layout1.getHeight() / 2.0f;
-        float depthZ = 0f;
-        Rotate3dAnimation rotate3dAnimationX = new Rotate3dAnimation(fromDegrees, toDegrees, centerX, centerY, depthZ, rotateXAxis, true);
-        rotate3dAnimationX.setDuration(1000);
-        layout1.startAnimation(rotate3dAnimationX);
-    }
-
-    // 以Z轴为轴心旋转---等价于普通平面旋转动画
-    private void rotateAnimHorizon() {
-        rotateOnXCoordinate(180, 0, Rotate3dAnimation.ROTATE_Z_AXIS);
-
-        /*// 下面是使用android自带的旋转动画
-         RotateAnimation rotateAnimation = new RotateAnimation(0, 180, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-         rotateAnimation.setDuration(1000);
-         auto.startAnimation(rotateAnimation);*/
-    }
 
     /**
      * Called when a view has been clicked.
@@ -75,6 +49,81 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
      */
     @Override
     public void onClick(View v) {
-        start(v);
+        //start(v);
+        switch (v.getId()) {
+            case R.id.first_btn:
+                applyRotation(1, 0, 90);
+                break;
+            case R.id.second_btn:
+                //applyRotation(-1, 180, 90);
+                applyRotation(-1, 360, 270);
+                break;
+        }
     }
+
+    private void applyRotation(final int mPosition, float start, float end) {
+        // Find the center of the container
+        final float centerX = first_btn.getWidth() / 2.0f;
+        final float centerY = first_btn.getHeight() / 2.0f;
+
+        // Create a new 3D rotation with the supplied parameter
+        // The animation listener is used to trigger the next animation
+        final reeiss.bonree.translation.Rotate3dAnimation rotation =
+            new reeiss.bonree.translation.Rotate3dAnimation(start, end, centerX, centerY, 310.0f, true);
+        rotation.setDuration(500);
+        rotation.setFillAfter(true);
+        rotation.setInterpolator(new AccelerateInterpolator());
+        rotation.setAnimationListener(new AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+                Log.e("JerryZhu", "onAnimationStart: ");
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                Log.e("JerryZhu", "onAnimationStart: ");
+                first_btn.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        final float centerX = first_btn.getWidth() / 2.0f;
+                        final float centerY = first_btn.getHeight() / 2.0f;
+                        reeiss.bonree.translation.Rotate3dAnimation rotation;
+
+                        if (mPosition > -1) {
+                            //显示图片 隐藏列表
+                            first_btn.setVisibility(View.GONE);
+                            second_btn.setVisibility(View.VISIBLE);
+                            second_btn.requestFocus();
+
+                            //rotation = new reeiss.bonree.translation.Rotate3dAnimation(90, 180, centerX, centerY, 310.0f, false);
+                            rotation = new reeiss.bonree.translation.Rotate3dAnimation(270, 360, centerX, centerY, 310.0f, false);
+
+                        } else {
+                            //隐藏图片 显示列表  ==-1
+                            second_btn.setVisibility(View.GONE);
+                            first_btn.setVisibility(View.VISIBLE);
+                            first_btn.requestFocus();
+
+                            rotation = new reeiss.bonree.translation.Rotate3dAnimation(90, 0, centerX, centerY, 310.0f, false);
+                        }
+
+                        rotation.setDuration(500);
+                        rotation.setFillAfter(true);
+                        rotation.setInterpolator(new DecelerateInterpolator());
+
+                        layout1.startAnimation(rotation);
+                    }
+                });
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+                Log.e("JerryZhu", "onAnimationRepeat: ");
+            }
+        });
+
+        layout1.startAnimation(rotation);
+    }
+
+
 }
