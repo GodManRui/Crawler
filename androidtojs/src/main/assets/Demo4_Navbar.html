@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link type="text/css" rel="stylesheet" href="jquery.mobile-1.4.5.min.css">
+    <script src="jquery-2.1.1.min.js"></script>
+    <script src="jquery.mobile-1.4.5.min.js"></script>
+</head>
+<body>
+<div data-role="navbar">
+    <ul>
+        <li><a href="#" class="ui-btn-active">one</a></li>
+        <li><a href="#">two</a></li>
+        <li><a href="#">three</a></li>
+        <li><a href="#">four</a></li>
+    </ul>
+</div>
+<div data-role="header">
+    <h1>my header</h1>
+    <div data-role="navbar">
+        <ul>
+            <li><a href="#">one</a></li>
+            <li><a href="#" class="ui-btn-active">two</a></li>
+            <li><a href="#">three</a></li>
+            <li><a href="#">four</a></li>
+        </ul>
+
+    </div>
+</div>
+<div data-role="footer">
+    <h1>my footer</h1>
+    <div data-role="navbar">
+        <ul>
+            <li><a href="#">one</a></li>
+            <li><a href="#">two</a></li>
+            <li><a href="#" class="ui-btn-active">three</a></li>
+            <li><a href="#">four</a></li>
+        </ul>
+    </div>
+    <div data-role="header" data-theme="a">
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#" data-icon="grid">one</a></li>
+                <li><a href="#" data-icon="star">two</a></li>
+                <li><a href="#" data-icon="gear" class="ui-btn-active">three</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <a href="#pp" data-rel="popup" class="ui-btn">弹出窗口</a>
+    <div data-role="popup" id="pp">
+        <p>这是一个弹出窗口</p>
+    </div>
+
+    <a href="#pop" data-rel="popup" data-position-to="window" data-transition="fade">
+        <img src="file:///android_res/drawable/liuyifei.jpg" class="pupphoto" style="height: 20%">
+    </a>
+    <div data-role="popup" id="pop">
+        <a href="#" data-rel="back"
+           class="ui-btn ui-conrer-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-right"></a>
+        <img src="file:///android_res/drawable/liuyifei.jpg" class="popphoto" style="max-height: 512px;">
+    </div>
+
+
+</div>
+
+</body>
+</html>

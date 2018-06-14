@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Title</title>
+    <link type="text/css" rel="stylesheet" href="jquery.mobile-1.4.5.min.css">
+    <script src="jquery-2.1.1.min.js"></script>
+    <script src="jquery.mobile-1.4.5.min.js"></script>
+    <!--<script>
+        alert("欢迎")
+        var b = confirm("confirm");
+        alert(b)
+        var password = prompt("请输入密码", "password")
+        alert(password)
+
+    </script>-->
+</head>
+<body>
+<div data-role="page">
+    <div data-role="header" data-position="fixed">
+        <h1 id="h1">这是头部</h1>
+    </div>
+
+    <div role="main">
+        <p>最近还好么？</p>
+    </div>
+
+    <div data-role="footer" data-position="fixed">
+        <h4>这是底部</h4>
+    </div>
+    <!--ul，无序列表-->
+    <ul data-role="listview">
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+        <li>D</li>
+    </ul>
+    <!--ol，有序列表，前面会加索引-->
+    <ol data-role="listview">
+        <li>E</li>
+        <li>F</li>
+        <li>G</li>
+        <li>H</li>
+    </ol>
+    <!--a标签实现可点击样式-->
+    <ol data-role="listview">
+        <li><a href="#">A</a></li>
+        <li><a href="#">B</a></li>
+        <li><a href="#">C</a></li>
+        <li><a href="#">D</a></li>
+    </ol>
+    <hr>
+    <hr>
+    <!--可以搜索，有搜索框，显示整块数据-->
+    <ul data-role="listview" data-filter="true" data-inset="true">
+        <li><a href="#">A</a></li>
+        <li><a href="#">AAA</a></li>
+        <li><a href="#">AAA</a></li>
+        <li><a href="#">BDD</a></li>
+        <li><a href="#">BG</a></li>
+        <li><a href="#">BD</a></li>
+        <li><a href="#">CC</a></li>
+        <li><a href="#">DTT</a></li>
+        <li><a href="#">DFF</a></li>
+        <li><a href="#">EGH</a></li>
+        <li><a href="#">FJ</a></li>
+        <li><a href="#">FD</a></li>
+    </ul>
+    <br>
+    <br>
+    <br>
+    <!--只显示搜索内容和搜索框，不显示整个数据-->
+    <form class="ui-filterable">
+        <input id="autoinput" data-type="search">
+    </form>
+    <ul data-role="listview" data-filter="true" data-filter-reveal="true" data-input="#autoinput" data-inset="true">
+        <li><a href="#">A</a></li>
+        <li><a href="#">AAA</a></li>
+        <li><a href="#">AAA</a></li>
+        <li><a href="#">BDD</a></li>
+        <li><a href="#">BG</a></li>
+        <li><a href="#">BD</a></li>
+        <li><a href="#">CC</a></li>
+        <li><a href="#">DTT</a></li>
+        <li><a href="#">DFF</a></li>
+        <li><a href="#">EGH</a></li>
+        <li><a href="#">FJ</a></li>
+        <li><a href="#">FD</a></li>
+    </ul>
+    <br>
+    <br>
+    <br>
+    <!--通讯录效果，数据前显示开头字母索引  但是没有排序，会重复显示索引-->
+    <ul data-role="listview" data-autodividers="true" data-filter="true" data-inset="true">
+        <li><a href="#">A</a></li>
+        <li><a href="#">AAA</a></li>
+        <li><a href="#">AAA</a></li>
+        <li><a href="#">BDD</a></li>
+        <li><a href="#">BG</a></li>
+        <li><a href="#">BD</a></li>
+        <li><a href="#">CC</a></li>
+        <li><a href="#">DTT</a></li>
+        <li><a href="#">DFF</a></li>
+        <li><a href="#">EGH</a></li>
+        <li><a href="#">FJ</a></li>
+        <li><a href="#">FD</a></li>
+        <li><a href="#">AAA</a></li>
+        <li><a href="#">AAA</a></li>
+    </ul>
+</div>
+</body>
+</html>

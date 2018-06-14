@@ -13,6 +13,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import java.lang.reflect.Method;
+
 //3D反转 解决 反转后界面颠倒
 public class MainActivity extends AppCompatActivity implements OnClickListener {
 
@@ -112,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements OnClickListener {
                         rotation.setInterpolator(new DecelerateInterpolator());
 
                         layout1.startAnimation(rotation);
+                        Class clas = MainActivity.class;
+                        Method[] declaredMethods = clas.getDeclaredMethods();
                     }
                 });
             }

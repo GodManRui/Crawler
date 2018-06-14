@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Title</title>
+    <link type="text/css" rel="stylesheet" href="jquery.mobile-1.4.5.min.css">
+    <script src="jquery-2.1.1.min.js"></script>
+    <script src="jquery.mobile-1.4.5.min.js"></script>
+</head>
+<body>
+<div data-role="page" id="pageOne">
+    <div data-role="header">
+        <h1>欢迎来到主页</h1>
+    </div>
+    <div role="main">
+        <a href="#pageTwo" data-transition="flip">跳转第二个</a>
+    </div>
+    <div data-role="footer">
+        <h1>这是底部</h1>
+    </div>
+</div>
+
+<div data-role="page" id="pageTwo">
+    <div data-role="header">
+        <h1>欢迎来到主页</h1>
+    </div>
+    <div role="main">
+        <a href="#pageOne" data-transition="flip">>返回第一个</a>
+    </div>
+    <div data-role="footer">
+        <h1>这是底部</h1>
+    </div>
+</div>
+
+</body>
+</html>

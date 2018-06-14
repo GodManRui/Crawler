@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>div布局</title>
+    <link type="text/css" rel="stylesheet" href="jquery.mobile-1.4.5.min.css">
+    <script src="jquery-2.1.1.min.js"></script>
+    <script src="jquery.mobile-1.4.5.min.js"></script>
+    <script>
+        function callJS(){
+         console.log("jerryzhu ： function")
+            //点击登录按钮 弹出层并初始化弹出层位置
+            $("#btnlogin").click(function() {
+                console.log("jerryzhu ： click")
+                $("#corBackground").animate({ opacity: "show" }, "slow");
+                $("#corInsertHref").animate({ opacity: "show" }, "slow");
+                autoSize($("#corInsertHref"));
+            });
+            //窗口大小缩放事件
+            $(window).resize(function() {
+                autoSize($("#corInsertHref"));
+            });
+            //窗口大小缩放时调整弹出层的位置
+            var autoSize = function(corObj) {
+                var wWidth = $(window).width(), wHeight = $(window).height();
+                var ihWidth = corObj.outerWidth(true), ihHeight = corObj.outerHeight(true);
+
+                corObj.css({ "top": ((wHeight - ihHeight) / 2) + "px", "left": ((wWidth - ihWidth) / 2) + "px" });
+            }
+        return "我是返回值";
+        }
+    </script>
+
+
+    <style type="text/css">
+        .corInsertHref
+        {
+            position: absolute;
+            z-index: 10000;
+            width: 370px;
+            float: left;
+            display: none;
+            background-color: #fff;
+            padding: 10px;
+        }
+        .corBackground
+        {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background-color: #000;
+            top: 0;
+            left: 0;
+            filter: alpha(opacity=30);
+            -moz-opacity: 0.30;
+            -khtml-opacity: 0.30;
+            opacity: 0.30;
+            z-index: 9999;
+            display: none;
+        }
+    </style>
+
+    <script type="text/javascript">
+
+        $(function() {
+            console.log("jerryzhu ： function")
+            //点击登录按钮 弹出层并初始化弹出层位置
+            $("#btnlogin").click(function() {
+                console.log("jerryzhu ： click")
+                $("#corBackground").animate({ opacity: "show" }, "slow");
+                $("#corInsertHref").animate({ opacity: "show" }, "slow");
+                autoSize($("#corInsertHref"));
+            });
+            //窗口大小缩放事件
+            $(window).resize(function() {
+                autoSize($("#corInsertHref"));
+            });
+            //窗口大小缩放时调整弹出层的位置
+            var autoSize = function(corObj) {
+                var wWidth = $(window).width(), wHeight = $(window).height();
+                var ihWidth = corObj.outerWidth(true), ihHeight = corObj.outerHeight(true);
+
+                corObj.css({ "top": ((wHeight - ihHeight) / 2) + "px", "left": ((wWidth - ihWidth) / 2) + "px" });
+            }
+        });
+    </script>
+
+</head>
+<body>
+<input type="button" id="btnlogin">登录</input>
+<div id="corInsertHref" class="corInsertHref">
+    <p>
+        账号<input id="txtName" type="text" /></p>
+    <p>
+        密码<input id="txtPwd" type="text" /></p>
+    <p>
+        <input type="button" value="登 录" /></p>
+</div>
+<div id="corBackground" class="corBackground">
+</div>
+</body>
+</html>

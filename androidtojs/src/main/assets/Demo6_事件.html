@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="jquery-2.1.1.min.js"></script>
+    <script src="jquery.mobile-1.4.5.min.js"></script>
+    <link type="text/css" rel="stylesheet" href="jquery.mobile-1.4.5.min.css">
+    <script>
+        function callJS(){
+        alert("我是js我被调用了")
+        return "我是返回值";
+        }
+    </script>
+    <script>
+        $(document).on("pageinit", function () {
+            console.log("pageinit")
+            $("#p2").click(function () {
+             console.log("点击了")
+              var bol =  callAndroid.callAndroid("js调用","我是内容");
+               console.log("返回值=" +bol)
+            });
+            //点击
+            $("#p2").on("tap"), function () {
+                console.log("tap")
+                $(this).hide();
+            };
+            //长按
+            $("h1").on("taphold"), function () {
+                console.log("taphold")
+                $(this).hide();
+            };
+            //滑动    swipeleft  swiperight
+            $("h1").on("swipe"), function () {
+                console.log("swipe")
+                $(this).hide();
+            };
+            //页面滚动  scrollstop 停止滑动
+            $(document).on("scrollstart", function () {
+                console.log("scrollstart")
+            })
+
+            //页面反转
+            $(document).on("orientationchange", function () {
+                alert("orientationchange")
+                console.log("orientationchange")
+            })
+        });
+    </script>
+</head>
+<body>
+
+<div data-role="page">
+    <div data-role="header">
+        <h1>hello header</h1>
+    </div>
+
+    <div data-role="content">
+        <p id="p2">内容部分,点击隐藏</p>
+        <p>内容部分,点击隐藏</p>
+        <p>内容部分,点击隐藏</p>
+        <p>内容部分,点击隐藏</p>
+        <p>内容部分,点击隐藏</p>
+        <p>内容部分,点击隐藏</p>
+        <p>内容部分,点击隐藏</p>
+    </div>
+
+    <div data-role="footer">
+        <h1>hello footer</h1>
+    </div>
+</div>
+</body>
+</html>
