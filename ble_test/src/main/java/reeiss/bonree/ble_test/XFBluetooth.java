@@ -15,21 +15,25 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.Log;
 
+import java.util.ArrayList;
+
 public class XFBluetooth {
     public static XFBluetooth xfBluetooth;
     private final BluetoothAdapter mBluetoothAdapter;
     private final Context context;
-    private XFBluetoothCallBack mXFBluetoothControl;
     private BluetoothLeScanner mBluetoothLeScanner;
     private boolean isStopCall;
+    private ArrayList<XFBluetoothCallBack> mListCallBack;
     private ScanCallback callback = new ScanCallback() {
 
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            if (isStopCall && mXFBluetoothControl != null)
+            if (isStopCall && mListCallBack.size() > 0)
                 if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
                     BluetoothDevice device = result.getDevice();
-                    mXFBluetoothControl.onScanResult(device);
+                    for (int i = 0; i < mListCallBack.size(); i++) {
+                        mListCallBack.get(i).onScanResult(device);
+                    }
                 }
         }
 
@@ -43,52 +47,66 @@ public class XFBluetooth {
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
             if (isStopCall)
-                mXFBluetoothControl.onScanResult(device);
+                for (int i = 0; i < mListCallBack.size(); i++) {
+                    mListCallBack.get(i).onScanResult(device);
+                }
         }
     };
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         //链接状态的回调
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            if (mXFBluetoothControl != null) {
-                mXFBluetoothControl.onConnectionStateChange(gatt, status, newState);
+            if (mListCallBack.size() > 0) {
+                for (int i = 0; i < mListCallBack.size(); i++) {
+                    mListCallBack.get(i).onConnectionStateChange(gatt, status, newState);
+                }
             }
         }
 
         //发现服务的回调
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (mXFBluetoothControl != null) {
-                mXFBluetoothControl.onServicesDiscovered(gatt, status);
+            if (mListCallBack.size() > 0) {
+                for (int i = 0; i < mListCallBack.size(); i++) {
+                    mListCallBack.get(i).onServicesDiscovered(gatt, status);
+                }
             }
         }
 
 
         //读操作的回调
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (mXFBluetoothControl != null) {
-                mXFBluetoothControl.onCharacteristicRead(gatt, characteristic, status);
+            if (mListCallBack.size() > 0) {
+                for (int i = 0; i < mListCallBack.size(); i++) {
+                    mListCallBack.get(i).onCharacteristicRead(gatt, characteristic, status);
+                }
             }
         }
 
         //写操作的回调
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            if (mXFBluetoothControl != null) {
-                mXFBluetoothControl.onCharacteristicWrite(gatt, characteristic, status);
+            if (mListCallBack.size() > 0) {
+                for (int i = 0; i < mListCallBack.size(); i++) {
+                    mListCallBack.get(i).onCharacteristicWrite(gatt, characteristic, status);
+                }
             }
         }
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            if (mXFBluetoothControl != null) {
-                mXFBluetoothControl.onCharacteristicChanged(gatt, characteristic);
+            if (mListCallBack.size() > 0) {
+                for (int i = 0; i < mListCallBack.size(); i++) {
+                    mListCallBack.get(i).onCharacteristicChanged(gatt, characteristic);
+                }
             }
         }
 
         //信号强度回调
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
-            if (mXFBluetoothControl != null) {
-                mXFBluetoothControl.onReadRemoteRssi(gatt, rssi, status);
+            if (mListCallBack.size() > 0) {
+                for (int i = 0; i < mListCallBack.size(); i++) {
+                    mListCallBack.get(i).onReadRemoteRssi(gatt, rssi, status);
+                }
             }
         }
     };
@@ -100,6 +118,7 @@ public class XFBluetooth {
         BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
         mBluetoothAdapter = bluetoothManager.getAdapter();
+        mListCallBack = new ArrayList();
     }
 
     public static XFBluetooth getInstance(Context context) {
@@ -115,8 +134,12 @@ public class XFBluetooth {
         return mXFBluetoothGatt;
     }
 
-    public void setBleCallBack(XFBluetoothCallBack mXFBluetoothControl) {
-        this.mXFBluetoothControl = mXFBluetoothControl;
+    public boolean addBleCallBack(XFBluetoothCallBack mXFBluetoothControl) {
+        return mListCallBack.add(mXFBluetoothControl);
+    }
+
+    public boolean removeBleCallBack(XFBluetoothCallBack mXFBluetoothControl) {
+        return mListCallBack.remove(mXFBluetoothControl);
     }
 
 

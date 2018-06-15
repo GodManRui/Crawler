@@ -27,6 +27,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".BlueControlActivity" />
+        <activity android:name=".BluetoothSetting" />
     </application>
 
 </manifest>

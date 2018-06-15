@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -48,7 +49,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
 
     private void initBle() {
         xfBluetooth = XFBluetooth.getInstance(this);
-        xfBluetooth.setBleCallBack(new XFBluetoothCallBack() {
+        xfBluetooth.addBleCallBack(new XFBluetoothCallBack() {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                 if (newState != BluetoothProfile.STATE_CONNECTED) {
@@ -83,7 +84,10 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         });
         xfBluetoothGatt = xfBluetooth.getXFBluetoothGatt();
         alertService = xfBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_Immediate_Alert));
-        alertCharacteristic = alertService.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Immediate_Alert));
+        if (alertService != null)
+            alertCharacteristic = alertService.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Immediate_Alert));
+        else
+            T.show(this, "服务未找到！");
     }
 
     private void initView() {
@@ -111,6 +115,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.im_setting:
+                startActivity(new Intent(this, BluetoothSetting.class));
                 break;
             case R.id.btn_call:
                 if (!isAlert) {

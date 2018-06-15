@@ -130,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void scanBle() {
         xfBluetooth = XFBluetooth.getInstance(this);
-        xfBluetooth.setBleCallBack(gattCallback);
+        xfBluetooth.addBleCallBack(gattCallback);
         RotateAnimation animation = new RotateAnimation(0f, 360f,
             Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         animation.setInterpolator(new LinearInterpolator());
