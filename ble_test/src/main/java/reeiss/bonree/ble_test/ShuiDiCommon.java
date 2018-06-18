@@ -18,6 +18,13 @@ public class ShuiDiCommon {
     static String Server_Pervate = "0000ffe0-0000-1000-8000-00805f9b34fb";
     //按键消息监听   单击收到0x01
     static String CH_Key_Press = "0000ffe1-0000-1000-8000-00805f9b34fb";
+
     //断开连接是否报警  0x01 报警  0x00不报警
-    static String CH_LinkLost_Alert = "0000ffe1-0000-1000-8000-00805f9b34fb";
+    static String Server_LinkLost_Alert = "00001803-0000-1000-8000-00805f9b34fb";
+    static String CH_LinkLost_Alert = "00002a06-0000-1000-8000-00805f9b34fb";
+    static byte Common_LinkLost_100Alert = 0x01;
+    static byte Common_LinkLost_200Alert = 0x02;
+    static int Common_LinkLost_No_Alert = 0xFF;
+
+
 }

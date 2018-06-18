@@ -35,7 +35,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         @Override
         public void run() {
             xfBluetoothGatt.readRemoteRssi();
-            mHandler.postDelayed(this, 1000);
+            mHandler.postDelayed(this, 2500);
         }
     };
 
@@ -78,7 +78,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
                             }
                         }
                     });
-                    Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
+                  //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
                 }
             }
         });

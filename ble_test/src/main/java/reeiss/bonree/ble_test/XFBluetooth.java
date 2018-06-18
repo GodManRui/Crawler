@@ -16,6 +16,7 @@ import android.os.Build.VERSION_CODES;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class XFBluetooth {
     public static XFBluetooth xfBluetooth;
@@ -84,6 +85,7 @@ public class XFBluetooth {
 
         //写操作的回调
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            Log.e("jerry", "写操作的回调: " + Arrays.toString(characteristic.getValue()));
             if (mListCallBack.size() > 0) {
                 for (int i = 0; i < mListCallBack.size(); i++) {
                     mListCallBack.get(i).onCharacteristicWrite(gatt, characteristic, status);
@@ -174,7 +176,6 @@ public class XFBluetooth {
         if (device != null) {
             mXFBluetoothGatt = device.connectGatt(context, true, gattCallback);
         }
-
     }
 
     public BluetoothAdapter getAdapter() {
