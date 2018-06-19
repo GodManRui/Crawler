@@ -15,7 +15,7 @@ public class ShuiDiCommon {
 
 
     // PrivateServices  私有服务
-    static String Server_Pervate = "0000ffe0-0000-1000-8000-00805f9b34fb";
+    static String Server_Private = "0000ffe0-0000-1000-8000-00805f9b34fb";
     //按键消息监听   单击收到0x01
     static String CH_Key_Press = "0000ffe1-0000-1000-8000-00805f9b34fb";
 

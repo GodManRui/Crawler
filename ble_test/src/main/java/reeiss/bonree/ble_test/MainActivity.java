@@ -3,6 +3,8 @@ package reeiss.bonree.ble_test;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +23,9 @@ import android.widget.ListView;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -82,10 +87,19 @@ public class MainActivity extends AppCompatActivity {
                     vDevLv.setItemsCanFocus(true);
 
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        Log.e("jerryzhu", "启动服务发现:" + xfBluetooth.getXFBluetoothGatt().discoverServices());
+                        Log.e("jerry", "连接成功，开启通知 : ");
+                        BluetoothGattService click = xfBluetooth.getXFBluetoothGatt().getService(UUID.fromString(ShuiDiCommon.Server_Private));
+                        if (click == null) return;
+                        BluetoothGattCharacteristic chKey = click.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Key_Press));
+                        xfBluetooth.getXFBluetoothGatt().setCharacteristicNotification(chKey, true);
                     }
                 }
             });
+        }
+
+        //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            Log.e("jerryzhu", "点击了  " + Arrays.toString(characteristic.getValue()));
         }
 
     };
@@ -134,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
         xfBluetooth = XFBluetooth.getInstance(this);
         xfBluetooth.addBleCallBack(gattCallback);
         RotateAnimation animation = new RotateAnimation(0f, 360f,
-            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(2000);
         animation.setRepeatCount(-1);

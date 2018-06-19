@@ -21,6 +21,8 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -38,7 +40,6 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
     private boolean isAlert;
     private BluetoothGatt xfBluetoothGatt;
     private TextView tvBattery;
-    private BluetoothGattService mPrivateService;
     private XFBluetoothCallBack mXFBluetoothCallBack = new XFBluetoothCallBack() {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, int status) {
@@ -72,6 +73,7 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
     private BluetoothGattService mLinkLostServer;
     private RelativeLayout rlRing;
     private MediaPlayer mp;
+    private TextView tvRing;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -89,7 +91,6 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
             Log.e("jerryzhu", "initBlue: " + xfBluetoothGatt.getServices().get(i).getUuid());
         }
         mLinkLostServer = xfBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_LinkLost_Alert));
-        mPrivateService = xfBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_Pervate));
         BluetoothGattService mBatteryServer = xfBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_Battery_Level));
         if (mBatteryServer != null) {
             BluetoothGattCharacteristic mChBattery = mBatteryServer.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Battery_Level));
@@ -101,12 +102,13 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
         vAlert = (Switch) findViewById(R.id.sw_is_alert);
         tvBattery = (TextView) findViewById(R.id.tv_battery);
         rlRing = (RelativeLayout) findViewById(R.id.rl_ring);
-
+        tvRing = (TextView) findViewById(R.id.tv_ring);
+        //todo 读取数据库，回显当前设置的铃声
         rlRing.setOnClickListener(this);
         vAlert.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                Log.e("jerryzhu", "onCheckedChanged: " + b);
+                //todo 小芳支持此功能
                 isAlert = b;
             }
         });
@@ -169,39 +171,48 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("选择铃声");
         builder.setIcon(R.mipmap.widget_bar_device_over);
+        //todo 读取数据库，默认选中当前选择的铃声
         builder.setSingleChoiceItems(itemName, 0,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (itemName[which] != null) {
-                            T.show(BluetoothSetting.this, itemName[which]);
-                            Integer resID = nameMap.get(itemName[which]);
-                            if (mp != null && mp.isPlaying()) {
-                                mp.stop();
-                                mp.reset();
-                                mp.release();
+                        if (0 <= which && which <= itemName.length - 1) {
+                            if (itemName[which] != null) {
+                                // T.show(BluetoothSetting.this, itemName[which]);
+                                Integer resID = nameMap.get(itemName[which]);
+                                if (mp != null) {
+                                    mp.reset();
+                                    mp.release();
+                                }
+                                mp = MediaPlayer.create(BluetoothSetting.this, resID);//重新设置要播放的音频
+                                mp.start();//开始播放
                             }
-                            mp = MediaPlayer.create(BluetoothSetting.this, resID);//重新设置要播放的音频
-                            mp.start();//开始播放
                         }
                     }
                 });
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                int checkedItemPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                if (0 <= checkedItemPosition && checkedItemPosition <= itemName.length - 1 && tvRing != null) {
+                    // TODO: 2018/6/19 保存数据库
+                    tvRing.setText(itemName[checkedItemPosition]);
+                }
                 dialog.dismiss();
-                T.show(BluetoothSetting.this, "确定");
             }
         });
-        builder.create().show();
-        builder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
                 if (mp != null) {
                     mp.reset();
                     mp.release();
+                    mp = null;
                 }
             }
         });
+
     }
 }

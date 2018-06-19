@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 
@@ -29,12 +30,12 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
     private BluetoothGattService alertService;
     private BluetoothGattCharacteristic alertCharacteristic;
     private Handler mHandler = new Handler();
-    private XFBluetooth xfBluetooth;
-    private BluetoothGatt xfBluetoothGatt;
+    private XFBluetooth mXFBluetooth;
+    private BluetoothGatt mXFBluetoothGatt;
     final Runnable runnable = new Runnable() {
         @Override
         public void run() {
-            xfBluetoothGatt.readRemoteRssi();
+            mXFBluetoothGatt.readRemoteRssi();
             mHandler.postDelayed(this, 2500);
         }
     };
@@ -48,12 +49,17 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
     }
 
     private void initBle() {
-        xfBluetooth = XFBluetooth.getInstance(this);
-        xfBluetooth.addBleCallBack(new XFBluetoothCallBack() {
+        mXFBluetooth = XFBluetooth.getInstance(this);
+        mXFBluetooth.addBleCallBack(new XFBluetoothCallBack() {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                 if (newState != BluetoothProfile.STATE_CONNECTED) {
-                    finish();
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            finish();
+                        }
+                    });
                 }
             }
 
@@ -78,12 +84,12 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
                             }
                         }
                     });
-                  //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
+                    //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
                 }
             }
         });
-        xfBluetoothGatt = xfBluetooth.getXFBluetoothGatt();
-        alertService = xfBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_Immediate_Alert));
+        mXFBluetoothGatt = mXFBluetooth.getXFBluetoothGatt();
+        alertService = mXFBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_Immediate_Alert));
         if (alertService != null)
             alertCharacteristic = alertService.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Immediate_Alert));
         else
@@ -100,7 +106,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         imSetting.setOnClickListener(this);
         btnCall.setOnClickListener(this);
 
-        tvDevName.setText(xfBluetoothGatt.getDevice().getName().trim());
+        tvDevName.setText(mXFBluetoothGatt.getDevice().getName().trim());
 
     }
 
@@ -120,12 +126,12 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
             case R.id.btn_call:
                 if (!isAlert) {
                     alertCharacteristic.setValue(new byte[]{ShuiDiCommon.Common_Middling_immediate_Alert});
-                    xfBluetoothGatt.writeCharacteristic(alertCharacteristic);
+                    mXFBluetoothGatt.writeCharacteristic(alertCharacteristic);
                     btnCall.setText("正在呼叫");
                     isAlert = true;
                 } else {
                     alertCharacteristic.setValue(new byte[]{ShuiDiCommon.Common_No_immediate_Alert});
-                    xfBluetoothGatt.writeCharacteristic(alertCharacteristic);
+                    mXFBluetoothGatt.writeCharacteristic(alertCharacteristic);
                     btnCall.setText("呼叫");
                     isAlert = false;
                 }
