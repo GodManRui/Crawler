@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,7 +47,8 @@ public class ThreeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        SDKInitializer.initialize(getActivity().getApplication());
+        Log.e("jerry", "onCreateView: " + getActivity().getApplication());
+        //SDKInitializer.initialize(getActivity().getApplication());
         View view = inflater.inflate(R.layout.fragment_three, null);
         map = view.findViewById(R.id.map);
         reset = view.findViewById(R.id.clear);
