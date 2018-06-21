@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg"
+    android:background="@color/background_material_light"
     android:orientation="vertical">
 
     <ImageView
@@ -12,7 +12,6 @@
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_marginRight="10dp"
-        android:background="@color/main_color"
         android:src="@mipmap/setting" />
 
     <ImageView
@@ -43,7 +42,7 @@
         android:layout_height="30dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="10dp"
-        android:background="@drawable/btn_ovaloval"
+        android:background="@drawable/shap_btn_main"
         android:text="呼叫"
         android:textColor="@android:color/white"
         android:textSize="20sp" />

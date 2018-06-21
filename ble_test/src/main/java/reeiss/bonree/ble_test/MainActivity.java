@@ -1,159 +1,118 @@
 package reeiss.bonree.ble_test;
 
-import android.app.ProgressDialog;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
-import android.bluetooth.BluetoothProfile;
-import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ImageView;
-import android.widget.ListView;
-
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    private XFBluetooth xfBluetooth;
-    private ListView vDevLv;
-    private ImageView vScan;
-    private View vReScan;
-    private DevListAdapter adapter;
-    private int position;
-    private ArrayList<DeviceListBean> mDevList;
-    private ProgressDialog progressDialog;
-    private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
-
-        /**
-         * device.getBondState()
-         * BOND_BONDED     指明远程设备已经匹配。   和远程设备的匹配并不意味着设备间已经成功连接。它只意味着匹配过程已经在稍早之前完成，
-         * 并且连接键已经存储在本地，准备在下次连接的时候使用。
-         * <p>
-         * BOND_BONDING  指明和远程设备的匹配正在进行中
-         * BOND_NONE      指明远程设备未被匹配。
-         */
-        //扫描获取设备的回调
-        @Override
-        public void onScanResult(final BluetoothDevice device) {
-            if (device.getName() != null && device.getName().contains("iTAG")) {
-                Log.e("JerryZhu", "停止扫描！！");
-                xfBluetooth.stop();
-                for (int i = 0; i < mDevList.size(); i++) {
-                    if (mDevList.get(i).getBluetoothDevice().getAddress().equals(device.getAddress())) {
-                        Log.e("JerryZhu", "onScanResult: TRUE !!!!!!");
-                        return;
-                    }
-                }
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        vReScan.setVisibility(View.GONE);
-                        vDevLv.setVisibility(View.VISIBLE);
-                        mDevList.add(new DeviceListBean(device, BluetoothGatt.STATE_DISCONNECTED));
-                        adapter.setDevList(mDevList);
-                    }
-                }, 2000);
-            }
-        }
-
-        //链接状态发生改变
-        @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, final int status, final int newState) {
-            Log.e("JerryZhu", "链接状态: " + status + "   ==  " + newState);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (progressDialog != null)
-                        progressDialog.dismiss();
-
-                    mDevList.get(position).setConnectState(newState);
-                    adapter.setDevList(mDevList);
-                    vDevLv.setItemsCanFocus(true);
-
-                    if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        Log.e("jerry", "连接成功，开启通知 : ");
-                        BluetoothGattService click = xfBluetooth.getXFBluetoothGatt().getService(UUID.fromString(ShuiDiCommon.Server_Private));
-                        if (click == null) return;
-                        BluetoothGattCharacteristic chKey = click.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Key_Press));
-                        xfBluetooth.getXFBluetoothGatt().setCharacteristicNotification(chKey, true);
-                    }
-                }
-            });
-        }
-
-        //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.e("jerryzhu", "点击了  " + Arrays.toString(characteristic.getValue()));
-        }
-
-    };
+    private BottomNavigationView mBottomNavigationView;
+    private Fragment[] mFragments;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_mainbaidu);
         initView();
-        scanBle();
     }
 
     private void initView() {
-        vDevLv = findViewById(R.id.ble_dev_lv);
-        vScan = findViewById(R.id.iv_scan);
-        vReScan = findViewById(R.id.rl_scan);
-        progressDialog = new ProgressDialog(MainActivity.this);
-        progressDialog.setMessage("正在连接..");
-        progressDialog.setCancelable(false);
-
-        mDevList = new ArrayList<DeviceListBean>();
-        adapter = new DevListAdapter(mDevList, MainActivity.this);
-        vDevLv.setAdapter(adapter);
-        vDevLv.setOnItemClickListener(new OnItemClickListener() {
-
+        mFragments = new Fragment[4];
+       /* mFragments[0] = new FirstFragment();
+        mFragments[1] = new SecondFragment();
+        mFragments[2] = new ThreeFragment();
+        mFragments[3] = new FourFragment();*/
+        mBottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation_view);
+        mBottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                DeviceListBean deviceListBean = mDevList.get(position);
-                if (deviceListBean.getConnectState().equals("已连接")) {
-                    T.show(MainActivity.this, "设备已连接！");
-                    Intent intent = new Intent(MainActivity.this, BlueControlActivity.class);
-                    startActivity(intent);
-                    return;
-                }
-                vDevLv.setItemsCanFocus(false);
-                MainActivity.this.position = position;/*
-                deviceListBean.setConnectState(BluetoothGatt.STATE_CONNECTING);
-                adapter.setDevList(mDevList);*/
-                progressDialog.show();
-                xfBluetooth.connect(deviceListBean.getBluetoothDevice());
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                onTabItemSelected(item.getItemId());
+                return true;
             }
         });
+
+        // 由于第一次进来没有回调onNavigationItemSelected，因此需要手动调用一下切换状态的方法
+        onTabItemSelected(R.id.tab_menu_home);
+
+       /*    FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        firstFragment = new FirstFragment();
+        transaction.replace(R.id.fragment, firstFragment);
+        transaction.commit();
+
+     image1 = findViewById(R.id.image1);
+        image2 = findViewById(R.id.image2);
+        image3 = findViewById(R.id.image3);
+        image4 = findViewById(R.id.image4);*/
+     /*   image1.setOnClickListener(this);
+        image2.setOnClickListener(this);
+        image3.setOnClickListener(this);
+        image4.setOnClickListener(this);*/
+
     }
 
-    private void scanBle() {
-        xfBluetooth = XFBluetooth.getInstance(this);
-        xfBluetooth.addBleCallBack(gattCallback);
-        RotateAnimation animation = new RotateAnimation(0f, 360f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        animation.setInterpolator(new LinearInterpolator());
-        animation.setDuration(2000);
-        animation.setRepeatCount(-1);
-        animation.setFillAfter(true);
-        vScan.startAnimation(animation);
-        xfBluetooth.scan();
+    private void onTabItemSelected(int id) {
+        Fragment fragment = null;
+        switch (id) {
+            case R.id.tab_menu_home:
+                fragment = mFragments[0];
+                FragmentFactory.getInstance().changeFragment(0, R.id.fragment, getSupportFragmentManager());
+                break;
+            case R.id.tab_menu_discovery:
+                fragment = mFragments[1];
+                FragmentFactory.getInstance().changeFragment(1, R.id.fragment, getSupportFragmentManager());
+                break;
+            case R.id.tab_menu_attention:
+                fragment = mFragments[2];
+                FragmentFactory.getInstance().changeFragment(2, R.id.fragment, getSupportFragmentManager());
+                break;
+            case R.id.tab_menu_profile:
+                fragment = mFragments[3];
+                FragmentFactory.getInstance().changeFragment(3, R.id.fragment, getSupportFragmentManager());
+                break;
+        }
+     /*   if (fragment != null) {
+            FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+            if (currentFragment != null) {
+                fragmentTransaction.hide(currentFragment);
+            }
+            fragmentTransaction.replace(R.id.fragment, fragment).commit();
+            currentFragment = fragment;
+        }*/
     }
+
+   /* @Override
+    public void onClick(View view) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        switch (view.getId()) {
+            case R.id.image1:
+                if (firstFragment == null)
+                    firstFragment = new FirstFragment();
+                transaction.replace(R.id.fragment, firstFragment);
+                transaction.commit();
+                break;
+            case R.id.image2:
+                if (secondFragment == null)
+                    secondFragment = new SecondFragment();
+                transaction.replace(R.id.fragment, secondFragment);
+                transaction.commit();
+                break;
+            case R.id.image3:
+                if (thirdFragment == null)
+                    thirdFragment = new ThreeFragment();
+                transaction.replace(R.id.fragment, thirdFragment);
+                transaction.commit();
+                break;
+            case R.id.image4:
+                if (fourthFragment == null)
+                    fourthFragment = new FourFragment();
+                transaction.replace(R.id.fragment, fourthFragment);
+                transaction.commit();
+                break;
+            default:
+                break;
+        }
+    }*/
 }

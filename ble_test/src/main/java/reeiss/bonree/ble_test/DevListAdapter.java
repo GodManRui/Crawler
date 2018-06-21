@@ -15,7 +15,7 @@ public class DevListAdapter extends BaseAdapter {
     private Context context;
 
 
-    DevListAdapter(ArrayList<DeviceListBean> devList, Context context) {
+    public DevListAdapter(ArrayList<DeviceListBean> devList, Context context) {
         this.devList = devList;
         this.context = context;
     }

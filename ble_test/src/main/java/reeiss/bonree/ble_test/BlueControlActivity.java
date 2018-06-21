@@ -16,7 +16,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 
@@ -39,6 +38,44 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
             mHandler.postDelayed(this, 2500);
         }
     };
+    private XFBluetoothCallBack mXFBluetoothControl = new XFBluetoothCallBack() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            if (newState != BluetoothProfile.STATE_CONNECTED) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, int status) {
+            if (imRssi != null) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (rssi > -45) {
+                            imRssi.setImageResource(R.mipmap.ic_rssi_5);
+                        } else if (rssi > -65) {
+                            imRssi.setImageResource(R.mipmap.ic_rssi_4);
+                        } else if (rssi > -85) {
+                            imRssi.setImageResource(R.mipmap.ic_rssi_3);
+                        } else if (rssi > -100) {
+                            imRssi.setImageResource(R.mipmap.ic_rssi_2);
+                        } else if (rssi > -110) {
+                            imRssi.setImageResource(R.mipmap.ic_rssi_1);
+                        } else if (rssi > -120) {
+                            imRssi.setImageResource(R.mipmap.ic_rssi_0);
+                        }
+                    }
+                });
+                //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,46 +87,13 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
 
     private void initBle() {
         mXFBluetooth = XFBluetooth.getInstance(this);
-        mXFBluetooth.addBleCallBack(new XFBluetoothCallBack() {
-            @Override
-            public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-                if (newState != BluetoothProfile.STATE_CONNECTED) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            finish();
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, int status) {
-                if (imRssi != null) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (rssi > -45) {
-                                imRssi.setImageResource(R.mipmap.ic_rssi_5);
-                            } else if (rssi > -65) {
-                                imRssi.setImageResource(R.mipmap.ic_rssi_4);
-                            } else if (rssi > -85) {
-                                imRssi.setImageResource(R.mipmap.ic_rssi_3);
-                            } else if (rssi > -100) {
-                                imRssi.setImageResource(R.mipmap.ic_rssi_2);
-                            } else if (rssi > -110) {
-                                imRssi.setImageResource(R.mipmap.ic_rssi_1);
-                            } else if (rssi > -120) {
-                                imRssi.setImageResource(R.mipmap.ic_rssi_0);
-                            }
-                        }
-                    });
-                    //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
-                }
-            }
-        });
+        mXFBluetooth.addBleCallBack(mXFBluetoothControl);
         mXFBluetoothGatt = mXFBluetooth.getXFBluetoothGatt();
         alertService = mXFBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_Immediate_Alert));
+        Log.e("jerryzhu", "服务扫描结果2   : " + mXFBluetoothGatt.getServices().size());
+        for (int i = 0; i < mXFBluetoothGatt.getServices().size(); i++) {
+            Log.e("jerryzhu", "服务扫描结果2   : " + mXFBluetoothGatt.getServices().get(i).getUuid());
+        }
         if (alertService != null)
             alertCharacteristic = alertService.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Immediate_Alert));
         else
@@ -115,6 +119,9 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         super.onDestroy();
         if (mHandler != null)
             mHandler.removeCallbacksAndMessages(null);
+        if (mXFBluetoothControl != null) {
+            mXFBluetooth.removeBleCallBack(mXFBluetoothControl);
+        }
     }
 
     @Override
@@ -138,4 +145,5 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
                 break;
         }
     }
+
 }
