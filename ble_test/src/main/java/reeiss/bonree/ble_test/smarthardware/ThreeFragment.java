@@ -16,7 +16,6 @@ import android.widget.Button;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClientOption;
-import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
@@ -29,7 +28,10 @@ import com.baidu.mapapi.utils.DistanceUtil;
 
 import java.util.LinkedList;
 
+import reeiss.bonree.ble_test.LocationApplication;
+import reeiss.bonree.ble_test.LocationService;
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.utils.Utils;
 
 /**
  * Wang YaHui

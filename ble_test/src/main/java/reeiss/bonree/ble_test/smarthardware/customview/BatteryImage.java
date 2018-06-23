@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test.smarthardware;
+package reeiss.bonree.ble_test.smarthardware.customview;
 
 import android.content.Context;
 import android.graphics.Canvas;

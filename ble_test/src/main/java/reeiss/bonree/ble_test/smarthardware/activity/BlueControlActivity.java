@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.smarthardware.activity;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -17,6 +17,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.UUID;
+
+import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.PreventLosingCommon;
+import reeiss.bonree.ble_test.utils.T;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
+import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 
 
 public class BlueControlActivity extends AppCompatActivity implements OnClickListener {
@@ -89,13 +95,15 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         mXFBluetooth = XFBluetooth.getInstance(this);
         mXFBluetooth.addBleCallBack(mXFBluetoothControl);
         mXFBluetoothGatt = mXFBluetooth.getXFBluetoothGatt();
-        alertService = mXFBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_Immediate_Alert));
+        // alertService = mXFBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_Immediate_Alert_ShuiDi));
+        alertService = mXFBluetoothGatt.getService(PreventLosingCommon.getServerImmediateAlert());
         Log.e("jerryzhu", "服务扫描结果2   : " + mXFBluetoothGatt.getServices().size());
         for (int i = 0; i < mXFBluetoothGatt.getServices().size(); i++) {
             Log.e("jerryzhu", "服务扫描结果2   : " + mXFBluetoothGatt.getServices().get(i).getUuid());
         }
         if (alertService != null)
-            alertCharacteristic = alertService.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Immediate_Alert));
+            // alertCharacteristic = alertService.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Immediate_Alert_ShuiDi));
+            alertCharacteristic = alertService.getCharacteristic(PreventLosingCommon.getCHImmediateAlert());
         else
             T.show(this, "服务未找到！");
     }
@@ -128,16 +136,16 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.im_setting:
-                startActivity(new Intent(this, BluetoothSetting.class));
+                startActivity(new Intent(this, BluetoothSettingActivity.class));
                 break;
             case R.id.btn_call:
                 if (!isAlert) {
-                    alertCharacteristic.setValue(new byte[]{ShuiDiCommon.Common_Middling_immediate_Alert});
+                    alertCharacteristic.setValue(new byte[]{PreventLosingCommon.Common_High_immediate_Alert});
                     mXFBluetoothGatt.writeCharacteristic(alertCharacteristic);
                     btnCall.setText("正在呼叫");
                     isAlert = true;
                 } else {
-                    alertCharacteristic.setValue(new byte[]{ShuiDiCommon.Common_No_immediate_Alert});
+                    alertCharacteristic.setValue(new byte[]{PreventLosingCommon.Common_No_immediate_Alert});
                     mXFBluetoothGatt.writeCharacteristic(alertCharacteristic);
                     btnCall.setText("呼叫");
                     isAlert = false;

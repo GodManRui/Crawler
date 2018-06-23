@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.demo;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

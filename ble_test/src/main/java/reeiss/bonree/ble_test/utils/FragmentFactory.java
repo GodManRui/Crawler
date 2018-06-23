@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.utils;
 
 
 import android.support.v4.app.Fragment;
@@ -30,30 +30,7 @@ public class FragmentFactory {
      * NET报警
      */
     public final static int NET_ALERT = 3;
-    /**
-     * 实时节点
-     */
-    public final static int NODE_ONLINE = 4;
-    /**
-     * 关于我们
-     */
-    public final static int ABOUT_US = 5;
-    /**
-     * SDK报告
-     */
-    public final static int SDK_REPORT = 6;
-    /**
-     * SDK报警
-     */
-    public final static int SDK_ALERT = 7;
-    /**
-     * 博睿Server
-     */
-    public final static int SERVER_REPORT = 8;
-    /**
-     * Server报警
-     */
-    public final static int SERVER_ALERT = 9;
+
     public static FirstFragment onlineTestFragment;
     private static SecondFragment userSettingFragment;
     private static ThreeFragment netTaskFragment;

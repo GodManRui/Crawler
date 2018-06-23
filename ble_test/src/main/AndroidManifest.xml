@@ -32,22 +32,22 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
     <application
-        android:name=".smarthardware.LocationApplication"
+        android:name=".LocationApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".smarthardware.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".BlueControlActivity" />
-        <activity android:name=".BluetoothSetting" />
+        <activity android:name=".smarthardware.activity.BlueControlActivity" />
+        <activity android:name=".smarthardware.activity.BluetoothSettingActivity" />
 
         <service
             android:name="com.baidu.location.f"

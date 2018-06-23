@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.blehelp;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -13,10 +13,13 @@ import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
 import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import reeiss.bonree.ble_test.utils.T;
 
 public class XFBluetooth {
     public static XFBluetooth xfBluetooth;
@@ -160,6 +163,13 @@ public class XFBluetooth {
             mBluetoothLeScanner.startScan(callback);
         } else
             mBluetoothAdapter.startLeScan(mLeScanCallback);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (mBluetoothAdapter != null && mBluetoothAdapter.isDiscovering())
+                    stop();
+            }
+        }, 20000);
     }
 
     public void stop() {

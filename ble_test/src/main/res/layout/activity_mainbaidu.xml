@@ -4,46 +4,21 @@
     android:id="@+id/fragment_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".smarthardware.MainActivity">
 
     <FrameLayout
         android:id="@+id/fragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
-    <!--<LinearLayout
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="51dp" />
+
+    <View
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:id="@+id/image1"
-            android:layout_weight="1"
-            android:src="@mipmap/image1"
-            />
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:id="@+id/image2"
-            android:layout_weight="1"
-            android:src="@mipmap/image1"
-            />
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:id="@+id/image3"
-            android:layout_weight="1"
-            android:src="@mipmap/image1"
-            />
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:id="@+id/image4"
-            android:layout_weight="1"
-            android:src="@mipmap/image1"
-            />
-        </LinearLayout>-->
+        android:layout_height="1dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:background="@color/bg" />
+
     <android.support.design.widget.BottomNavigationView
         android:id="@+id/bottom_navigation_view"
         android:layout_width="match_parent"

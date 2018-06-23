@@ -1,10 +1,10 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.blehelp;
 
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 
-import reeiss.bonree.ble_test.XFBluetooth.XFBluetoothControl;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth.XFBluetoothControl;
 
 public abstract class XFBluetoothCallBack implements XFBluetoothControl {
     @Override

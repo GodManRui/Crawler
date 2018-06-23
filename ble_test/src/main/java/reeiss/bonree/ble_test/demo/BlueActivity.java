@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.demo;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothAdapter.LeScanCallback;
@@ -22,7 +22,8 @@ import android.view.View;
 import java.util.Arrays;
 import java.util.List;
 
-import reeiss.bonree.ble_test.Bluetooth5.GetBluetoothDevice;
+import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.demo.Bluetooth5.GetBluetoothDevice;
 
 
 public class BlueActivity extends AppCompatActivity implements GetBluetoothDevice {

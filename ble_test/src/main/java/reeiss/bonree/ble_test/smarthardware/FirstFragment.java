@@ -27,14 +27,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
-import reeiss.bonree.ble_test.BlueControlActivity;
-import reeiss.bonree.ble_test.DevListAdapter;
-import reeiss.bonree.ble_test.DeviceListBean;
+import reeiss.bonree.ble_test.smarthardware.activity.BlueControlActivity;
+import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
+import reeiss.bonree.ble_test.bean.DeviceListBean;
 import reeiss.bonree.ble_test.R;
-import reeiss.bonree.ble_test.ShuiDiCommon;
-import reeiss.bonree.ble_test.T;
-import reeiss.bonree.ble_test.XFBluetooth;
-import reeiss.bonree.ble_test.XFBluetoothCallBack;
+import reeiss.bonree.ble_test.bean.PreventLosingCommon;
+import reeiss.bonree.ble_test.utils.T;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
+import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 
 public class FirstFragment extends Fragment {
 
@@ -61,7 +61,7 @@ public class FirstFragment extends Fragment {
         @Override
         public void onScanResult(final BluetoothDevice device) {
             if (device.getName() != null && device.getName().contains("iTAG")) {
-                xfBluetooth.stop();
+                // xfBluetooth.stop();
                 for (int i = 0; i < mDevList.size(); i++) {
                     if (mDevList.get(i).getBluetoothDevice().getAddress().equals(device.getAddress())) {
                         Log.e("JerryZhu", "onScanResult: 列表已存在!!!!!!");
@@ -108,10 +108,11 @@ public class FirstFragment extends Fragment {
                 for (int i = 0; i < xfBluetooth.getXFBluetoothGatt().getServices().size(); i++) {
                     Log.e("jerryzhu", "服务扫描结果 : " + xfBluetooth.getXFBluetoothGatt().getServices().get(i).getUuid());
                 }
+                PreventLosingCommon.getDeviceType(xfBluetooth.getXFBluetoothGatt());
                 Log.e("JerryZhu", "onServicesDiscovered: 服务扫描成功，开启按键通知！");
-                BluetoothGattService click = xfBluetooth.getXFBluetoothGatt().getService(UUID.fromString(ShuiDiCommon.Server_Private));
+                BluetoothGattService click = xfBluetooth.getXFBluetoothGatt().getService(UUID.fromString(PreventLosingCommon.Server_Private));
                 if (click == null) return;
-                BluetoothGattCharacteristic chKey = click.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Key_Press));
+                BluetoothGattCharacteristic chKey = click.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Key_Press));
                 xfBluetooth.getXFBluetoothGatt().setCharacteristicNotification(chKey, true);
             }
         }
@@ -145,48 +146,6 @@ public class FirstFragment extends Fragment {
         scanBle();
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        Log.e("JerryZhu", "onActivityCreated: ");
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        Log.e("JerryZhu", "onStart: ");
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        Log.e("JerryZhu", "onResume: ");
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        Log.e("JerryZhu", "onPause: ");
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        Log.e("JerryZhu", "onPause: ");
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.e("JerryZhu", "onDestroy: ");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.e("JerryZhu", "onDestroy: ");
-    }
-
     private void initView() {
         vDevLv = getView().findViewById(R.id.ble_dev_lv);
         vScan = getView().findViewById(R.id.iv_scan);
@@ -202,6 +161,12 @@ public class FirstFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Log.e("jerry", "onItem " + xfBluetooth.getAdapter().isDiscovering());
+                //todo 判断仍在扫描，此方法暂时无效
+                if (xfBluetooth.getAdapter().isDiscovering()) {
+                    Log.e("jerry", "onItemClick: 正在发现");
+                    xfBluetooth.stop();
+                }
                 DeviceListBean deviceListBean = mDevList.get(position);
                 if (deviceListBean.getConnectState().equals("已连接")) {
                     T.show(getActivity(), "设备已连接！");
@@ -223,7 +188,7 @@ public class FirstFragment extends Fragment {
         xfBluetooth = XFBluetooth.getInstance(getActivity());
         xfBluetooth.addBleCallBack(gattCallback);
         RotateAnimation animation = new RotateAnimation(0f, 360f,
-            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(2000);
         animation.setRepeatCount(-1);

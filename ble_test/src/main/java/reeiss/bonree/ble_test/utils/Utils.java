@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test.smarthardware;
+package reeiss.bonree.ble_test.utils;
 
 public class Utils {
 	public final static String CoorType_GCJ02 = "gcj02";

@@ -1,7 +1,6 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.smarthardware.adapter;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +8,9 @@ import android.widget.BaseAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+
+import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.DeviceListBean;
 
 public class DevListAdapter extends BaseAdapter {
     private ArrayList<DeviceListBean> devList;

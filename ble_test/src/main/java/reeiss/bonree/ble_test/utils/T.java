@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.utils;
 
 /**
  * Created by Administrator on 2017/4/17.

@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test;
+package reeiss.bonree.ble_test.smarthardware.activity;
 
 
 import android.app.ProgressDialog;
@@ -6,34 +6,31 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
 import android.content.DialogInterface;
-import android.media.MediaDataSource;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CompoundButton;
-import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.UUID;
 
-public class BluetoothSetting extends AppCompatActivity implements View.OnClickListener {
+import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.PreventLosingCommon;
+import reeiss.bonree.ble_test.utils.T;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
+import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
+
+public class BluetoothSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Switch vAlert;
     private XFBluetooth mXFBlue;
@@ -61,9 +58,9 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
                 public void run() {
                     mProgressDialog.dismiss();
                     if (status == BluetoothGatt.GATT_SUCCESS) {
-                        T.show(BluetoothSetting.this, "设置成功！");
+                        T.show(BluetoothSettingActivity.this, "设置成功！");
                     } else {
-                        T.show(BluetoothSetting.this, "设置失败！");
+                        T.show(BluetoothSettingActivity.this, "设置失败！");
                     }
                 }
             });
@@ -84,16 +81,16 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
     }
 
     private void initBlue() {
-        mXFBlue = XFBluetooth.getInstance(BluetoothSetting.this);
+        mXFBlue = XFBluetooth.getInstance(BluetoothSettingActivity.this);
         xfBluetoothGatt = mXFBlue.getXFBluetoothGatt();
         mXFBlue.addBleCallBack(mXFBluetoothCallBack);
         for (int i = 0; i < xfBluetoothGatt.getServices().size(); i++) {
             Log.e("jerryzhu", "initBlue: " + xfBluetoothGatt.getServices().get(i).getUuid());
         }
-        mLinkLostServer = xfBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_LinkLost_Alert));
-        BluetoothGattService mBatteryServer = xfBluetoothGatt.getService(UUID.fromString(ShuiDiCommon.Server_Battery_Level));
+        mLinkLostServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_LinkLost_Alert));
+        BluetoothGattService mBatteryServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_Battery_Level));
         if (mBatteryServer != null) {
-            BluetoothGattCharacteristic mChBattery = mBatteryServer.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_Battery_Level));
+            BluetoothGattCharacteristic mChBattery = mBatteryServer.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Battery_Level));
             xfBluetoothGatt.readCharacteristic(mChBattery);
         }
     }
@@ -117,13 +114,13 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
 
     public void saveConfig(View view) {
         finish();
-       /* BluetoothGattCharacteristic mLinkLostCharacteristic = mLinkLostServer.getCharacteristic(UUID.fromString(ShuiDiCommon.CH_LinkLost_Alert));
+       /* BluetoothGattCharacteristic mLinkLostCharacteristic = mLinkLostServer.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_LinkLost_Alert));
         if (mLinkLostCharacteristic != null) {
             Log.e("jerryzhu", "saveConfig: " + mLinkLostCharacteristic.getProperties() + "   ==  " + mLinkLostCharacteristic.getUuid());
             if (isAlert) {
-                mLinkLostCharacteristic.setValue(new byte[]{ShuiDiCommon.Common_LinkLost_100Alert});
+                mLinkLostCharacteristic.setValue(new byte[]{PreventLosingCommon.Common_LinkLost_100Alert});
             } else {
-                mLinkLostCharacteristic.setValue(new byte[]{(byte) ShuiDiCommon.Common_LinkLost_No_Alert});
+                mLinkLostCharacteristic.setValue(new byte[]{(byte) PreventLosingCommon.Common_LinkLost_No_Alert});
             }
             xfBluetoothGatt.writeCharacteristic(mLinkLostCharacteristic);
         } else {
@@ -178,13 +175,13 @@ public class BluetoothSetting extends AppCompatActivity implements View.OnClickL
                     public void onClick(DialogInterface dialog, int which) {
                         if (0 <= which && which <= itemName.length - 1) {
                             if (itemName[which] != null) {
-                                // T.show(BluetoothSetting.this, itemName[which]);
+                                // T.show(BluetoothSettingActivity.this, itemName[which]);
                                 Integer resID = nameMap.get(itemName[which]);
                                 if (mp != null) {
                                     mp.reset();
                                     mp.release();
                                 }
-                                mp = MediaPlayer.create(BluetoothSetting.this, resID);//重新设置要播放的音频
+                                mp = MediaPlayer.create(BluetoothSettingActivity.this, resID);//重新设置要播放的音频
                                 mp.start();//开始播放
                             }
                         }

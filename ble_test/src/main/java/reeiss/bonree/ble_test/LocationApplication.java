@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test.smarthardware;
+package reeiss.bonree.ble_test;
 
 import android.app.Application;
 import android.app.Service;
@@ -6,7 +6,7 @@ import android.os.Vibrator;
 
 import com.baidu.mapapi.SDKInitializer;
 
-import reeiss.bonree.ble_test.XFBluetooth;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 
 /**
  * Wang YaHui
