@@ -16,13 +16,13 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.util.UUID;
-
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.PreventLosingCommon;
-import reeiss.bonree.ble_test.utils.T;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
+import reeiss.bonree.ble_test.utils.T;
+
+import static reeiss.bonree.ble_test.bean.CommonHelp.getImmediateAlert;
 
 
 public class BlueControlActivity extends AppCompatActivity implements OnClickListener {
@@ -32,7 +32,6 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
     private Button btnCall;
     private ImageView imSetting;
     private boolean isAlert;
-    private BluetoothGattService alertService;
     private BluetoothGattCharacteristic alertCharacteristic;
     private Handler mHandler = new Handler();
     private XFBluetooth mXFBluetooth;
@@ -95,17 +94,14 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         mXFBluetooth = XFBluetooth.getInstance(this);
         mXFBluetooth.addBleCallBack(mXFBluetoothControl);
         mXFBluetoothGatt = mXFBluetooth.getXFBluetoothGatt();
-        // alertService = mXFBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_Immediate_Alert_ShuiDi));
-        alertService = mXFBluetoothGatt.getService(PreventLosingCommon.getServerImmediateAlert());
-        Log.e("jerryzhu", "服务扫描结果2   : " + mXFBluetoothGatt.getServices().size());
+
         for (int i = 0; i < mXFBluetoothGatt.getServices().size(); i++) {
-            Log.e("jerryzhu", "服务扫描结果2   : " + mXFBluetoothGatt.getServices().get(i).getUuid());
+            Log.e("jerryzhu", "服务扫描结果   : " + mXFBluetoothGatt.getServices().get(i).getUuid());
         }
-        if (alertService != null)
-            // alertCharacteristic = alertService.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Immediate_Alert_ShuiDi));
-            alertCharacteristic = alertService.getCharacteristic(PreventLosingCommon.getCHImmediateAlert());
-        else
-            T.show(this, "服务未找到！");
+
+        alertCharacteristic = getImmediateAlert(mXFBluetoothGatt);
+        if (alertCharacteristic == null)
+            T.show(this, "报警服务未找到！");
     }
 
     private void initView() {

@@ -49,7 +49,6 @@ public class ThreeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        Log.e("jerry", "onCreateView: " + getActivity().getApplication());
         //SDKInitializer.initialize(getActivity().getApplication());
         View view = inflater.inflate(R.layout.fragment_three, null);
         map = view.findViewById(R.id.map);

@@ -5,7 +5,7 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,16 +25,18 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.UUID;
+import java.util.List;
 
-import reeiss.bonree.ble_test.smarthardware.activity.BlueControlActivity;
-import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
-import reeiss.bonree.ble_test.bean.DeviceListBean;
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.DeviceListBean;
 import reeiss.bonree.ble_test.bean.PreventLosingCommon;
-import reeiss.bonree.ble_test.utils.T;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
+import reeiss.bonree.ble_test.smarthardware.activity.BlueControlActivity;
+import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
+import reeiss.bonree.ble_test.utils.T;
+
+import static reeiss.bonree.ble_test.bean.CommonHelp.getOnClick;
 
 public class FirstFragment extends Fragment {
 
@@ -84,6 +86,9 @@ public class FirstFragment extends Fragment {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, final int status, final int newState) {
             Log.e("JerryZhu", "链接状态: " + status + "   ==  " + newState);
+            if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                PreventLosingCommon.Dev_Type = -1;
+            }
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -105,21 +110,36 @@ public class FirstFragment extends Fragment {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                for (int i = 0; i < xfBluetooth.getXFBluetoothGatt().getServices().size(); i++) {
-                    Log.e("jerryzhu", "服务扫描结果 : " + xfBluetooth.getXFBluetoothGatt().getServices().get(i).getUuid());
-                }
+
                 PreventLosingCommon.getDeviceType(xfBluetooth.getXFBluetoothGatt());
                 Log.e("JerryZhu", "onServicesDiscovered: 服务扫描成功，开启按键通知！");
-                BluetoothGattService click = xfBluetooth.getXFBluetoothGatt().getService(UUID.fromString(PreventLosingCommon.Server_Private));
-                if (click == null) return;
-                BluetoothGattCharacteristic chKey = click.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Key_Press));
-                xfBluetooth.getXFBluetoothGatt().setCharacteristicNotification(chKey, true);
+
+                BluetoothGattCharacteristic chOnclick = getOnClick(xfBluetooth.getXFBluetoothGatt());
+                boolean isEnable = xfBluetooth.getXFBluetoothGatt().setCharacteristicNotification(chOnclick, true);
+                if (isEnable) {
+                    List<BluetoothGattDescriptor> descriptorList = chOnclick.getDescriptors();
+                    if (descriptorList != null && descriptorList.size() > 0) {
+                        for (BluetoothGattDescriptor descriptor : descriptorList) {
+                            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                            gatt.writeDescriptor(descriptor);
+                        }
+                    }
+                }
             }
         }
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            Log.e("jerryzhu", "点击了  " + Arrays.toString(characteristic.getValue()));
+            String value = Arrays.toString(characteristic.getValue());
+            if (value.equals("[2]")) {
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        T.show(getActivity(), "警报！！");
+                    }
+                });
+            }
+            Log.e("jerryzhu", "点击了  " + value);
         }
 
     };
@@ -134,14 +154,12 @@ public class FirstFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.activity_main, null);
-        Log.e("JerryZhu", "onCreateView: ");
         return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        Log.e("JerryZhu", "onViewCreated: ");
         initView();
         scanBle();
     }
@@ -188,7 +206,7 @@ public class FirstFragment extends Fragment {
         xfBluetooth = XFBluetooth.getInstance(getActivity());
         xfBluetooth.addBleCallBack(gattCallback);
         RotateAnimation animation = new RotateAnimation(0f, 360f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(2000);
         animation.setRepeatCount(-1);
