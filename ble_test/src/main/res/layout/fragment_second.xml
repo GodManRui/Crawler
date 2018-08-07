@@ -9,7 +9,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
         android:background="@null"
-        android:text="切换" />
+        android:text="切换"
+        android:textSize="20sp" />
 
     <FrameLayout
         android:id="@+id/camera_preview"
@@ -23,6 +24,16 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:background="@null"
-        android:text="拍照" />
+        android:text="拍照"
+        android:textSize="20sp" />
+
+    <ImageView
+        android:id="@+id/im_picture"
+        android:layout_width="50dp"
+        android:layout_height="40dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/button_capture"
+        android:layout_marginEnd="30dp"
+        android:src="@mipmap/widget_bar_device_over" />
 
 </RelativeLayout>

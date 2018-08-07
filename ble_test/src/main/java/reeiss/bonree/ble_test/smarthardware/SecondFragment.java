@@ -2,17 +2,19 @@ package reeiss.bonree.ble_test.smarthardware;
 
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.hardware.Camera;
-import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.CameraInfo;
+import android.hardware.Camera.PictureCallback;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -22,14 +24,12 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Date;
-
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.utils.T;
@@ -39,17 +39,20 @@ public class SecondFragment extends Fragment {
     private Camera mCamera;
     private CameraPreview mPreview;
     private FrameLayout mCameraLayout;
+    private int mCameraId = CameraInfo.CAMERA_FACING_BACK;
+    private String picturePath;
+    private ImageView imPicture;
     // 拍照回调
     private PictureCallback mPictureCallback = new PictureCallback() {
         @Override
         public void onPictureTaken(final byte[] data, Camera camera) {
             File pictureDir = Environment
-                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
-            final String picturePath = pictureDir
-                    + File.separator
-                    + new DateFormat().format("yyyyMMddHHmmss", new Date())
-                    .toString() + ".jpg";
+            picturePath = pictureDir
+                + File.separator
+                + new DateFormat().format("yyyyMMddHHmmss", new Date())
+                .toString() + ".jpg";
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -63,14 +66,19 @@ public class SecondFragment extends Fragment {
                             bitmap = CameraPreview.rotateBitmapByDegree(bitmap, -90);
                         }
                         BufferedOutputStream bos = new BufferedOutputStream(
-                                new FileOutputStream(file));
+                            new FileOutputStream(file));
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                         bos.flush();
                         bos.close();
                         bitmap.recycle();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Uri uri = Uri.fromFile(new File(picturePath));
+                                imPicture.setImageURI(uri);
+                            }
+                        });
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
@@ -79,7 +87,16 @@ public class SecondFragment extends Fragment {
             mCamera.startPreview();
         }
     };
-    private int mCameraId = CameraInfo.CAMERA_FACING_BACK;
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (hidden) {
+            releaseCamera();
+        } else {
+            openCamera();
+        }
+    }
 
     @Nullable
     @Override
@@ -115,6 +132,19 @@ public class SecondFragment extends Fragment {
                 openCamera();
             }
         });
+        imPicture = getView().findViewById(R.id.im_picture);
+        imPicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (picturePath == null || picturePath.isEmpty()) return;
+                Intent intent = new Intent(Intent.ACTION_VIEW);    //打开图片得启动ACTION_VIEW意图
+                Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+                //将图片转换为bitmap格式
+                Uri uri = Uri.parse(MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, null, null));    //将bitmap转换为uri
+                intent.setDataAndType(uri, "image/*");    //设置intent数据和图片格式
+                startActivity(intent);
+            }
+        });
         openCamera();
     }
 
@@ -129,11 +159,35 @@ public class SecondFragment extends Fragment {
         if (volume != 0) {
             if (mediaPlayer == null)
                 mediaPlayer = MediaPlayer.create(getActivity(),
-                        Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                    Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
             if (mediaPlayer != null) {
                 mediaPlayer.start();
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+//        openCamera();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+//        releaseCamera();
+    }
+
+    // 释放相机
+    public void releaseCamera() {
+        if (mCamera != null) {
+            mCamera.setPreviewCallback(null);
+            mCamera.stopPreview();
+            mCamera.release();
+            mCamera = null;
+        }
+        mPreview = null;
+        mCameraLayout.removeAllViews();
     }
 
     // 开始预览相机
@@ -165,7 +219,7 @@ public class SecondFragment extends Fragment {
     // 判断相机是否支持
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_CAMERA)) {
+            PackageManager.FEATURE_CAMERA)) {
             return true;
         } else {
             return false;
@@ -181,41 +235,6 @@ public class SecondFragment extends Fragment {
             e.printStackTrace();
         }
         return c;
-    }
-
-    // 释放相机
-    public void releaseCamera() {
-        if (mCamera != null) {
-            mCamera.setPreviewCallback(null);
-            mCamera.stopPreview();
-            mCamera.release();
-            mCamera = null;
-        }
-        mPreview = null;
-        mCameraLayout.removeAllViews();
-    }
-
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        openCamera();
-    }
-
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        if (hidden) {
-            releaseCamera();
-        } else {
-            openCamera();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        releaseCamera();
     }
 
 

@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -23,6 +24,7 @@ import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.TextureMapView;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.utils.DistanceUtil;
 
@@ -31,6 +33,7 @@ import java.util.LinkedList;
 import reeiss.bonree.ble_test.LocationApplication;
 import reeiss.bonree.ble_test.LocationService;
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.utils.T;
 import reeiss.bonree.ble_test.utils.Utils;
 
 /**
@@ -40,7 +43,7 @@ import reeiss.bonree.ble_test.utils.Utils;
 
 public class ThreeFragment extends Fragment {
 
-    private MapView map;
+    private TextureMapView map;
     private BaiduMap mBaiduMap;
     private Button reset;
     private LinkedList<LocationEntity> locationList = new LinkedList<LocationEntity>();
@@ -48,7 +51,7 @@ public class ThreeFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         //SDKInitializer.initialize(getActivity().getApplication());
         View view = inflater.inflate(R.layout.fragment_three, null);
         map = view.findViewById(R.id.map);
@@ -61,6 +64,9 @@ public class ThreeFragment extends Fragment {
         LocationClientOption mOption = locationService.getDefaultLocationClientOption();
         mOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
         mOption.setCoorType("bd09ll");
+
+        mOption.setIsNeedAddress(true);
+
         locationService.setLocationOption(mOption);
         locationService.registerListener(listener);
         locationService.start();
@@ -68,19 +74,19 @@ public class ThreeFragment extends Fragment {
     }
 
     BDAbstractLocationListener listener = new BDAbstractLocationListener() {
-
+        //百度地图定位回调
         @Override
         public void onReceiveLocation(BDLocation location) {
             // TODO Auto-generated method stub
 
             if (location != null && (location.getLocType() == 161 || location.getLocType() == 66)) {
-                Message locMsg = locHander.obtainMessage();
+                Message locMsg = locHandler.obtainMessage();
                 Bundle locData;
                 locData = Algorithm(location);
                 if (locData != null) {
                     locData.putParcelable("loc", location);
                     locMsg.setData(locData);
-                    locHander.sendMessage(locMsg);
+                    locHandler.sendMessage(locMsg);
                 }
             }
         }
@@ -132,7 +138,7 @@ public class ThreeFragment extends Fragment {
      * 接收定位结果消息，并显示在地图上
      */
     @SuppressLint("HandlerLeak")
-    private Handler locHander = new Handler() {
+    private Handler locHandler = new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
@@ -140,12 +146,14 @@ public class ThreeFragment extends Fragment {
             super.handleMessage(msg);
             try {
                 BDLocation location = msg.getData().getParcelable("loc");
-                int iscal = msg.getData().getInt("iscalculate");
-                if (location != null) {
+                int isCal = msg.getData().getInt("iscalculate");
+                if (location != null) {             //纬度                        //经度
                     LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
+                    T.show(getActivity(),location.getAddrStr());
+                    T.show(getActivity(),location.getLocationDescribe());
                     // 构建Marker图标
                     BitmapDescriptor bitmap = null;
-                    if (iscal == 0) {
+                    if (isCal == 0) {
                         bitmap = BitmapDescriptorFactory.fromResource(R.mipmap.icon_openmap_mark); // 非推算结果
                     } else {
                         bitmap = BitmapDescriptorFactory.fromResource(R.mipmap.icon_openmap_focuse_mark); // 推算结果

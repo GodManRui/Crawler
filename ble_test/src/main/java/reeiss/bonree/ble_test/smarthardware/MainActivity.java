@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.utils.BottomNavigationViewHelper;
 import reeiss.bonree.ble_test.utils.FragmentFactory;
 
 public class MainActivity extends AppCompatActivity {
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initView() {
         mBottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation_view);
+        BottomNavigationViewHelper.disableShiftMode(mBottomNavigationView);
         mBottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
