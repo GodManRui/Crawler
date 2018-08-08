@@ -6,6 +6,8 @@ import android.os.Vibrator;
 
 import com.baidu.mapapi.SDKInitializer;
 
+import org.litepal.LitePal;
+
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 
 /**
@@ -27,5 +29,6 @@ public class LocationApplication extends Application {
         mVibrator = (Vibrator) getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
         SDKInitializer.initialize(getApplicationContext());
         XFBluetooth.getInstance(this);
+        LitePal.initialize(this);
     }
 }
