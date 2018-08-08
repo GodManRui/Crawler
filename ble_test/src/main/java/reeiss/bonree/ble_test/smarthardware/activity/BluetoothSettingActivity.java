@@ -18,6 +18,8 @@ import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.litepal.LitePal;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,10 +27,11 @@ import java.util.HashMap;
 import java.util.UUID;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.BleDevConfig;
 import reeiss.bonree.ble_test.bean.PreventLosingCommon;
-import reeiss.bonree.ble_test.utils.T;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
+import reeiss.bonree.ble_test.utils.T;
 
 public class BluetoothSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -106,7 +109,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
                 //todo 小芳支持此功能
-                isAlert = b;
+
             }
         });
         mProgressDialog = new ProgressDialog(this);
@@ -148,6 +151,8 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
      * 单选
      */
     private void dialogChoice() {
+        final BleDevConfig bleDevConfig = LitePal.where("mac=?", xfBluetoothGatt.getDevice().getAddress()).findFirst(BleDevConfig.class);
+
         //final String items[] = {"男", "女", "其他"};
         final HashMap<String, Integer> nameMap = new HashMap();
         Field[] fields = R.raw.class.getDeclaredFields();
@@ -169,7 +174,9 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         builder.setTitle("选择铃声");
         builder.setIcon(R.mipmap.widget_bar_device_over);
         //todo 读取数据库，默认选中当前选择的铃声
-        builder.setSingleChoiceItems(itemName, 0,
+        final int ringPosition = bleDevConfig.getRingPosition();
+
+        builder.setSingleChoiceItems(itemName, ringPosition,
                 new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -177,6 +184,8 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
                             if (itemName[which] != null) {
                                 // T.show(BluetoothSettingActivity.this, itemName[which]);
                                 Integer resID = nameMap.get(itemName[which]);
+                                bleDevConfig.setRingResId(resID);
+
                                 if (mp != null) {
                                     mp.reset();
                                     mp.release();
@@ -193,6 +202,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
                 int checkedItemPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
                 if (0 <= checkedItemPosition && checkedItemPosition <= itemName.length - 1 && tvRing != null) {
                     // TODO: 2018/6/19 保存数据库
+                    bleDevConfig.setRingPosition(checkedItemPosition);
                     tvRing.setText(itemName[checkedItemPosition]);
                 }
                 dialog.dismiss();
@@ -203,6 +213,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
+                bleDevConfig.update(bleDevConfig.id);
                 if (mp != null) {
                     mp.reset();
                     mp.release();

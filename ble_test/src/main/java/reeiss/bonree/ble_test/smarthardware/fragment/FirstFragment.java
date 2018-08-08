@@ -23,11 +23,14 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ListView;
 
+import org.litepal.LitePal;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.BleDevConfig;
 import reeiss.bonree.ble_test.bean.DeviceListBean;
 import reeiss.bonree.ble_test.bean.PreventLosingCommon;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
@@ -101,6 +104,11 @@ public class FirstFragment extends Fragment {
 
                     if (newState == BluetoothProfile.STATE_CONNECTED) {
                         xfBluetooth.getXFBluetoothGatt().discoverServices();
+                        BleDevConfig bleDevConfig = LitePal.where("mac=?", xfBluetooth.getXFBluetoothGatt().getDevice().getAddress()).findFirst(BleDevConfig.class);
+                        if (bleDevConfig == null) {
+                            BleDevConfig bleDevConfi = new BleDevConfig(xfBluetooth.getXFBluetoothGatt().getDevice().getAddress());
+                            bleDevConfi.save();
+                        }
                         Log.e("jerry", "连接成功，服务扫描 : ");
                     }
                 }
@@ -214,7 +222,7 @@ public class FirstFragment extends Fragment {
         xfBluetooth = XFBluetooth.getInstance(getActivity());
         xfBluetooth.addBleCallBack(gattCallback);
         RotateAnimation animation = new RotateAnimation(0f, 360f,
-            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(2000);
         animation.setRepeatCount(-1);
