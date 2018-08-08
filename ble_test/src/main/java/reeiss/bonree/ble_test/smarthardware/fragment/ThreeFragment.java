@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test.smarthardware;
+package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
 import android.annotation.SuppressLint;
@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
@@ -21,7 +20,6 @@ import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
-import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.TextureMapView;
@@ -33,7 +31,7 @@ import java.util.LinkedList;
 import reeiss.bonree.ble_test.LocationApplication;
 import reeiss.bonree.ble_test.LocationService;
 import reeiss.bonree.ble_test.R;
-import reeiss.bonree.ble_test.utils.T;
+import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.utils.Utils;
 
 /**
@@ -45,95 +43,8 @@ public class ThreeFragment extends Fragment {
 
     private TextureMapView map;
     private BaiduMap mBaiduMap;
-    private Button reset;
     private LinkedList<LocationEntity> locationList = new LinkedList<LocationEntity>();
     private LocationService locationService;
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        //SDKInitializer.initialize(getActivity().getApplication());
-        View view = inflater.inflate(R.layout.fragment_three, null);
-        map = view.findViewById(R.id.map);
-        reset = view.findViewById(R.id.clear);
-        mBaiduMap = this.map.getMap();
-        mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);
-        mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomTo(15));
-
-        locationService = ((LocationApplication) getActivity().getApplication()).locationService;
-        LocationClientOption mOption = locationService.getDefaultLocationClientOption();
-        mOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
-        mOption.setCoorType("bd09ll");
-
-        mOption.setIsNeedAddress(true);
-
-        locationService.setLocationOption(mOption);
-        locationService.registerListener(listener);
-        locationService.start();
-        return view;
-    }
-
-    BDAbstractLocationListener listener = new BDAbstractLocationListener() {
-        //百度地图定位回调
-        @Override
-        public void onReceiveLocation(BDLocation location) {
-            // TODO Auto-generated method stub
-
-            if (location != null && (location.getLocType() == 161 || location.getLocType() == 66)) {
-                Message locMsg = locHandler.obtainMessage();
-                Bundle locData;
-                locData = Algorithm(location);
-                if (locData != null) {
-                    locData.putParcelable("loc", location);
-                    locMsg.setData(locData);
-                    locHandler.sendMessage(locMsg);
-                }
-            }
-        }
-
-    };
-
-    private Bundle Algorithm(BDLocation location) {
-        Bundle locData = new Bundle();
-        double curSpeed = 0;
-        if (locationList.isEmpty() || locationList.size() < 2) {
-            LocationEntity temp = new LocationEntity();
-            temp.location = location;
-            temp.time = System.currentTimeMillis();
-            locData.putInt("iscalculate", 0);
-            locationList.add(temp);
-        } else {
-            if (locationList.size() > 5)
-                locationList.removeFirst();
-            double score = 0;
-            for (int i = 0; i < locationList.size(); ++i) {
-                LatLng lastPoint = new LatLng(locationList.get(i).location.getLatitude(),
-                        locationList.get(i).location.getLongitude());
-                LatLng curPoint = new LatLng(location.getLatitude(), location.getLongitude());
-                double distance = DistanceUtil.getDistance(lastPoint, curPoint);
-                curSpeed = distance / (System.currentTimeMillis() - locationList.get(i).time) / 1000;
-                score += curSpeed * Utils.EARTH_WEIGHT[i];
-            }
-            if (score > 0.00000999 && score < 0.00005) { // 经验值,开发者可根据业务自行调整，也可以不使用这种算法
-                location.setLongitude(
-                        (locationList.get(locationList.size() - 1).location.getLongitude() + location.getLongitude())
-                                / 2);
-                location.setLatitude(
-                        (locationList.get(locationList.size() - 1).location.getLatitude() + location.getLatitude())
-                                / 2);
-                locData.putInt("iscalculate", 1);
-            } else {
-                locData.putInt("iscalculate", 0);
-            }
-            LocationEntity newLocation = new LocationEntity();
-            newLocation.location = location;
-            newLocation.time = System.currentTimeMillis();
-            locationList.add(newLocation);
-
-        }
-        return locData;
-    }
-
     /***
      * 接收定位结果消息，并显示在地图上
      */
@@ -149,8 +60,9 @@ public class ThreeFragment extends Fragment {
                 int isCal = msg.getData().getInt("iscalculate");
                 if (location != null) {             //纬度                        //经度
                     LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
-                    T.show(getActivity(),location.getAddrStr());
-                    T.show(getActivity(),location.getLocationDescribe());
+                    Log.e("JerryZhu", "当前位置: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe());
+                    new Location(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), location.getAddrStr(), location.getLocationDescribe(), false).save();
+//                    T.show(getActivity(), location.getLocationDescribe());
                     // 构建Marker图标
                     BitmapDescriptor bitmap = null;
                     if (isCal == 0) {
@@ -170,6 +82,72 @@ public class ThreeFragment extends Fragment {
             }
         }
     };
+    BDAbstractLocationListener listener = new BDAbstractLocationListener() {
+        //百度地图定位回调
+        @Override
+        public void onReceiveLocation(BDLocation location) {
+            // TODO Auto-generated method stub
+
+            if (location != null && (location.getLocType() == 161 || location.getLocType() == 66)) {
+                Message locMsg = locHandler.obtainMessage();
+                Bundle locData;
+                locData = Algorithm(location);
+                if (locData != null) {
+                    locData.putParcelable("loc", location);
+                    locMsg.setData(locData);
+                    locHandler.sendMessage(locMsg);
+                }
+            }
+        }
+    };
+
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            getActivity().setTitle("定位");
+        }
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        //SDKInitializer.initialize(getActivity().getApplication());
+        View view = inflater.inflate(R.layout.fragment_three, null);
+        getActivity().setTitle("定位");
+        map = view.findViewById(R.id.map);
+//        reset = view.findViewById(R.id.clear);
+        mBaiduMap = this.map.getMap();
+        mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);
+        mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomTo(15));
+
+        locationService = ((LocationApplication) getActivity().getApplication()).locationService;
+        LocationClientOption mOption = locationService.getDefaultLocationClientOption();
+        mOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
+        mOption.setCoorType("bd09ll");
+        mOption.setScanSpan(6000);
+        mOption.setIsNeedAddress(true);
+
+        locationService.setLocationOption(mOption);
+        locationService.registerListener(listener);
+        locationService.start();
+        return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
+        map.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // 在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
+        map.onPause();
+
+    }
 
     @Override
     public void onDestroy() {
@@ -180,28 +158,45 @@ public class ThreeFragment extends Fragment {
         map.onDestroy();
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // 在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
-        map.onResume();
-        reset.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // TODO Auto-generated method stub
-                if (mBaiduMap != null)
-                    mBaiduMap.clear();
+    private Bundle Algorithm(BDLocation location) {
+        Bundle locData = new Bundle();
+        double curSpeed = 0;
+        if (locationList.isEmpty() || locationList.size() < 2) {
+            LocationEntity temp = new LocationEntity();
+            temp.location = location;
+            temp.time = System.currentTimeMillis();
+            locData.putInt("iscalculate", 0);
+            locationList.add(temp);
+        } else {
+            if (locationList.size() > 5)
+                locationList.removeFirst();
+            double score = 0;
+            for (int i = 0; i < locationList.size(); ++i) {
+                LatLng lastPoint = new LatLng(locationList.get(i).location.getLatitude(),
+                    locationList.get(i).location.getLongitude());
+                LatLng curPoint = new LatLng(location.getLatitude(), location.getLongitude());
+                double distance = DistanceUtil.getDistance(lastPoint, curPoint);
+                curSpeed = distance / (System.currentTimeMillis() - locationList.get(i).time) / 1000;
+                score += curSpeed * Utils.EARTH_WEIGHT[i];
             }
-        });
-    }
+            if (score > 0.00000999 && score < 0.00005) { // 经验值,开发者可根据业务自行调整，也可以不使用这种算法
+                location.setLongitude(
+                    (locationList.get(locationList.size() - 1).location.getLongitude() + location.getLongitude())
+                        / 2);
+                location.setLatitude(
+                    (locationList.get(locationList.size() - 1).location.getLatitude() + location.getLatitude())
+                        / 2);
+                locData.putInt("iscalculate", 1);
+            } else {
+                locData.putInt("iscalculate", 0);
+            }
+            LocationEntity newLocation = new LocationEntity();
+            newLocation.location = location;
+            newLocation.time = System.currentTimeMillis();
+            locationList.add(newLocation);
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        // 在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
-        map.onPause();
-
+        }
+        return locData;
     }
 
     class LocationEntity {

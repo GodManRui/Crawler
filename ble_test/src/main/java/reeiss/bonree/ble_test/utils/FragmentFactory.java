@@ -4,10 +4,10 @@ package reeiss.bonree.ble_test.utils;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
-import reeiss.bonree.ble_test.smarthardware.FirstFragment;
-import reeiss.bonree.ble_test.smarthardware.FourFragment;
-import reeiss.bonree.ble_test.smarthardware.SecondFragment;
-import reeiss.bonree.ble_test.smarthardware.ThreeFragment;
+import reeiss.bonree.ble_test.smarthardware.fragment.FirstFragment;
+import reeiss.bonree.ble_test.smarthardware.fragment.FourFragment;
+import reeiss.bonree.ble_test.smarthardware.fragment.SecondFragment;
+import reeiss.bonree.ble_test.smarthardware.fragment.ThreeFragment;
 
 /**
  * Created by GodRui on 2017/12/27.

@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test.smarthardware;
+package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
 import android.app.ProgressDialog;
@@ -145,6 +145,14 @@ public class FirstFragment extends Fragment {
     };
 
     @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            getActivity().setTitle("设备管理");
+        }
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.e("JerryZhu", "onCreate: ");
@@ -153,8 +161,7 @@ public class FirstFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_main, null);
-        return view;
+        return inflater.inflate(R.layout.activity_main, null);
     }
 
     @Override
@@ -165,6 +172,7 @@ public class FirstFragment extends Fragment {
     }
 
     private void initView() {
+        getActivity().setTitle("设备管理");
         vDevLv = getView().findViewById(R.id.ble_dev_lv);
         vScan = getView().findViewById(R.id.iv_scan);
         vReScan = getView().findViewById(R.id.rl_scan);

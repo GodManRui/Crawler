@@ -1,16 +1,17 @@
-package reeiss.bonree.ble_test.smarthardware;
+package reeiss.bonree.ble_test.smarthardware.customview;
 
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
+import android.hardware.Camera;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.hardware.Camera;
+
 import java.io.IOException;
 
-public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback{
+public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
 
@@ -22,42 +23,13 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
-    public void surfaceCreated(SurfaceHolder holder) {
-        try {
-            mCamera.setPreviewDisplay(holder);
-            mCamera.startPreview();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void surfaceDestroyed(SurfaceHolder holder) {
-    }
-
-    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
-        if (mHolder.getSurface() == null){
-            return;
-        }
-        try {
-            mCamera.stopPreview();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-
-        try {
-            mCamera.setPreviewDisplay(mHolder);
-            mCamera.startPreview();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
     // 设置相机横竖屏
     public static void setCameraDisplayOrientation(Activity activity,
                                                    int cameraId, Camera camera) {
         android.hardware.Camera.CameraInfo info = new android.hardware.Camera.CameraInfo();
         android.hardware.Camera.getCameraInfo(cameraId, info);
         int rotation = activity.getWindowManager().getDefaultDisplay()
-                .getRotation();
+            .getRotation();
         int degrees = 0;
         switch (rotation) {
             case Surface.ROTATION_0:
@@ -83,6 +55,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         }
         camera.setDisplayOrientation(result);
     }
+
     // 旋转图片
     public static Bitmap rotateBitmapByDegree(Bitmap bm, int degree) {
         Bitmap returnBm = null;
@@ -90,7 +63,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         matrix.postRotate(degree);
         try {
             returnBm = Bitmap.createBitmap(bm, 0, 0, bm.getWidth(),
-                    bm.getHeight(), matrix, true);
+                bm.getHeight(), matrix, true);
         } catch (OutOfMemoryError e) {
         }
         if (returnBm == null) {
@@ -100,6 +73,36 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             bm.recycle();
         }
         return returnBm;
+    }
+
+    public void surfaceCreated(SurfaceHolder holder) {
+        try {
+            mCamera.setPreviewDisplay(holder);
+            mCamera.startPreview();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+        if (mHolder.getSurface() == null) {
+            return;
+        }
+        try {
+            mCamera.stopPreview();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        try {
+            mCamera.setPreviewDisplay(mHolder);
+            mCamera.startPreview();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void surfaceDestroyed(SurfaceHolder holder) {
     }
 
 }

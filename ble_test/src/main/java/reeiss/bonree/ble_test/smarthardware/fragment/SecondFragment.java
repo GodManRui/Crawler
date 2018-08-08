@@ -1,4 +1,4 @@
-package reeiss.bonree.ble_test.smarthardware;
+package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
 import android.content.Context;
@@ -32,6 +32,7 @@ import java.io.FileOutputStream;
 import java.util.Date;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.smarthardware.customview.CameraPreview;
 import reeiss.bonree.ble_test.utils.T;
 
 public class SecondFragment extends Fragment {
@@ -94,6 +95,7 @@ public class SecondFragment extends Fragment {
         if (hidden) {
             releaseCamera();
         } else {
+            getActivity().setTitle("拍照");
             openCamera();
         }
     }
@@ -102,13 +104,13 @@ public class SecondFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_second, null);
-        return view;
+        return inflater.inflate(R.layout.fragment_second, null);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        getActivity().setTitle("拍照");
         mCameraLayout = (FrameLayout) getView().findViewById(R.id.camera_preview);
         //Button mTakePictureBtn = (Button) getView().findViewById(R.id.button_capture);
         // Button mChangeCarema = (Button) getView().findViewById(R.id.change);
