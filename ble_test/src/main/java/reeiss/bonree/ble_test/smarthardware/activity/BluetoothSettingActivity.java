@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     private boolean isAlert;
     private BluetoothGatt xfBluetoothGatt;
     private TextView tvBattery;
+    private ProgressDialog mProgressDialog;
     private XFBluetoothCallBack mXFBluetoothCallBack = new XFBluetoothCallBack() {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, int status) {
@@ -69,7 +71,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             });
         }
     };
-    private ProgressDialog mProgressDialog;
     private BluetoothGattService mLinkLostServer;
     private RelativeLayout rlRing;
     private MediaPlayer mp;
@@ -81,21 +82,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         setContentView(R.layout.setting);
         initView();
         initBlue();
-    }
-
-    private void initBlue() {
-        mXFBlue = XFBluetooth.getInstance(BluetoothSettingActivity.this);
-        xfBluetoothGatt = mXFBlue.getXFBluetoothGatt();
-        mXFBlue.addBleCallBack(mXFBluetoothCallBack);
-        for (int i = 0; i < xfBluetoothGatt.getServices().size(); i++) {
-            Log.e("jerryzhu", "initBlue: " + xfBluetoothGatt.getServices().get(i).getUuid());
-        }
-        mLinkLostServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_LinkLost_Alert));
-        BluetoothGattService mBatteryServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_Battery_Level));
-        if (mBatteryServer != null) {
-            BluetoothGattCharacteristic mChBattery = mBatteryServer.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Battery_Level));
-            xfBluetoothGatt.readCharacteristic(mChBattery);
-        }
     }
 
     private void initView() {
@@ -113,6 +99,21 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             }
         });
         mProgressDialog = new ProgressDialog(this);
+    }
+
+    private void initBlue() {
+        mXFBlue = XFBluetooth.getInstance(BluetoothSettingActivity.this);
+        xfBluetoothGatt = mXFBlue.getXFBluetoothGatt();
+        mXFBlue.addBleCallBack(mXFBluetoothCallBack);
+        for (int i = 0; i < xfBluetoothGatt.getServices().size(); i++) {
+            Log.e("jerryzhu", "initBlue: " + xfBluetoothGatt.getServices().get(i).getUuid());
+        }
+        mLinkLostServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_LinkLost_Alert));
+        BluetoothGattService mBatteryServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_Battery_Level));
+        if (mBatteryServer != null) {
+            BluetoothGattCharacteristic mChBattery = mBatteryServer.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Battery_Level));
+            xfBluetoothGatt.readCharacteristic(mChBattery);
+        }
     }
 
     public void saveConfig(View view) {
@@ -152,7 +153,8 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
      */
     private void dialogChoice() {
         final BleDevConfig bleDevConfig = LitePal.where("mac=?", xfBluetoothGatt.getDevice().getAddress()).findFirst(BleDevConfig.class);
-
+        final ContentValues values = new ContentValues();
+        values.put("title", "今日iPhone6 Plus发布");
         //final String items[] = {"男", "女", "其他"};
         final HashMap<String, Integer> nameMap = new HashMap();
         Field[] fields = R.raw.class.getDeclaredFields();
@@ -177,25 +179,25 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         final int ringPosition = bleDevConfig.getRingPosition();
 
         builder.setSingleChoiceItems(itemName, ringPosition,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (0 <= which && which <= itemName.length - 1) {
-                            if (itemName[which] != null) {
-                                // T.show(BluetoothSettingActivity.this, itemName[which]);
-                                Integer resID = nameMap.get(itemName[which]);
-                                bleDevConfig.setRingResId(resID);
-
-                                if (mp != null) {
-                                    mp.reset();
-                                    mp.release();
-                                }
-                                mp = MediaPlayer.create(BluetoothSettingActivity.this, resID);//重新设置要播放的音频
-                                mp.start();//开始播放
+            new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (0 <= which && which <= itemName.length - 1) {
+                        if (itemName[which] != null) {
+                            // T.show(BluetoothSettingActivity.this, itemName[which]);
+                            Integer resID = nameMap.get(itemName[which]);
+                            bleDevConfig.setRingResId(resID);
+                            values.put("ringResId", resID);
+                            if (mp != null) {
+                                mp.reset();
+                                mp.release();
                             }
+                            mp = MediaPlayer.create(BluetoothSettingActivity.this, resID);//重新设置要播放的音频
+                            mp.start();//开始播放
                         }
                     }
-                });
+                }
+            });
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -203,6 +205,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
                 if (0 <= checkedItemPosition && checkedItemPosition <= itemName.length - 1 && tvRing != null) {
                     // TODO: 2018/6/19 保存数据库
                     bleDevConfig.setRingPosition(checkedItemPosition);
+                    values.put("ringPosition", checkedItemPosition);
                     tvRing.setText(itemName[checkedItemPosition]);
                 }
                 dialog.dismiss();
@@ -213,7 +216,8 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
-                bleDevConfig.update(bleDevConfig.id);
+//                bleDevConfig.update(bleDevConfig.id);
+//                LitePal.updateAll(BleDevConfig.class, values, "mac = ?", bleDevConfig.getMac());
                 if (mp != null) {
                     mp.reset();
                     mp.release();
