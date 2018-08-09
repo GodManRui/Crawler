@@ -105,7 +105,7 @@ public class FirstFragment extends Fragment {
                             final MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), currentDev.getRingResId());//重新设置要播放的音频
                             mediaPlayer.start();
                             T.show(getActivity(), "开始报警：" + currentDev.getRingResId());
-                            AlertDialog.Builder b = new AlertDialog.Builder(getActivity().getApplicationContext());
+                            AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
                             b.setTitle("丢失报警");
                             b.setMessage("防丢器已断开连接！");
                             b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {

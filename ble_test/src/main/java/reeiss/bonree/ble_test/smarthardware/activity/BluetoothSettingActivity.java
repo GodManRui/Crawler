@@ -154,7 +154,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     private void dialogChoice() {
         final BleDevConfig bleDevConfig = LitePal.where("mac=?", xfBluetoothGatt.getDevice().getAddress()).findFirst(BleDevConfig.class);
         final ContentValues values = new ContentValues();
-        values.put("title", "今日iPhone6 Plus发布");
         //final String items[] = {"男", "女", "其他"};
         final HashMap<String, Integer> nameMap = new HashMap();
         Field[] fields = R.raw.class.getDeclaredFields();
@@ -217,7 +216,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             @Override
             public void onDismiss(DialogInterface dialogInterface) {
 //                bleDevConfig.update(bleDevConfig.id);
-//                LitePal.updateAll(BleDevConfig.class, values, "mac = ?", bleDevConfig.getMac());
+                LitePal.updateAll(BleDevConfig.class, values, "mac = ?", bleDevConfig.getMac());
                 if (mp != null) {
                     mp.reset();
                     mp.release();
