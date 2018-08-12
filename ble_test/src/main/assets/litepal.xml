@@ -6,5 +6,6 @@
 
     <list>
         <mapping class="reeiss.bonree.ble_test.bean.BleDevConfig"></mapping>
+        <mapping class="reeiss.bonree.ble_test.bean.Location"></mapping>
     </list>
 </litepal>

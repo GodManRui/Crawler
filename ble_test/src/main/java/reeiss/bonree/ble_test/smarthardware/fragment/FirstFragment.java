@@ -28,7 +28,6 @@ import android.widget.ListView;
 
 import org.litepal.LitePal;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -56,7 +55,6 @@ public class FirstFragment extends Fragment {
     private int position;
     private ArrayList<DeviceListBean> mDevList;
     private ProgressDialog progressDialog;
-    private String address;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
 
         /**
@@ -70,6 +68,7 @@ public class FirstFragment extends Fragment {
         //扫描获取设备的回调
         @Override
         public void onScanResult(final BluetoothDevice device) {
+            Log.e("jerryzhu", "扫描结果: " + device.getName());
             if (device.getName() != null && device.getName().contains("iTAG")) {
                 // xfBluetooth.stop();
                 for (int i = 0; i < mDevList.size(); i++) {
@@ -94,11 +93,12 @@ public class FirstFragment extends Fragment {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, final int status, final int newState) {
             Log.e("JerryZhu", "链接状态: " + status + "   ==  " + newState);
+            final BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
+
             if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 PreventLosingCommon.Dev_Type = -1;
 
-                final BleDevConfig currentDev = LitePal.where("mac=?", address).findFirst(BleDevConfig.class);
-                if (currentDev != null && currentDev.isAlert()) {
+                if (currentDev == null || "true".equals(currentDev.getAlert())) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -120,7 +120,6 @@ public class FirstFragment extends Fragment {
                         }
                     });
                 }
-                address = "";
             }
             getActivity().runOnUiThread(new Runnable() {
                 @Override
@@ -136,18 +135,10 @@ public class FirstFragment extends Fragment {
                         xfBluetooth.getXFBluetoothGatt().discoverServices();
                         BluetoothDevice device = xfBluetooth.getXFBluetoothGatt().getDevice();
                         if (device == null) return;
-                        address = device.getAddress();
-                        BleDevConfig bleDevConfig = LitePal.where("mac=?", address).findFirst(BleDevConfig.class);
-                        if (bleDevConfig == null) {
-                            Field[] fields = R.raw.class.getDeclaredFields();
-                            BleDevConfig bleDevConfi = null;
-                            try {
-                                bleDevConfi = new BleDevConfig(address, device.getName(), true, 0, fields[0].getInt(R.raw.class));
-                                bleDevConfi.save();
-                            } catch (IllegalAccessException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                        BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
+                        BleDevConfig bleDevConfig = new BleDevConfig();
+                        bleDevConfig.setAlias(device.getName());
+                        bleDevConfig.update(currentDev.id);
                         Log.e("jerry", "连接成功，服务扫描 : ");
                     }
                 }
@@ -177,13 +168,28 @@ public class FirstFragment extends Fragment {
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic
-            characteristic) {
+                characteristic) {
             String value = Arrays.toString(characteristic.getValue());
             if (value.equals("[2]")) {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        T.show(getActivity(), "警报！！");
+                        final BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
+                        T.show(getActivity(), "寻找手机！！");
+                        final MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), currentDev.getRingResId());//重新设置要播放的音频
+                        mediaPlayer.start();
+                        AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
+                        b.setTitle("寻找手机");
+                        b.setMessage(currentDev.getAlias().isEmpty() ? xfBluetooth.getXFBluetoothGatt().getDevice().getName() : currentDev.getAlias());
+                        b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mediaPlayer.reset();
+                                mediaPlayer.release();
+                                T.show(getActivity(), "取消");
+                            }
+                        });
+                        b.setCancelable(false).create().show();
                     }
                 });
             }
@@ -237,15 +243,17 @@ public class FirstFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.e("jerry", "onItem " + xfBluetooth.getAdapter().isDiscovering());
                 //todo 判断仍在扫描，此方法暂时无效
-                if (xfBluetooth.getAdapter().isDiscovering()) {
+                try {
                     Log.e("jerry", "onItemClick: 正在发现");
                     xfBluetooth.stop();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
                 DeviceListBean deviceListBean = mDevList.get(position);
                 if (deviceListBean.getConnectState().equals("已连接")) {
                     T.show(getActivity(), "设备已连接！");
                     Intent intent = new Intent(getActivity(), BlueControlActivity.class);
-                    startActivity(intent);
+                    startActivityForResult(intent, 100);
                     return;
                 }
                 vDevLv.setItemsCanFocus(false);
@@ -258,11 +266,26 @@ public class FirstFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == 100) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    BleDevConfig dev = LitePal.findFirst(BleDevConfig.class);
+                    mDevList.get(position).setDevNick(dev.getAlias());
+                    adapter.setDevList(mDevList);
+                }
+            });
+        }
+    }
+
     private void scanBle() {
         xfBluetooth = XFBluetooth.getInstance(getActivity());
         xfBluetooth.addBleCallBack(gattCallback);
         RotateAnimation animation = new RotateAnimation(0f, 360f,
-            Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         animation.setInterpolator(new LinearInterpolator());
         animation.setDuration(2000);
         animation.setRepeatCount(-1);

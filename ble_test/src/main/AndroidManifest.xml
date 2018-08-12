@@ -48,6 +48,8 @@
         </activity>
         <activity android:name=".smarthardware.activity.BlueControlActivity" />
         <activity android:name=".smarthardware.activity.BluetoothSettingActivity" />
+        <activity android:name=".smarthardware.activity.WifiSpoceActivity" />
+        <activity android:name=".smarthardware.activity.LostHistory" />
 
         <service
             android:name="com.baidu.location.f"

@@ -43,6 +43,8 @@ public class XFBluetooth {
 
         @Override
         public void onScanFailed(int errorCode) {
+            T.show(context.getApplicationContext(), "启动扫描失败:  " + errorCode);
+            Log.e("jerry", "启动扫描失败: " + errorCode);
             super.onScanFailed(errorCode);
         }
     };
@@ -50,6 +52,8 @@ public class XFBluetooth {
 
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
+            Log.e("jerryzhu", "onLeScan: " + isStopCall);
+
             if (isStopCall)
                 for (int i = 0; i < mListCallBack.size(); i++) {
                     mListCallBack.get(i).onScanResult(device);
@@ -160,6 +164,7 @@ public class XFBluetooth {
                 T.show(context, "蓝牙未开启或设备不支持蓝牙！");
                 return;
             }
+            Log.e("JerryZhu", "开始扫描: ");
             mBluetoothLeScanner.startScan(callback);
         } else
             mBluetoothAdapter.startLeScan(mLeScanCallback);
@@ -174,8 +179,8 @@ public class XFBluetooth {
 
     public void stop() {
         isStopCall = false;
+        Log.e("JerryZhu", "停止扫描: ");
         if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP && mBluetoothLeScanner != null) {
-            Log.e("JerryZhu", "停止扫描: ");
             mBluetoothLeScanner.stopScan(callback);
         } else if (mBluetoothAdapter != null) {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);

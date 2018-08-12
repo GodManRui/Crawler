@@ -9,6 +9,7 @@ import com.baidu.mapapi.SDKInitializer;
 import org.litepal.LitePal;
 
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
+import tech.linjiang.pandora.Pandora;
 
 /**
  * Wang YaHui
@@ -30,5 +31,7 @@ public class LocationApplication extends Application {
         SDKInitializer.initialize(getApplicationContext());
         XFBluetooth.getInstance(this);
         LitePal.initialize(this);
+        Pandora.init(this).enableShakeOpen();
+        Pandora.get().open();
     }
 }

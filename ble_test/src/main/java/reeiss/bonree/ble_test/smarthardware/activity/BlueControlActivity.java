@@ -2,7 +2,6 @@ package reeiss.bonree.ble_test.smarthardware.activity;
 
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
-import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.os.Bundle;
@@ -129,10 +128,17 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
     }
 
     @Override
+    public void onBackPressed() {
+        setResult(100);
+        super.onBackPressed();
+    }
+
+    @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.im_setting:
-                startActivity(new Intent(this, BluetoothSettingActivity.class));
+                Intent intent = new Intent(this, BluetoothSettingActivity.class);
+                startActivityForResult(intent, 100);
                 break;
             case R.id.btn_call:
                 if (!isAlert) {
@@ -150,4 +156,19 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == 100) {
+            final String name = data.getStringExtra("name");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (name != null && !name.isEmpty()) {
+                        tvDevName.setText(name);
+                    }
+                }
+            });
+        }
+    }
 }

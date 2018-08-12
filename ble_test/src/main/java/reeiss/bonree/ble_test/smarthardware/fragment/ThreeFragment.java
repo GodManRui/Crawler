@@ -2,6 +2,9 @@ package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothProfile;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -32,6 +35,9 @@ import reeiss.bonree.ble_test.LocationApplication;
 import reeiss.bonree.ble_test.LocationService;
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.Location;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
+import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
+import reeiss.bonree.ble_test.smarthardware.activity.LostHistory;
 import reeiss.bonree.ble_test.utils.Utils;
 
 /**
@@ -45,6 +51,20 @@ public class ThreeFragment extends Fragment {
     private BaiduMap mBaiduMap;
     private LinkedList<LocationEntity> locationList = new LinkedList<LocationEntity>();
     private LocationService locationService;
+    private boolean isLost = false;
+    private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
+        @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            super.onConnectionStateChange(gatt, status, newState);
+            if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                isLost = true;
+            } else if (newState == BluetoothProfile.STATE_CONNECTED) {
+                isLost = false;
+                if (!locationService.isStart())
+                    locationService.start();
+            }
+        }
+    };
     /***
      * 接收定位结果消息，并显示在地图上
      */
@@ -61,7 +81,10 @@ public class ThreeFragment extends Fragment {
                 if (location != null) {             //纬度                        //经度
                     LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
                     Log.e("JerryZhu", "当前位置: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe());
-                    new Location(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), location.getAddrStr(), location.getLocationDescribe(), false).save();
+                    if (isLost) {
+                        new Location(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), location.getAddrStr(), location.getLocationDescribe(), isLost).save();
+                        locationService.stop();
+                    }
 //                    T.show(getActivity(), location.getLocationDescribe());
                     // 构建Marker图标
                     BitmapDescriptor bitmap = null;
@@ -100,6 +123,7 @@ public class ThreeFragment extends Fragment {
             }
         }
     };
+    private View btLost;
 
     @Override
     public void onHiddenChanged(boolean hidden) {
@@ -116,11 +140,17 @@ public class ThreeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_three, null);
         getActivity().setTitle("定位");
         map = view.findViewById(R.id.map);
+        view.findViewById(R.id.bt_lost).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), LostHistory.class));
+            }
+        });
 //        reset = view.findViewById(R.id.clear);
         mBaiduMap = this.map.getMap();
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);
         mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomTo(15));
-
+        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
         locationService = ((LocationApplication) getActivity().getApplication()).locationService;
         LocationClientOption mOption = locationService.getDefaultLocationClientOption();
         mOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
@@ -140,6 +170,7 @@ public class ThreeFragment extends Fragment {
         // 在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
         map.onResume();
     }
+
 
     @Override
     public void onPause() {
@@ -173,7 +204,7 @@ public class ThreeFragment extends Fragment {
             double score = 0;
             for (int i = 0; i < locationList.size(); ++i) {
                 LatLng lastPoint = new LatLng(locationList.get(i).location.getLatitude(),
-                    locationList.get(i).location.getLongitude());
+                        locationList.get(i).location.getLongitude());
                 LatLng curPoint = new LatLng(location.getLatitude(), location.getLongitude());
                 double distance = DistanceUtil.getDistance(lastPoint, curPoint);
                 curSpeed = distance / (System.currentTimeMillis() - locationList.get(i).time) / 1000;
@@ -181,11 +212,11 @@ public class ThreeFragment extends Fragment {
             }
             if (score > 0.00000999 && score < 0.00005) { // 经验值,开发者可根据业务自行调整，也可以不使用这种算法
                 location.setLongitude(
-                    (locationList.get(locationList.size() - 1).location.getLongitude() + location.getLongitude())
-                        / 2);
+                        (locationList.get(locationList.size() - 1).location.getLongitude() + location.getLongitude())
+                                / 2);
                 location.setLatitude(
-                    (locationList.get(locationList.size() - 1).location.getLatitude() + location.getLatitude())
-                        / 2);
+                        (locationList.get(locationList.size() - 1).location.getLatitude() + location.getLatitude())
+                                / 2);
                 locData.putInt("iscalculate", 1);
             } else {
                 locData.putInt("iscalculate", 0);

@@ -1,5 +1,6 @@
 package reeiss.bonree.ble_test.smarthardware.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -7,9 +8,14 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 
+import org.litepal.LitePal;
+
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.BleDevConfig;
+import reeiss.bonree.ble_test.smarthardware.activity.WifiSpoceActivity;
 
 /**
  * Wang YaHui
@@ -40,6 +46,21 @@ public class FourFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle("更多");
         swWifi = view.findViewById(R.id.sw_wifi_wurao);
+        swWifi.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked)
+                    startActivity(new Intent(getActivity(), WifiSpoceActivity.class));
+                else {
+                    BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
+                    BleDevConfig bleDevConfig = new BleDevConfig();
+                    bleDevConfig.setAlert("true");
+                    bleDevConfig.update(currentDev.id);
+                }
+            }
+        });
+
         swSleep = view.findViewById(R.id.sw_sleep);
     }
+
 }

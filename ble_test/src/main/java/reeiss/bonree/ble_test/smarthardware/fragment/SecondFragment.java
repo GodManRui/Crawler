@@ -1,6 +1,8 @@
 package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,6 +21,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -29,9 +32,12 @@ import android.widget.ImageView;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.Arrays;
 import java.util.Date;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
+import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.smarthardware.customview.CameraPreview;
 import reeiss.bonree.ble_test.utils.T;
 
@@ -43,17 +49,32 @@ public class SecondFragment extends Fragment {
     private int mCameraId = CameraInfo.CAMERA_FACING_BACK;
     private String picturePath;
     private ImageView imPicture;
+    private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicChanged(gatt, characteristic);
+            String value = Arrays.toString(characteristic.getValue());
+            if (value.equals("[1]")) {
+                if (mCamera != null) {
+                    //shutter是快门按下时的回调，raw是获取拍照原始数据的回调，jpeg是获取经过压缩成jpg格式的图像数据的回调。
+                    mCamera.takePicture(null, null, mPictureCallback);
+                    playSound();
+                }
+            }
+            Log.e("jerry", "onCharacteristicChanged: " + value);
+        }
+    };
     // 拍照回调
     private PictureCallback mPictureCallback = new PictureCallback() {
         @Override
         public void onPictureTaken(final byte[] data, Camera camera) {
             File pictureDir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
             picturePath = pictureDir
-                + File.separator
-                + new DateFormat().format("yyyyMMddHHmmss", new Date())
-                .toString() + ".jpg";
+                    + File.separator
+                    + new DateFormat().format("yyyyMMddHHmmss", new Date())
+                    .toString() + ".jpg";
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -67,7 +88,7 @@ public class SecondFragment extends Fragment {
                             bitmap = CameraPreview.rotateBitmapByDegree(bitmap, -90);
                         }
                         BufferedOutputStream bos = new BufferedOutputStream(
-                            new FileOutputStream(file));
+                                new FileOutputStream(file));
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                         bos.flush();
                         bos.close();
@@ -112,6 +133,7 @@ public class SecondFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle("拍照");
         mCameraLayout = (FrameLayout) getView().findViewById(R.id.camera_preview);
+        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
         //Button mTakePictureBtn = (Button) getView().findViewById(R.id.button_capture);
         // Button mChangeCarema = (Button) getView().findViewById(R.id.change);
         getView().findViewById(R.id.button_capture).setOnClickListener(new View.OnClickListener() {
@@ -161,7 +183,7 @@ public class SecondFragment extends Fragment {
         if (volume != 0) {
             if (mediaPlayer == null)
                 mediaPlayer = MediaPlayer.create(getActivity(),
-                    Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                        Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
             if (mediaPlayer != null) {
                 mediaPlayer.start();
             }
@@ -221,7 +243,7 @@ public class SecondFragment extends Fragment {
     // 判断相机是否支持
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(
-            PackageManager.FEATURE_CAMERA)) {
+                PackageManager.FEATURE_CAMERA)) {
             return true;
         } else {
             return false;

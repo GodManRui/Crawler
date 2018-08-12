@@ -4,30 +4,29 @@ import org.litepal.crud.LitePalSupport;
 
 public class BleDevConfig extends LitePalSupport {
     public long id;
-    private String mac;
     private String alias;
-    private boolean isAlert;
+    private String isAlert;
     private int ringPosition;
+    private String ringName;
     private int ringResId;
 
-    public BleDevConfig(String mac) {
-        this.mac = mac;
+    public BleDevConfig() {
     }
 
-    public BleDevConfig(String mac, String alias, boolean isAlert, int ringPosition, int ringResId) {
-        this.mac = mac;
+    public BleDevConfig(String alias, String isAlert, String ringName, int ringPosition, int ringResId) {
+        this.ringName = ringName;
         this.alias = alias;
         this.isAlert = isAlert;
         this.ringPosition = ringPosition;
         this.ringResId = ringResId;
     }
 
-    public String getMac() {
-        return mac;
+    public String getRingName() {
+        return ringName;
     }
 
-    public void setMac(String mac) {
-        this.mac = mac;
+    public void setRingName(String ringName) {
+        this.ringName = ringName;
     }
 
     public String getAlias() {
@@ -38,11 +37,11 @@ public class BleDevConfig extends LitePalSupport {
         this.alias = alias;
     }
 
-    public boolean isAlert() {
+    public String getAlert() {
         return isAlert;
     }
 
-    public void setAlert(boolean alert) {
+    public void setAlert(String alert) {
         isAlert = alert;
     }
 
