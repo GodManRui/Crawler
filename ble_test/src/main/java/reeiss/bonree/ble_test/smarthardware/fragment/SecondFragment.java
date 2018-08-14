@@ -115,9 +115,11 @@ public class SecondFragment extends Fragment {
         super.onHiddenChanged(hidden);
         if (hidden) {
             releaseCamera();
+            XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
         } else {
             getActivity().setTitle("拍照");
             openCamera();
+            XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
         }
     }
 
