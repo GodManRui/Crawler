@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ import android.widget.ListView;
 
 import org.litepal.LitePal;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +45,7 @@ import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
 import reeiss.bonree.ble_test.utils.T;
 
 import static reeiss.bonree.ble_test.bean.CommonHelp.getOnClick;
+import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
 
 public class FirstFragment extends Fragment {
 
@@ -93,18 +96,18 @@ public class FirstFragment extends Fragment {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, final int status, final int newState) {
             Log.e("JerryZhu", "链接状态: " + status + "   ==  " + newState);
-            final BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
+//            final BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
 
             if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 PreventLosingCommon.Dev_Type = -1;
-
-                if (currentDev == null || "true".equals(currentDev.getAlert())) {
+                final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+                if (currentDevConfig != null) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            final MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), currentDev.getRingResId());//重新设置要播放的音频
+                            final MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), currentDevConfig.getRingResId());//重新设置要播放的音频
                             mediaPlayer.start();
-                            T.show(getActivity(), "开始报警：" + currentDev.getRingResId());
+                            T.show(getActivity(), "开始报警：" + currentDevConfig.getRingResId());
                             AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
                             b.setTitle("丢失报警");
                             b.setMessage("防丢器已断开连接！");
@@ -127,20 +130,28 @@ public class FirstFragment extends Fragment {
                     if (progressDialog != null)
                         progressDialog.dismiss();
 
+                    BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+                    if (newState == BluetoothProfile.STATE_CONNECTED) {
+                        xfBluetooth.getXFBluetoothGatt().discoverServices();
+                        if (currentDevConfig == null) {
+                            Field[] fields = R.raw.class.getDeclaredFields();
+                            try {
+                                currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, XFBluetooth.getInstance(getActivity()).getXFBluetoothGatt().getDevice().getName(), "true", fields[1].getName(), 0, fields[1].getInt(R.raw.class));
+                                currentDevConfig.save();
+                            } catch (IllegalAccessException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
                     mDevList.get(position).setConnectState(newState);
+                    //如果当前设备以前设置过别名，那么应该先显示别名
+                    if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias()))
+                        mDevList.get(position).setDevNick(currentDevConfig.getAlias());
+
                     adapter.setDevList(mDevList);
                     vDevLv.setItemsCanFocus(true);
 
-                    if (newState == BluetoothProfile.STATE_CONNECTED) {
-                        xfBluetooth.getXFBluetoothGatt().discoverServices();
-                        BluetoothDevice device = xfBluetooth.getXFBluetoothGatt().getDevice();
-                        if (device == null) return;
-                        BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
-                        BleDevConfig bleDevConfig = new BleDevConfig();
-                        bleDevConfig.setAlias(device.getName());
-                        bleDevConfig.update(currentDev.id);
-                        Log.e("jerry", "连接成功，服务扫描 : ");
-                    }
+                    Log.e("jerry", "连接成功，服务扫描 : ");
                 }
             });
         }
@@ -273,8 +284,10 @@ public class FirstFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    BleDevConfig dev = LitePal.findFirst(BleDevConfig.class);
-                    mDevList.get(position).setDevNick(dev.getAlias());
+                    BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+                    if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias())) {
+                        mDevList.get(position).setDevNick(currentDevConfig.getAlias());
+                    }
                     adapter.setDevList(mDevList);
                 }
             });

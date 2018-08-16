@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanResult;
@@ -14,20 +15,25 @@ import android.content.Context;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.Log;
+
+import org.litepal.LitePal;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import reeiss.bonree.ble_test.bean.BleDevConfig;
 import reeiss.bonree.ble_test.utils.T;
 
 public class XFBluetooth {
     public static XFBluetooth xfBluetooth;
-    private final BluetoothAdapter mBluetoothAdapter;
+    private BluetoothAdapter mBluetoothAdapter;
     private final Context context;
     private BluetoothLeScanner mBluetoothLeScanner;
     private boolean isStopCall;
     private ArrayList<XFBluetoothCallBack> mListCallBack;
+    public static String CURRENT_DEV_MAC = "";
     private ScanCallback callback = new ScanCallback() {
 
         @Override
@@ -64,10 +70,18 @@ public class XFBluetooth {
         //链接状态的回调
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            Log.e("jerryzhu", "主类回调连接状态: " + newState);
+            if (newState == BluetoothProfile.STATE_CONNECTED) {
+                CURRENT_DEV_MAC = gatt.getDevice().getAddress();
+            }
+//            CURRENT_DEV_MAC = (newState == BluetoothProfile.STATE_CONNECTED) ? gatt.getDevice().getAddress() : "";
             if (mListCallBack.size() > 0) {
                 for (int i = 0; i < mListCallBack.size(); i++) {
                     mListCallBack.get(i).onConnectionStateChange(gatt, status, newState);
                 }
+            }
+            if (newState != BluetoothProfile.STATE_CONNECTED) {
+                CURRENT_DEV_MAC = "";
             }
         }
 
@@ -134,6 +148,8 @@ public class XFBluetooth {
         synchronized (XFBluetooth.class) {
             if (xfBluetooth == null) {
                 xfBluetooth = new XFBluetooth(context);
+            } else {
+                T.show(context.getApplicationContext(), "不需要创建！");
             }
             return xfBluetooth;
         }
@@ -171,7 +187,9 @@ public class XFBluetooth {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (mBluetoothAdapter != null && mBluetoothAdapter.isDiscovering())
+                Log.e("jerryzhu", "超过20秒时的状态 : " + mBluetoothAdapter.isDiscovering());
+//                mBluetoothAdapter.isDiscovering()
+                if (mBluetoothAdapter != null && isStopCall)
                     stop();
             }
         }, 20000);
@@ -185,6 +203,12 @@ public class XFBluetooth {
         } else if (mBluetoothAdapter != null) {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
         }
+    }
+
+    public static BleDevConfig getCurrentDevConfig() {
+        if (TextUtils.isEmpty(CURRENT_DEV_MAC)) return null;
+
+        return LitePal.where("mac=?", CURRENT_DEV_MAC).findFirst(BleDevConfig.class);
     }
 
     public void connect(BluetoothDevice device) {

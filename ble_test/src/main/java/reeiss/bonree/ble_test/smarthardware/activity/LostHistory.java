@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.BleDevConfig;
 import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.utils.T;
 
@@ -28,17 +29,19 @@ public class LostHistory extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        lv = new ListView(this);
-        setContentView(lv);
+        setContentView(R.layout.lost_history);
         initView();
     }
 
     private void initView() {
-        lostHistories = LitePal.where("islost = ?", "1").find(Location.class);
+        lostHistories = LitePal.findAll(Location.class);
         if (lostHistories.size() <= 0) {
+            findViewById(R.id.tv_nodata).setVisibility(View.VISIBLE);
             T.show(this, "没有数据!");
             return;
         }
+
+        lv = findViewById(R.id.lv_lost);
         MyAdapter myAdapter = new MyAdapter();
         lv.setAdapter(myAdapter);
     }
@@ -63,20 +66,21 @@ public class LostHistory extends Activity {
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             convertView = LayoutInflater.from(LostHistory.this).inflate(R.layout.lv_lost, null);
+            TextView tvName = convertView.findViewById(R.id.tv_name);
             TextView tvTime = convertView.findViewById(R.id.tv_time);
-            TextView jingweidu = convertView.findViewById(R.id.tv_jingweidu);
+//            TextView jingweidu = convertView.findViewById(R.id.tv_jingweidu);
             TextView weizhi = convertView.findViewById(R.id.tv_weizhistr);
-            TextView weizhimiaoshu = convertView.findViewById(R.id.tv_weizhimiaoashu);
+//            TextView weizhimiaoshu = convertView.findViewById(R.id.tv_weizhimiaoashu);
             Location lostHistory = lostHistories.get(position);
-
+            BleDevConfig ble = LitePal.where("mac=?", lostHistory.getMac()).findFirst(BleDevConfig.class);
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//这个是你要转成后的时间的格式
             String sd = sdf.format(new Date(lostHistory.getTime()));   // 时间戳转换成时间
             tvTime.setText(sd);
-
-            jingweidu.setText("经度:" + lostHistory.getLongitude() + "  维度:" + lostHistory.getLatitude());
-            weizhi.setText(lostHistory.getAddrStr());
-            weizhimiaoshu.setText(lostHistory.getLocationDescribe());
-            return null;
+            tvName.setText(ble.getAlias());
+//            jingweidu.setText("经度:" + lostHistory.getLongitude() + "  维度:" + lostHistory.getLatitude());
+            weizhi.setText(lostHistory.getAddStr());
+//            weizhimiaoshu.setText(lostHistory.getLocationDescribe());
+            return convertView;
         }
     }
 }

@@ -51,15 +51,22 @@ public class ThreeFragment extends Fragment {
     private BaiduMap mBaiduMap;
     private LinkedList<LocationEntity> locationList = new LinkedList<LocationEntity>();
     private LocationService locationService;
-    private boolean isLost = false;
+    private Location mLocation = new Location();
+    //    private boolean isLost = false;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
             if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-                isLost = true;
+                //断开连接，首先停止定位服务
+                if (locationService.isStart()) locationService.stop();
+//                isLost = true;
+                //如果断开连接，就保存到数据库
+                boolean save = mLocation.save();
+                if (save)
+                    mLocation = new Location();
             } else if (newState == BluetoothProfile.STATE_CONNECTED) {
-                isLost = false;
+//                isLost = false;
                 if (!locationService.isStart())
                     locationService.start();
             }
@@ -81,10 +88,13 @@ public class ThreeFragment extends Fragment {
                 if (location != null) {             //纬度                        //经度
                     LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
                     Log.e("JerryZhu", "当前位置: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe());
-                    if (isLost) {
-                        new Location(System.currentTimeMillis(), location.getLatitude(), location.getLongitude(), location.getAddrStr(), location.getLocationDescribe(), isLost).save();
-                        locationService.stop();
-                    }
+                    mLocation.setMac(XFBluetooth.CURRENT_DEV_MAC);
+                    mLocation.setTime(System.currentTimeMillis());
+                    mLocation.setLatitude(location.getLatitude());
+                    mLocation.setLongitude(location.getLongitude());
+                    mLocation.setAddStr(location.getAddrStr());
+                    mLocation.setLocationDescribe(location.getLocationDescribe());
+
 //                    T.show(getActivity(), location.getLocationDescribe());
                     // 构建Marker图标
                     BitmapDescriptor bitmap = null;
@@ -155,7 +165,7 @@ public class ThreeFragment extends Fragment {
         LocationClientOption mOption = locationService.getDefaultLocationClientOption();
         mOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
         mOption.setCoorType("bd09ll");
-        mOption.setScanSpan(6000);
+        mOption.setScanSpan(10000);
         mOption.setIsNeedAddress(true);
 
         locationService.setLocationOption(mOption);

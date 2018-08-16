@@ -6,26 +6,29 @@ public class Location extends LitePalSupport {
     private long time;
     private double latitude;        //维度
     private double longitude;        //经度
-    private String addrStr;        //位置信息
+    private String addStr;        //位置信息
     private String locationDescribe;        //位置描述
-    private boolean isLose;
+    private String mac;
+
+    public Location() {
+    }
+
+    public String getMac() {
+        return mac;
+    }
+
+    public void setMac(String mac) {
+        this.mac = mac;
+    }
 
     public Location(long time, double latitude, double longitude, String addrStr, String locationDescribe, boolean isLose) {
         this.time = time;
         this.latitude = latitude;
         this.longitude = longitude;
-        this.addrStr = addrStr;
+        this.addStr = addrStr;
         this.locationDescribe = locationDescribe;
-        this.isLose = isLose;
     }
 
-    public boolean isLose() {
-        return isLose;
-    }
-
-    public void setLose(boolean lose) {
-        isLose = lose;
-    }
 
     public long getTime() {
         return time;
@@ -51,12 +54,12 @@ public class Location extends LitePalSupport {
         this.longitude = longitude;
     }
 
-    public String getAddrStr() {
-        return addrStr == null ? "" : addrStr;
+    public String getAddStr() {
+        return addStr == null ? "" : addStr;
     }
 
-    public void setAddrStr(String addrStr) {
-        this.addrStr = addrStr;
+    public void setAddStr(String addStr) {
+        this.addStr = addStr;
     }
 
     public String getLocationDescribe() {

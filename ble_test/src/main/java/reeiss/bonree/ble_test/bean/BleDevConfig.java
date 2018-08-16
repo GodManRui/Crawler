@@ -3,15 +3,24 @@ package reeiss.bonree.ble_test.bean;
 import org.litepal.crud.LitePalSupport;
 
 public class BleDevConfig extends LitePalSupport {
-    public long id;
+    private long id;
     private String mac;
     private String alias;
     private String isAlert;
     private int ringPosition;
     private String ringName;
     private int ringResId;
+    private String isWuRao;
 
     public BleDevConfig() {
+    }
+
+    public String getIsWuRao() {
+        return isWuRao;
+    }
+
+    public void setIsWuRao(String isWuRao) {
+        this.isWuRao = isWuRao;
     }
 
     public BleDevConfig(String mac) {

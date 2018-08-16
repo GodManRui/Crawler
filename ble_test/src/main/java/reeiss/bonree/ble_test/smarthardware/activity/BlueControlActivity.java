@@ -142,6 +142,10 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
                 break;
             case R.id.btn_call:
                 if (!isAlert) {
+                    if (alertCharacteristic == null) {
+                        T.show(this, "暂未获得服务,请稍后再试");
+                        return;
+                    }
                     alertCharacteristic.setValue(new byte[]{PreventLosingCommon.Common_High_immediate_Alert});
                     mXFBluetoothGatt.writeCharacteristic(alertCharacteristic);
                     btnCall.setText("正在呼叫");

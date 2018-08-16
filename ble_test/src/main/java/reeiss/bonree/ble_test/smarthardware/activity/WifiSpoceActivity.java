@@ -68,7 +68,7 @@ public class WifiSpoceActivity extends Activity {
                 }
                 BleDevConfig bleDevConfig = new BleDevConfig();
                 bleDevConfig.setAlert("false");
-                bleDevConfig.update(currentDev.id);
+                bleDevConfig.update(currentDev.getId());
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
