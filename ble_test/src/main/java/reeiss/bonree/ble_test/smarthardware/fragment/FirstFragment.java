@@ -254,23 +254,26 @@ public class FirstFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Log.e("jerry", "onItem " + xfBluetooth.getAdapter().isDiscovering());
                 //todo 判断仍在扫描，此方法暂时无效
-                try {
-                    Log.e("jerry", "onItemClick: 正在发现");
+
+                if (xfBluetooth.isStopCall) {
+                    Log.e("jerry", "点击的时候: 正在发现");
                     xfBluetooth.stop();
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+
                 DeviceListBean deviceListBean = mDevList.get(position);
-                if (deviceListBean.getConnectState().equals("已连接")) {
+                if (XFBluetooth.getCurrentDevConfig() != null && deviceListBean.getConnectState().equals("已连接")) {
                     T.show(getActivity(), "设备已连接！");
                     Intent intent = new Intent(getActivity(), BlueControlActivity.class);
                     startActivityForResult(intent, 100);
                     return;
                 }
+
                 vDevLv.setItemsCanFocus(false);
                 FirstFragment.this.position = position;/*
                 deviceListBean.setConnectState(BluetoothGatt.STATE_CONNECTING);
                 adapter.setDevList(mDevList);*/
+                deviceListBean.setConnectState(BluetoothGatt.STATE_DISCONNECTED);
+                adapter.notifyDataSetChanged();
                 progressDialog.show();
                 xfBluetooth.connect(deviceListBean.getBluetoothDevice());
             }

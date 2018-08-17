@@ -31,7 +31,7 @@ public class XFBluetooth {
     private BluetoothAdapter mBluetoothAdapter;
     private final Context context;
     private BluetoothLeScanner mBluetoothLeScanner;
-    private boolean isStopCall;
+    public boolean isStopCall;
     private ArrayList<XFBluetoothCallBack> mListCallBack;
     public static String CURRENT_DEV_MAC = "";
     private ScanCallback callback = new ScanCallback() {

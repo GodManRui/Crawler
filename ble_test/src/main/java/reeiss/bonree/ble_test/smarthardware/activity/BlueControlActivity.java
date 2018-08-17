@@ -15,6 +15,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.Objects;
+
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.PreventLosingCommon;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
@@ -113,7 +115,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         imSetting.setOnClickListener(this);
         btnCall.setOnClickListener(this);
 
-        tvDevName.setText(mXFBluetoothGatt.getDevice().getName().trim());
+        tvDevName.setText(Objects.requireNonNull(XFBluetooth.getCurrentDevConfig()).getAlias());
 
     }
 

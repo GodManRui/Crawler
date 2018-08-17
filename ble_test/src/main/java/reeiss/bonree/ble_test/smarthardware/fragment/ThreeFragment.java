@@ -34,6 +34,7 @@ import java.util.LinkedList;
 import reeiss.bonree.ble_test.LocationApplication;
 import reeiss.bonree.ble_test.LocationService;
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.BleDevConfig;
 import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
@@ -87,8 +88,15 @@ public class ThreeFragment extends Fragment {
                 int isCal = msg.getData().getInt("iscalculate");
                 if (location != null) {             //纬度                        //经度
                     LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
-                    Log.e("JerryZhu", "当前位置: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe());
-                    mLocation.setMac(XFBluetooth.CURRENT_DEV_MAC);
+                    BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+
+                    if (currentDevConfig != null) {
+                        Log.e("JerryZhu", "当前位置Str: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe() + "  ==  " + currentDevConfig.getAlias() + "   MAC =   " + currentDevConfig.getMac());
+                        mLocation.setMac(currentDevConfig.getMac());
+                        mLocation.setName(currentDevConfig.getAlias());
+                    } else {
+                        Log.e("JerryZhu", "空！！！！！！！！当前位置Str: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe());
+                    }
                     mLocation.setTime(System.currentTimeMillis());
                     mLocation.setLatitude(location.getLatitude());
                     mLocation.setLongitude(location.getLongitude());

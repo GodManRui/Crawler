@@ -3,6 +3,7 @@ package reeiss.bonree.ble_test.bean;
 import org.litepal.crud.LitePalSupport;
 
 public class Location extends LitePalSupport {
+    private String name;
     private long time;
     private double latitude;        //维度
     private double longitude;        //经度
@@ -34,8 +35,17 @@ public class Location extends LitePalSupport {
         return time;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setTime(long time) {
         this.time = time;
+
     }
 
     public double getLatitude() {
