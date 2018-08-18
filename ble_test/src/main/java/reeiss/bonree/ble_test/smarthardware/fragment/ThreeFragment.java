@@ -18,7 +18,6 @@ import android.view.ViewGroup;
 
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
-import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
@@ -27,9 +26,6 @@ import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.TextureMapView;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.utils.DistanceUtil;
-
-import java.util.LinkedList;
 
 import reeiss.bonree.ble_test.LocationApplication;
 import reeiss.bonree.ble_test.LocationService;
@@ -39,7 +35,6 @@ import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.smarthardware.activity.LostHistory;
-import reeiss.bonree.ble_test.utils.Utils;
 
 /**
  * Wang YaHui
@@ -50,7 +45,6 @@ public class ThreeFragment extends Fragment {
 
     private TextureMapView map;
     private BaiduMap mBaiduMap;
-    private LinkedList<LocationEntity> locationList = new LinkedList<LocationEntity>();
     private LocationService locationService;
     private Location mLocation = new Location();
     //    private boolean isLost = false;
@@ -59,17 +53,24 @@ public class ThreeFragment extends Fragment {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
             super.onConnectionStateChange(gatt, status, newState);
             if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+                Log.e("jerryzhu3", "断开了 ");
                 //断开连接，首先停止定位服务
-                if (locationService.isStart()) locationService.stop();
+                if (locationService.isStart()) {
+                    Log.e("jerryzhu3", "断开了 停止定位: ");
+                    locationService.stop();
+                }
 //                isLost = true;
                 //如果断开连接，就保存到数据库
                 boolean save = mLocation.save();
                 if (save)
                     mLocation = new Location();
             } else if (newState == BluetoothProfile.STATE_CONNECTED) {
+                Log.e("jerryzhu3", "已连接: ");
 //                isLost = false;
-                if (!locationService.isStart())
+                if (!locationService.isStart()) {
+                    Log.e("jerryzhu3", " 定位开启: ");
                     locationService.start();
+                }
             }
         }
     };
@@ -141,7 +142,6 @@ public class ThreeFragment extends Fragment {
             }
         }
     };
-    private View btLost;
 
     @Override
     public void onHiddenChanged(boolean hidden) {
@@ -170,7 +170,8 @@ public class ThreeFragment extends Fragment {
         mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomTo(15));
         XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
         locationService = ((LocationApplication) getActivity().getApplication()).locationService;
-        LocationClientOption mOption = locationService.getDefaultLocationClientOption();
+        locationService.registerListener(listener);
+     /*   LocationClientOption mOption = locationService.getDefaultLocationClientOption();
         mOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
         mOption.setCoorType("bd09ll");
         mOption.setScanSpan(10000);
@@ -178,7 +179,8 @@ public class ThreeFragment extends Fragment {
 
         locationService.setLocationOption(mOption);
         locationService.registerListener(listener);
-        locationService.start();
+        Log.e("jerryzhu3", "onCreateView  定位开启: ");
+        locationService.start();*/
         return view;
     }
 
@@ -203,55 +205,11 @@ public class ThreeFragment extends Fragment {
         super.onDestroy();
         // 在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
         locationService.unregisterListener(listener);
+        Log.e("jerryzhu3", "onDestroy  定位开启: ");
         locationService.stop();
         map.onDestroy();
     }
 
-    private Bundle Algorithm(BDLocation location) {
-        Bundle locData = new Bundle();
-        double curSpeed = 0;
-        if (locationList.isEmpty() || locationList.size() < 2) {
-            LocationEntity temp = new LocationEntity();
-            temp.location = location;
-            temp.time = System.currentTimeMillis();
-            locData.putInt("iscalculate", 0);
-            locationList.add(temp);
-        } else {
-            if (locationList.size() > 5)
-                locationList.removeFirst();
-            double score = 0;
-            for (int i = 0; i < locationList.size(); ++i) {
-                LatLng lastPoint = new LatLng(locationList.get(i).location.getLatitude(),
-                        locationList.get(i).location.getLongitude());
-                LatLng curPoint = new LatLng(location.getLatitude(), location.getLongitude());
-                double distance = DistanceUtil.getDistance(lastPoint, curPoint);
-                curSpeed = distance / (System.currentTimeMillis() - locationList.get(i).time) / 1000;
-                score += curSpeed * Utils.EARTH_WEIGHT[i];
-            }
-            if (score > 0.00000999 && score < 0.00005) { // 经验值,开发者可根据业务自行调整，也可以不使用这种算法
-                location.setLongitude(
-                        (locationList.get(locationList.size() - 1).location.getLongitude() + location.getLongitude())
-                                / 2);
-                location.setLatitude(
-                        (locationList.get(locationList.size() - 1).location.getLatitude() + location.getLatitude())
-                                / 2);
-                locData.putInt("iscalculate", 1);
-            } else {
-                locData.putInt("iscalculate", 0);
-            }
-            LocationEntity newLocation = new LocationEntity();
-            newLocation.location = location;
-            newLocation.time = System.currentTimeMillis();
-            locationList.add(newLocation);
-
-        }
-        return locData;
-    }
-
-    class LocationEntity {
-        BDLocation location;
-        long time;
-    }
 
 
 }
