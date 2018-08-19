@@ -1,5 +1,6 @@
 package reeiss.bonree.ble_test.smarthardware;
 
+import android.app.ActionBar;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -37,27 +38,10 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        FragmentFactory.getInstance().changeFragment(2, R.id.fragment, getSupportFragmentManager());
         onTabItemSelected(R.id.tab_menu_home);
-      /*  BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
-        if (currentDev == null) {
-            try {
-                Field[] fields = R.raw.class.getDeclaredFields();
-                BleDevConfig bleDevConfi = null;
-                String ringName = "";
-                for (int i = 0; i < fields.length; i++) {
-                    String name = fields[i].getName();
-                    if (name != null && name.startsWith("ring")) {
-                        ringName = name;
-                        break;
-                    }
-                }
-                bleDevConfi = new BleDevConfig("", "true", ringName, 0, fields[1].getInt(R.raw.class));
-                bleDevConfi.save();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }*/
+
+        ActionBar actionBar = getActionBar();
+
     }
 
     private void onTabItemSelected(int id) {

@@ -65,14 +65,15 @@ public class LocationApplication extends Application {
                         Log.e("JerryZhu", "当前位置Str: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe() + "  ==  " + currentDevConfig.getAlias() + "   MAC =   " + currentDevConfig.getMac());
                         mLocation.setMac(currentDevConfig.getMac());
                         mLocation.setName(currentDevConfig.getAlias());
+
+                        mLocation.setTime(System.currentTimeMillis());
+                        mLocation.setLatitude(location.getLatitude());
+                        mLocation.setLongitude(location.getLongitude());
+                        mLocation.setAddStr(location.getAddrStr());
+                        mLocation.setLocationDescribe(location.getLocationDescribe());
                     } else {
                         Log.e("JerryZhu", "空！！！！！！！！当前位置Str: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe());
                     }
-                    mLocation.setTime(System.currentTimeMillis());
-                    mLocation.setLatitude(location.getLatitude());
-                    mLocation.setLongitude(location.getLongitude());
-                    mLocation.setAddStr(location.getAddrStr());
-                    mLocation.setLocationDescribe(location.getLocationDescribe());
 
 //                    T.show(getActivity(), location.getLocationDescribe());
                     // 构建Marker图标
@@ -127,14 +128,18 @@ public class LocationApplication extends Application {
 
         locationService.setLocationOption(mOption);
         locationService.registerListener(listener);
-//        locationService.start();
+        locationService.start();
 
         mVibrator = (Vibrator) getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
         SDKInitializer.initialize(getApplicationContext());
         XFBluetooth.getInstance(this);
         LitePal.initialize(this);
-        Pandora.init(this).enableShakeOpen();
-        Pandora.get().open();
+//        Pandora.init(this).enableShakeOpen();
+        try {
+            Pandora.get().open();
+        } catch (Exception e) {
+
+        }
     }
 
 

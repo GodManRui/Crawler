@@ -201,9 +201,12 @@ public class FirstFragment extends Fragment {
                     Log.e("jerryzhu", "first 停止定位: ");
                     locationApplication.locationService.stop();
                 }
-                boolean save = locationApplication.mLocation.save();
-                if (save)
-                    locationApplication.mLocation = new Location();
+                if (!TextUtils.isEmpty(locationApplication.mLocation.getMac())) {
+                    boolean save = locationApplication.mLocation.save();
+                    T.show(getActivity(), "丢失位置已保存！");
+                    if (save)
+                        locationApplication.mLocation = new Location();
+                }
             }
 
             final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
