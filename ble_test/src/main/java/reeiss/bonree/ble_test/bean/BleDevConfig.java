@@ -51,13 +51,14 @@ public class BleDevConfig extends LitePalSupport {
         this.isAlert = isAlert;
     }
 
-    public BleDevConfig(String mac, String alias, String isAlert, String ringName, int ringPosition, int ringResId) {
+    public BleDevConfig(String mac, String alias, String isAlert, String isWuRao, String ringName, int ringPosition, int ringResId) {
         this.mac = mac;
-        this.ringName = ringName;
         this.alias = alias;
         this.isAlert = isAlert;
         this.ringPosition = ringPosition;
+        this.ringName = ringName;
         this.ringResId = ringResId;
+        this.isWuRao = isWuRao;
     }
 
     public String getRingName() {

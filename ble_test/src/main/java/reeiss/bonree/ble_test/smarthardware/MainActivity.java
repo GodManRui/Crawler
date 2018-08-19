@@ -10,6 +10,11 @@ import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.utils.BottomNavigationViewHelper;
 import reeiss.bonree.ble_test.utils.FragmentFactory;
 
+import static reeiss.bonree.ble_test.utils.FragmentFactory.FIRST;
+import static reeiss.bonree.ble_test.utils.FragmentFactory.FOUR;
+import static reeiss.bonree.ble_test.utils.FragmentFactory.SECOND;
+import static reeiss.bonree.ble_test.utils.FragmentFactory.THREE;
+
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView mBottomNavigationView;
@@ -32,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        FragmentFactory.getInstance().changeFragment(2, R.id.fragment, getSupportFragmentManager());
         onTabItemSelected(R.id.tab_menu_home);
       /*  BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
         if (currentDev == null) {
@@ -57,16 +63,16 @@ public class MainActivity extends AppCompatActivity {
     private void onTabItemSelected(int id) {
         switch (id) {
             case R.id.tab_menu_home:
-                FragmentFactory.getInstance().changeFragment(0, R.id.fragment, getSupportFragmentManager());
+                FragmentFactory.getInstance().changeFragment(FIRST, R.id.fragment, getSupportFragmentManager());
                 break;
             case R.id.tab_menu_discovery:
-                FragmentFactory.getInstance().changeFragment(1, R.id.fragment, getSupportFragmentManager());
+                FragmentFactory.getInstance().changeFragment(SECOND, R.id.fragment, getSupportFragmentManager());
                 break;
             case R.id.tab_menu_attention:
-                FragmentFactory.getInstance().changeFragment(2, R.id.fragment, getSupportFragmentManager());
+                FragmentFactory.getInstance().changeFragment(THREE, R.id.fragment, getSupportFragmentManager());
                 break;
             case R.id.tab_menu_profile:
-                FragmentFactory.getInstance().changeFragment(3, R.id.fragment, getSupportFragmentManager());
+                FragmentFactory.getInstance().changeFragment(FOUR, R.id.fragment, getSupportFragmentManager());
                 break;
         }
 

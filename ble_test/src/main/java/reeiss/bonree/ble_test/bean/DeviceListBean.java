@@ -8,6 +8,8 @@ import android.bluetooth.BluetoothGatt;
  * The profile is in connecting state  The profile is in connected state
  * The profile is in connecting state  The profile is in connected state
  * The profile is in connecting state  The profile is in connected state
+ * The profile is in connecting state  The profile is in connected state
+ * The profile is in connecting state  The profile is in connected state
  *//*
 public static final int STATE_DISCONNECTED  = 0;
 *//** The profile is in connecting state *//*
@@ -41,6 +43,7 @@ public class DeviceListBean {
         this.bluetoothDevice = bluetoothDevice;
         ConnectState = connectState;
     }
+
 
     public BluetoothDevice getBluetoothDevice() {
         return bluetoothDevice;

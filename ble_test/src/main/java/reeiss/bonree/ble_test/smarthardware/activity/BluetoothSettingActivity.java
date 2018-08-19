@@ -33,11 +33,13 @@ import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.utils.T;
 
+import static reeiss.bonree.ble_test.bean.CommonHelp.getLinkLostAlert;
+import static reeiss.bonree.ble_test.bean.PreventLosingCommon.Common_LinkLost_No_Alert;
+
 public class BluetoothSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Switch vAlert;
     private XFBluetooth mXFBlue;
-    private boolean isAlert;
     private BluetoothGatt xfBluetoothGatt;
     private TextView tvBattery;
     private ProgressDialog mProgressDialog;
@@ -70,11 +72,11 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             });
         }
     };
-    private BluetoothGattService mLinkLostServer;
     private RelativeLayout rlRing;
     private MediaPlayer mp;
     private TextView tvRing;
     private EditText edDevName;
+    private boolean isChecked;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -101,7 +103,9 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 T.show(BluetoothSettingActivity.this, " " + isChecked);
+                BluetoothSettingActivity.this.isChecked = isChecked;
                 //小芳支持
+
             }
         });
         mProgressDialog = new ProgressDialog(this);
@@ -114,7 +118,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         for (int i = 0; i < xfBluetoothGatt.getServices().size(); i++) {
             Log.e("jerryzhu", "initBlue: " + xfBluetoothGatt.getServices().get(i).getUuid());
         }
-        mLinkLostServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_LinkLost_Alert));
         BluetoothGattService mBatteryServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_Battery_Level));
         if (mBatteryServer != null) {
             BluetoothGattCharacteristic mChBattery = mBatteryServer.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Battery_Level));
@@ -126,6 +129,20 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         if (edDevName.getText().toString().isEmpty()) {
             T.show(this, "别名不能为空");
             return;
+        }
+
+        BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(XFBluetooth.getInstance(this).getXFBluetoothGatt());
+        byte[] value = linkLostAlert.getValue();
+        for (int i = 0; i < value.length; i++) {
+            Log.e("jerry", "saveConfig: " + value[i]);
+        }
+        if (!isChecked) {
+            if (linkLostAlert != null) {
+                linkLostAlert.setValue(new byte[Common_LinkLost_No_Alert]);
+                XFBluetooth.getInstance(this).getXFBluetoothGatt().writeCharacteristic(linkLostAlert);
+            } else {
+                T.show(this, "断开报警不支持！");
+            }
         }
         BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         assert currentDevConfig != null;
@@ -221,6 +238,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
                 if (0 <= checkedItemPosition && checkedItemPosition <= itemName.length - 1 && tvRing != null) {
                     // TODO: 2018/6/19 保存数据库
                     currentDev.setRingPosition(checkedItemPosition);
+                    currentDev.setRingName(itemName[checkedItemPosition]);
 
                     tvRing.setText(itemName[checkedItemPosition]);
                 }

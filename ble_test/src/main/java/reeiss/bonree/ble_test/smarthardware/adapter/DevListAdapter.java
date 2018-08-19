@@ -50,7 +50,8 @@ public class DevListAdapter extends BaseAdapter {
         TextView tvDevName = convertView.findViewById(R.id.tv_dev_name);
         TextView tvConnectState = convertView.findViewById(R.id.tv_connect_state);
         DeviceListBean device = devList.get(position);
-        if ("已连接".equals(device.getConnectState()) && !device.getDevNick().isEmpty()) {
+//        if ("已连接".equals(device.getConnectState()) && !device.getDevNick().isEmpty()) {
+        if (!device.getDevNick().isEmpty()) {
             tvDevName.setText(device.getDevNick());
         } else {
             tvDevName.setText(device.getBluetoothDevice().getName());

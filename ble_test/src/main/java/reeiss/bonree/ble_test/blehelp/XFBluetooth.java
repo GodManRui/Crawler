@@ -54,6 +54,7 @@ public class XFBluetooth {
             super.onScanFailed(errorCode);
         }
     };
+
     private BluetoothAdapter.LeScanCallback mLeScanCallback = new LeScanCallback() {
 
         @Override
@@ -82,6 +83,13 @@ public class XFBluetooth {
             }
             if (newState != BluetoothProfile.STATE_CONNECTED) {
                 CURRENT_DEV_MAC = "";
+                try {
+                    mXFBluetoothGatt.disconnect();
+                    mXFBluetoothGatt.close();
+                    mXFBluetoothGatt = null;
+                } catch (Exception e) {
+                    Log.e("jerryzhu", "mXFBluetoothGatt.close() 异常！！！ " + e.toString());
+                }
             }
         }
 

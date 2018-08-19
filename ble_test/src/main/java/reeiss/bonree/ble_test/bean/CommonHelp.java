@@ -7,8 +7,10 @@ import android.bluetooth.BluetoothGattService;
 import java.util.UUID;
 
 import static reeiss.bonree.ble_test.bean.PreventLosingCommon.getCHImmediateAlert;
+import static reeiss.bonree.ble_test.bean.PreventLosingCommon.getCHLinkLostAlert;
 import static reeiss.bonree.ble_test.bean.PreventLosingCommon.getCHOnClick;
 import static reeiss.bonree.ble_test.bean.PreventLosingCommon.getServerImmediateAlert;
+import static reeiss.bonree.ble_test.bean.PreventLosingCommon.getServerLinkLostAlert;
 import static reeiss.bonree.ble_test.bean.PreventLosingCommon.getServerOnClick;
 
 public class CommonHelp {
@@ -32,6 +34,7 @@ public class CommonHelp {
 
     /**
      * 控制报警
+     *
      * @param gatt
      * @return
      */
@@ -42,6 +45,24 @@ public class CommonHelp {
             BluetoothGattService service = gatt.getService(server);
             if (service != null) {
                 return service.getCharacteristic(getCHImmediateAlert());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 蓝牙断开报警
+     *
+     * @param gatt
+     * @return
+     */
+    public static BluetoothGattCharacteristic getLinkLostAlert(BluetoothGatt gatt) {
+        UUID server = null;
+        server = getServerLinkLostAlert();
+        if (server != null) {
+            BluetoothGattService service = gatt.getService(server);
+            if (service != null) {
+                return service.getCharacteristic(getCHLinkLostAlert());
             }
         }
         return null;

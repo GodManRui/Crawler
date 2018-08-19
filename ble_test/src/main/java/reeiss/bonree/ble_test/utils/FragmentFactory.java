@@ -17,19 +17,19 @@ public class FragmentFactory {
     /**
      * 测试报告
      */
-    public final static int ONLINE = 0;
+    public final static int FIRST = 1;
     /**
      * 用户中心
      */
-    public final static int USER = 1;
+    public final static int SECOND = 2;
     /**
      * 博睿NET
      */
-    public final static int NET_TASK = 2;
+    public final static int THREE = 3;
     /**
      * NET报警
      */
-    public final static int NET_ALERT = 3;
+    public final static int FOUR = 4;
 
     public static FirstFragment onlineTestFragment;
     private static SecondFragment userSettingFragment;
@@ -72,7 +72,7 @@ public class FragmentFactory {
         if (cacheFragment == null) {
             // 第一次进来要切换的fragment作为当前fragment加入到transaction中并显示
             fragmentManager.beginTransaction().add(resourceId, target)
-                .show(target).commit();
+                    .show(target).commit();
             cacheFragment = target;
             return;
         }
@@ -86,7 +86,7 @@ public class FragmentFactory {
         }
         // 隐藏当前的fragment示目标的fragment
         fragmentManager.beginTransaction().hide(cacheFragment).show(target)
-            .commit();
+                .commit();
         //将目标fragment复制给缓存标记
         cacheFragment = target;
     }
@@ -99,24 +99,24 @@ public class FragmentFactory {
      */
     public Fragment getFragment(int type) {
         switch (type) {
-            case ONLINE:
+            case FIRST:
                 if (onlineTestFragment == null) {
                     onlineTestFragment = new FirstFragment();
                 }
                 return onlineTestFragment;
 
-            case USER:
+            case SECOND:
                 if (userSettingFragment == null) {
                     userSettingFragment = new SecondFragment();
                 }
                 return userSettingFragment;
 
-            case NET_TASK:
+            case THREE:
                 if (netTaskFragment == null) {
                     netTaskFragment = new ThreeFragment();
                 }
                 return netTaskFragment;
-            case NET_ALERT:
+            case FOUR:
                 if (alertFragment == null) {
                     alertFragment = new FourFragment();
                 }
@@ -128,17 +128,17 @@ public class FragmentFactory {
 
     public boolean getFragmentStatus(int type) {
         switch (type) {
-            case ONLINE:
+            case FIRST:
                 if (onlineTestFragment == null)
                     return false;
                 else return true;
-            case USER:
+            case SECOND:
                 if (userSettingFragment == null) return false;
                 else return true;
-            case NET_TASK:
+            case THREE:
                 if (netTaskFragment == null) return false;
                 else return true;
-            case NET_ALERT:
+            case FOUR:
                 return false;
         }
         return false;
