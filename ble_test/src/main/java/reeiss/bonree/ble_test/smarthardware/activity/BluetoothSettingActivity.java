@@ -34,7 +34,6 @@ import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.utils.T;
 
 import static reeiss.bonree.ble_test.bean.CommonHelp.getLinkLostAlert;
-import static reeiss.bonree.ble_test.bean.PreventLosingCommon.Common_LinkLost_No_Alert;
 
 public class BluetoothSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -132,13 +131,18 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         }
 
         BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(XFBluetooth.getInstance(this).getXFBluetoothGatt());
-        byte[] value = linkLostAlert.getValue();
-        for (int i = 0; i < value.length; i++) {
-            Log.e("jerry", "saveConfig: " + value[i]);
-        }
+
         if (!isChecked) {
             if (linkLostAlert != null) {
-                linkLostAlert.setValue(new byte[Common_LinkLost_No_Alert]);
+                linkLostAlert.setValue(new byte[0x40]);
+//                linkLostAlert.setValue(new byte[Common_LinkLost_No_Alert]);
+                XFBluetooth.getInstance(this).getXFBluetoothGatt().writeCharacteristic(linkLostAlert);
+            } else {
+                T.show(this, "关闭报警不支持！");
+            }
+        }else {
+            if (linkLostAlert != null) {
+                linkLostAlert.setValue(new byte[0]);
                 XFBluetooth.getInstance(this).getXFBluetoothGatt().writeCharacteristic(linkLostAlert);
             } else {
                 T.show(this, "断开报警不支持！");
@@ -153,21 +157,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         intent.putExtra("name", edDevName.getText().toString());
         setResult(100, intent);
         finish();
-       /* BluetoothGattCharacteristic mLinkLostCharacteristic = mLinkLostServer.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_LinkLost_Alert));
-        if (mLinkLostCharacteristic != null) {
-            Log.e("jerryzhu", "saveConfig: " + mLinkLostCharacteristic.getProperties() + "   ==  " + mLinkLostCharacteristic.getUuid());
-            if (isAlert) {
-                mLinkLostCharacteristic.setValue(new byte[]{PreventLosingCommon.Common_LinkLost_100Alert});
-            } else {
-                mLinkLostCharacteristic.setValue(new byte[]{(byte) PreventLosingCommon.Common_LinkLost_No_Alert});
-            }
-            xfBluetoothGatt.writeCharacteristic(mLinkLostCharacteristic);
-        } else {
-            T.show(this, "未搜索到该服务！");
-            return;
-        }
-        mProgressDialog.setMessage("正在设置..");
-        mProgressDialog.show();*/
+
     }
 
     @Override

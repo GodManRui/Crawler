@@ -11,15 +11,22 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
+import com.baidu.mapapi.map.MarkerOptions;
+import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.TextureMapView;
+import com.baidu.mapapi.model.LatLng;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.litepal.LitePal;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.EventBusLocation;
+import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.smarthardware.activity.LostHistory;
 
 /**
@@ -49,7 +56,7 @@ public class ThreeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        //SDKInitializer.initialize(getActivity().getApplication());
+
         View view = inflater.inflate(R.layout.fragment_three, null);
         getActivity().setTitle("定位");
         map = view.findViewById(R.id.map);
@@ -59,23 +66,19 @@ public class ThreeFragment extends Fragment {
                 startActivity(new Intent(getActivity(), LostHistory.class));
             }
         });
-//        reset = view.findViewById(R.id.clear);
+
         mBaiduMap = this.map.getMap();
         mBaiduMap.setMapType(BaiduMap.MAP_TYPE_NORMAL);
         mBaiduMap.setMapStatus(MapStatusUpdateFactory.zoomTo(15));
-//        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
-//        locationService = ((LocationApplication) getActivity().getApplication()).locationService;
-//        locationService.registerListener(listener);
-     /*   LocationClientOption mOption = locationService.getDefaultLocationClientOption();
-        mOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
-        mOption.setCoorType("bd09ll");
-        mOption.setScanSpan(10000);
-        mOption.setIsNeedAddress(true);
 
-        locationService.setLocationOption(mOption);
-        locationService.registerListener(listener);
-        Log.e("jerryzhu3", "onCreateView  定位开启: ");
-        locationService.start();*/
+        Location location = LitePal.findLast(Location.class);
+        if (location != null) {
+            LatLng point = new LatLng(location.getLatitude(), location.getLongitude());
+            BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(R.mipmap.icon_openmap_mark);
+            OverlayOptions option = new MarkerOptions().position(point).icon(bitmap);
+            mBaiduMap.addOverlay(option);
+            mBaiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(point));
+        }
         EventBus.getDefault().register(this);
         return view;
     }

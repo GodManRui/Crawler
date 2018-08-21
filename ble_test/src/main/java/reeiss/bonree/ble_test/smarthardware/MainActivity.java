@@ -1,6 +1,5 @@
 package reeiss.bonree.ble_test.smarthardware;
 
-import android.app.ActionBar;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -39,8 +38,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         onTabItemSelected(R.id.tab_menu_home);
-
-        ActionBar actionBar = getActionBar();
 
     }
 

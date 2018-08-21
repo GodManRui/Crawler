@@ -16,7 +16,7 @@ public class PreventLosingCommon {
     //立即使能报警
     public static String Server_Immediate_Alert_ShuiDi = "00001802-0000-1000-8000-00805f9b34fb";
     public static String CH_Immediate_Alert_ShuiDi = "00002a06-0000-1000-8000-00805f9b34fb";
-    public static String CH_Immediate_Alert_Rectangle = "0000ffe3-0000-1000-8000-00805f9b34fb";
+    public static String CH_Immediate_Alert_Rectangle = "0000ffe4-0000-1000-8000-00805f9b34fb";
     public static byte Common_High_immediate_Alert = 0x01; //High immediateAlertLevel
     public static byte Common_Middling_immediate_Alert = 0x03; //Middling immediateAlertLevel
     public static byte Common_No_immediate_Alert = 0x00; //No immediateAlertLevel

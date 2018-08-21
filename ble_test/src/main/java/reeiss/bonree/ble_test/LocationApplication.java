@@ -128,7 +128,7 @@ public class LocationApplication extends Application {
 
         locationService.setLocationOption(mOption);
         locationService.registerListener(listener);
-        locationService.start();
+//        locationService.start();
 
         mVibrator = (Vibrator) getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
         SDKInitializer.initialize(getApplicationContext());
