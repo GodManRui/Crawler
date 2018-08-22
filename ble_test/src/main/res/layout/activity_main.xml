@@ -3,10 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <Button
+        android:id="@+id/bt_scan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="开始扫描" />
+
     <RelativeLayout
         android:id="@+id/rl_scan"
         android:layout_width="match_parent"
-        android:layout_height="240dp">
+        android:layout_height="240dp"
+        android:layout_below="@id/bt_scan">
 
         <ImageView
             android:layout_width="200dp"
@@ -22,10 +29,12 @@
             android:src="@mipmap/ic_scanning" />
     </RelativeLayout>
 
+
     <ListView
         android:id="@+id/ble_dev_lv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@id/bt_scan"
         android:visibility="gone" />
 
 

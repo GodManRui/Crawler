@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,7 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 
@@ -138,6 +140,8 @@ public class FirstFragment extends Fragment {
         }
 
     };
+    private Button btScan;
+    private Handler handler;
 
     private void FoundPhone(BluetoothGattCharacteristic characteristic) {
         String value = Arrays.toString(characteristic.getValue());
@@ -309,7 +313,10 @@ public class FirstFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initView();
-        scanBle();
+        xfBluetooth = XFBluetooth.getInstance(getActivity());
+        xfBluetooth.addBleCallBack(gattCallback);
+        handler = new Handler();
+
     }
 
     private void initView() {
@@ -317,6 +324,13 @@ public class FirstFragment extends Fragment {
         vDevLv = getView().findViewById(R.id.ble_dev_lv);
         vScan = getView().findViewById(R.id.iv_scan);
         vReScan = getView().findViewById(R.id.rl_scan);
+        btScan = getView().findViewById(R.id.bt_scan);
+        btScan.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scan();
+            }
+        });
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("正在连接..");
         progressDialog.setCancelable(false);
@@ -329,11 +343,8 @@ public class FirstFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Log.e("jerry", "onItem " + xfBluetooth.getAdapter().isDiscovering());
-                //todo 判断仍在扫描，此方法暂时无效
 
-                if (xfBluetooth.isStopCall) {
-                    Log.e("jerry", "点击的时候: 正在发现");
+                if (xfBluetooth.isScaning) {
                     xfBluetooth.stop();
                 }
 
@@ -374,16 +385,50 @@ public class FirstFragment extends Fragment {
         }
     }
 
+    public void scan() {
+
+        if (xfBluetooth.isScaning) {       //停止扫描
+            btScan.setText("开始扫描");
+            stopBle();
+        } else {                            //开始扫描
+            btScan.setText("停止扫描");
+            scanBle();
+        }
+    }
+
     private void scanBle() {
-        xfBluetooth = XFBluetooth.getInstance(getActivity());
-        xfBluetooth.addBleCallBack(gattCallback);
-        RotateAnimation animation = new RotateAnimation(0f, 360f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        animation.setInterpolator(new LinearInterpolator());
-        animation.setDuration(2000);
-        animation.setRepeatCount(-1);
-        animation.setFillAfter(true);
-        vScan.startAnimation(animation);
+        if (vReScan.getVisibility() == View.VISIBLE) {
+            RotateAnimation animation = new RotateAnimation(0f, 360f,
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+            animation.setInterpolator(new LinearInterpolator());
+            animation.setDuration(2000);
+            animation.setRepeatCount(-1);
+            animation.setFillAfter(true);
+            vScan.startAnimation(animation);
+        }
         xfBluetooth.scan();
+
+        handler.postDelayed(scanTimeOut, 20000);
+    }
+
+    private Runnable scanTimeOut = new Runnable() {
+        @Override
+        public void run() {
+            T.show(getActivity(), "扫描超时已停止");
+            stopBle();
+        }
+    };
+
+    private void stopBle() {
+        vScan.clearAnimation();
+//        vReScan.setVisibility(View.GONE);
+        xfBluetooth.stop();
+        handler.removeCallbacks(scanTimeOut);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacks(scanTimeOut);
     }
 }

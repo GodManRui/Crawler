@@ -14,10 +14,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import java.lang.reflect.Field;
@@ -33,11 +31,9 @@ import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.utils.T;
 
-import static reeiss.bonree.ble_test.bean.CommonHelp.getLinkLostAlert;
-
 public class BluetoothSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Switch vAlert;
+
     private XFBluetooth mXFBlue;
     private BluetoothGatt xfBluetoothGatt;
     private TextView tvBattery;
@@ -45,6 +41,8 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     private XFBluetoothCallBack mXFBluetoothCallBack = new XFBluetoothCallBack() {
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, int status) {
+            byte[] value = characteristic.getValue();
+            Log.e("jerry", "读取数据  : " + Arrays.toString(value));
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 runOnUiThread(new Runnable() {
                     @Override
@@ -57,14 +55,16 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         }
 
         @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
+        public void onCharacteristicWrite(final BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     mProgressDialog.dismiss();
                     if (status == BluetoothGatt.GATT_SUCCESS) {
+                        Log.e("jerry", "GATT_SUCCESS 写入成功? ");
                         T.show(BluetoothSettingActivity.this, "设置成功！");
                     } else {
+                        Log.e("jerry", " 写入？   " + status);
                         T.show(BluetoothSettingActivity.this, "设置失败！");
                     }
                 }
@@ -86,7 +86,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     }
 
     private void initView() {
-        vAlert = (Switch) findViewById(R.id.sw_is_alert);
+//        vAlert = (Switch) findViewById(R.id.sw_is_alert);
         tvBattery = (TextView) findViewById(R.id.tv_battery);
         rlRing = (RelativeLayout) findViewById(R.id.rl_ring);
         tvRing = (TextView) findViewById(R.id.tv_ring);
@@ -97,16 +97,13 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             edDevName.setText(currentDevConfig.getAlias());
         }
         rlRing.setOnClickListener(this);
-        vAlert.setChecked(XFBluetooth.getCurrentDevConfig().getAlert().equals("true"));
+   /*     vAlert.setChecked(XFBluetooth.getCurrentDevConfig().getAlert().equals("true"));
         vAlert.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                T.show(BluetoothSettingActivity.this, " " + isChecked);
                 BluetoothSettingActivity.this.isChecked = isChecked;
-                //小芳支持
-
             }
-        });
+        });*/
         mProgressDialog = new ProgressDialog(this);
     }
 
@@ -117,6 +114,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         for (int i = 0; i < xfBluetoothGatt.getServices().size(); i++) {
             Log.e("jerryzhu", "initBlue: " + xfBluetoothGatt.getServices().get(i).getUuid());
         }
+        //读取当前电量
         BluetoothGattService mBatteryServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_Battery_Level));
         if (mBatteryServer != null) {
             BluetoothGattCharacteristic mChBattery = mBatteryServer.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Battery_Level));
@@ -125,29 +123,37 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     }
 
     public void saveConfig(View view) {
+
         if (edDevName.getText().toString().isEmpty()) {
             T.show(this, "别名不能为空");
             return;
         }
 
-        BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(XFBluetooth.getInstance(this).getXFBluetoothGatt());
+/*
+        BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(xfBluetoothGatt);
 
-        if (!isChecked) {
+       *//* Bit0:
+        Bit0 = 1 时 Tagelf 被设置成断开连接后报警
+                Bit0 = 0 时 Tagelf 被设置成断开连接后不报警*//*
+        if (isChecked) {
+            //需要报警  1000 0000  -128   80
             if (linkLostAlert != null) {
-                linkLostAlert.setValue(new byte[0x40]);
+                linkLostAlert.setValue(new byte[1]);
 //                linkLostAlert.setValue(new byte[Common_LinkLost_No_Alert]);
-                XFBluetooth.getInstance(this).getXFBluetoothGatt().writeCharacteristic(linkLostAlert);
+                boolean b = xfBluetoothGatt.writeCharacteristic(linkLostAlert);
+                Log.e("jerry", "写入了: 1  " + b);
             } else {
-                T.show(this, "关闭报警不支持！");
+                T.show(BluetoothSettingActivity.this, "关闭报警不支持！");
             }
-        }else {
+        } else {
             if (linkLostAlert != null) {
                 linkLostAlert.setValue(new byte[0]);
-                XFBluetooth.getInstance(this).getXFBluetoothGatt().writeCharacteristic(linkLostAlert);
+                boolean b = xfBluetoothGatt.writeCharacteristic(linkLostAlert);
+                Log.e("jerry", "写入了: 0  " + b);
             } else {
-                T.show(this, "断开报警不支持！");
+                T.show(BluetoothSettingActivity.this, "断开报警不支持！");
             }
-        }
+        }*/
         BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         assert currentDevConfig != null;
         currentDevConfig.setAlias(edDevName.getText().toString());

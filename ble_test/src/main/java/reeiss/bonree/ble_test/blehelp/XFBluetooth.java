@@ -14,7 +14,6 @@ import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -31,14 +30,14 @@ public class XFBluetooth {
     private BluetoothAdapter mBluetoothAdapter;
     private final Context context;
     private BluetoothLeScanner mBluetoothLeScanner;
-    public boolean isStopCall;
+    public boolean isScaning;          //正在扫描？
     private ArrayList<XFBluetoothCallBack> mListCallBack;
     public static String CURRENT_DEV_MAC = "";
     private ScanCallback callback = new ScanCallback() {
 
         @Override
         public void onScanResult(int callbackType, ScanResult result) {
-            if (isStopCall && mListCallBack.size() > 0)
+            if (isScaning && mListCallBack.size() > 0)
                 if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
                     BluetoothDevice device = result.getDevice();
                     for (int i = 0; i < mListCallBack.size(); i++) {
@@ -59,9 +58,9 @@ public class XFBluetooth {
 
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            Log.e("jerryzhu", "onLeScan: " + isStopCall);
+            Log.e("jerryzhu", "onLeScan: " + isScaning);
 
-            if (isStopCall)
+            if (isScaning)
                 for (int i = 0; i < mListCallBack.size(); i++) {
                     mListCallBack.get(i).onScanResult(device);
                 }
@@ -83,13 +82,7 @@ public class XFBluetooth {
             }
             if (newState != BluetoothProfile.STATE_CONNECTED) {
                 CURRENT_DEV_MAC = "";
-                try {
-                    mXFBluetoothGatt.disconnect();
-                    mXFBluetoothGatt.close();
-                    mXFBluetoothGatt = null;
-                } catch (Exception e) {
-                    Log.e("jerryzhu", "mXFBluetoothGatt.close() 异常！！！ " + e.toString());
-                }
+                reset();
             }
         }
 
@@ -141,6 +134,19 @@ public class XFBluetooth {
             }
         }
     };
+
+    private void reset() {
+        try {
+            if (mXFBluetoothGatt != null) {
+                mXFBluetoothGatt.disconnect();
+                mXFBluetoothGatt.close();
+                mXFBluetoothGatt = null;
+            }
+        } catch (Exception e) {
+            Log.e("jerryzhu", "mXFBluetoothGatt.close() 异常！！！ " + e.toString());
+        }
+    }
+
     private BluetoothGatt mXFBluetoothGatt;
 
     private XFBluetooth(Context context) {
@@ -177,7 +183,7 @@ public class XFBluetooth {
 
 
     public void scan() {
-        isStopCall = true;
+        isScaning = true;
         if (mBluetoothAdapter == null) {
             T.show(context, "蓝牙未开启或设备不支持蓝牙！");
             return;
@@ -192,19 +198,14 @@ public class XFBluetooth {
             mBluetoothLeScanner.startScan(callback);
         } else
             mBluetoothAdapter.startLeScan(mLeScanCallback);
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                Log.e("jerryzhu", "超过20秒时的状态 : " + mBluetoothAdapter.isDiscovering());
-//                mBluetoothAdapter.isDiscovering()
-                if (mBluetoothAdapter != null && isStopCall)
-                    stop();
-            }
-        }, 20000);
+
     }
 
     public void stop() {
-        isStopCall = false;
+        if (mBluetoothAdapter == null || !isScaning) {
+            return;
+        }
+        isScaning = false;
         Log.e("JerryZhu", "停止扫描: ");
         if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP && mBluetoothLeScanner != null) {
             mBluetoothLeScanner.stopScan(callback);
@@ -221,6 +222,7 @@ public class XFBluetooth {
 
     public void connect(BluetoothDevice device) {
         if (device != null) {
+            reset();
             mXFBluetoothGatt = device.connectGatt(context, true, gattCallback);
         }
     }
