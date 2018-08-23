@@ -135,8 +135,9 @@ public class XFBluetooth {
         }
     };
 
-    private void reset() {
+    public void reset() {
         try {
+            Log.e("jerry", "reset: 断开");
             if (mXFBluetoothGatt != null) {
                 mXFBluetoothGatt.disconnect();
                 mXFBluetoothGatt.close();
