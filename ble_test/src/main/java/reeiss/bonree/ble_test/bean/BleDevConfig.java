@@ -10,18 +10,10 @@ public class BleDevConfig extends LitePalSupport {
     private int ringPosition;
     private String ringName;
     private int ringResId;
-    private String isWuRao;
 
     public BleDevConfig() {
     }
 
-    public String getIsWuRao() {
-        return isWuRao;
-    }
-
-    public void setIsWuRao(String isWuRao) {
-        this.isWuRao = isWuRao;
-    }
 
     public BleDevConfig(String mac) {
         this.mac = mac;
@@ -51,14 +43,14 @@ public class BleDevConfig extends LitePalSupport {
         this.isAlert = isAlert;
     }
 
-    public BleDevConfig(String mac, String alias, String isAlert, String isWuRao, String ringName, int ringPosition, int ringResId) {
+    public BleDevConfig(String mac, String alias, String isAlert, String ringName, int ringPosition, int ringResId) {
         this.mac = mac;
         this.alias = alias;
         this.isAlert = isAlert;
         this.ringPosition = ringPosition;
         this.ringName = ringName;
         this.ringResId = ringResId;
-        this.isWuRao = isWuRao;
+
     }
 
     public String getRingName() {

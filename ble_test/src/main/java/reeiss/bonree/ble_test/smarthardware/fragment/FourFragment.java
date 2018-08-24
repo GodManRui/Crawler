@@ -1,11 +1,12 @@
 package reeiss.bonree.ble_test.smarthardware.fragment;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,11 +14,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import reeiss.bonree.ble_test.R;
-import reeiss.bonree.ble_test.bean.BleDevConfig;
-import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.smarthardware.activity.WifiSpoceActivity;
-
-import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
 
 /**
  * Wang YaHui
@@ -28,6 +25,7 @@ public class FourFragment extends Fragment {
 
     private Switch swWifi;
     private Switch swSleep;
+    private SharedPreferences myPreference;
 
     @Override
     public void onHiddenChanged(boolean hidden) {
@@ -48,22 +46,25 @@ public class FourFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle("更多");
         swWifi = view.findViewById(R.id.sw_wifi_wurao);
+        myPreference = ((getActivity()).getSharedPreferences("myPreference", Context.MODE_PRIVATE));
+        boolean isOpenWuRao = myPreference.getBoolean("isOpenWuRao", false);
+        swWifi.setChecked(isOpenWuRao);
 
-        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-        if (currentDevConfig != null) {
-            swWifi.setChecked(currentDevConfig.getIsWuRao().equals("true"));
-        }
         swWifi.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (TextUtils.isEmpty(CURRENT_DEV_MAC)) return;
-                if (isChecked)
+//                if (TextUtils.isEmpty(CURRENT_DEV_MAC)) return;
+
+                SharedPreferences.Editor edit = myPreference.edit();
+                if (isChecked) {
+                    edit.putBoolean("isOpenWuRao", true).apply();
                     startActivity(new Intent(getActivity(), WifiSpoceActivity.class));
-                else {
-                    BleDevConfig currentDev = XFBluetooth.getCurrentDevConfig();
+                } else {
+                    edit.putBoolean("isOpenWuRao", false).apply();
+                 /*   BleDevConfig currentDev = XFBluetooth.getCurrentDevConfig();
                     if (currentDev == null) return;
                     currentDev.setIsWuRao("false");
-                    currentDev.update(currentDev.getId());
+                    currentDev.update(currentDev.getId());*/
                 }
             }
         });

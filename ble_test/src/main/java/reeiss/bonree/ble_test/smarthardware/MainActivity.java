@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-
         onTabItemSelected(R.id.tab_menu_home);
 
     }

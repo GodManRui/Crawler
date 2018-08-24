@@ -141,6 +141,7 @@ public class FirstFragment extends Fragment {
     };
     private Button btScan;
     private Handler handler;
+    private boolean dontAlert;
 
     private void FoundPhone(BluetoothGattCharacteristic characteristic) {
         String value = Arrays.toString(characteristic.getValue());
@@ -204,57 +205,58 @@ public class FirstFragment extends Fragment {
                     Log.e("jerryzhu", "first 停止定位: ");
                     locationApplication.locationService.stop();
                 }
-                if (!TextUtils.isEmpty(locationApplication.mLocation.getMac())) {
-                    boolean save = locationApplication.mLocation.save();
-                    T.show(getActivity(), "丢失位置已保存！");
-                    if (save)
-                        locationApplication.mLocation = new Location();
-                }
-            }
+                if (!dontAlert) {
+                    if (!TextUtils.isEmpty(locationApplication.mLocation.getMac())) {
+                        boolean save = locationApplication.mLocation.save();
+                        T.show(getActivity(), "丢失位置已保存！");
+                        if (save)
+                            locationApplication.mLocation = new Location();
+                    }
 
-            final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-            if (currentDevConfig != null) {
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (mPlayer != null && mPlayer.isPlaying()) {
-                            Log.e("jerry", "run: 正在播放断开");
-                            return;
-                        }
-                        try {
-                            mPlayer = new MediaPlayer();
-                            Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
-                            mPlayer.setDataSource(getActivity(), setDataSourceuri);
-                            mPlayer.prepare();
-                            mPlayer.start();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-//                            mPlayer.setVolume(2f, 2f);
-                       /* final MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), currentDevConfig.getRingResId());//重新设置要播放的音频
-                        mediaPlayer.start();*/
-                        T.show(getActivity(), "开始报警：" + currentDevConfig.getRingResId());
-                        AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
-                        b.setTitle("丢失报警");
-                        b.setMessage("防丢器已断开连接！");
-                        b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+                    if (currentDevConfig != null) {
+                        getActivity().runOnUiThread(new Runnable() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                if (mPlayer != null) {
-                                    mPlayer.stop();
-                                    mPlayer.release();
-                                    mPlayer = null;
+                            public void run() {
+                                if (mPlayer != null && mPlayer.isPlaying()) {
+                                    Log.e("jerry", "run: 正在播放断开");
+                                    return;
                                 }
-                                T.show(getActivity(), "取消报警");
+                                try {
+                                    mPlayer = new MediaPlayer();
+                                    Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
+                                    mPlayer.setDataSource(getActivity(), setDataSourceuri);
+                                    mPlayer.prepare();
+                                    mPlayer.start();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+//                            mPlayer.setVolume(2f, 2f);
+
+                                T.show(getActivity(), "开始报警：" + currentDevConfig.getRingResId());
+                                AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
+                                b.setTitle("丢失报警");
+                                b.setMessage("防丢器已断开连接！");
+                                b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        if (mPlayer != null) {
+                                            mPlayer.stop();
+                                            mPlayer.release();
+                                            mPlayer = null;
+                                        }
+                                        T.show(getActivity(), "取消报警");
+                                    }
+                                });
+                                b.setCancelable(false).create().show();
                             }
                         });
-                        b.setCancelable(false).create().show();
                     }
-                });
+                }
+            } else {
+                dontAlert = false;
             }
         }
-        Log.e("jerry", "run: 走了");
-
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -272,7 +274,7 @@ public class FirstFragment extends Fragment {
                     if (currentDevConfig == null) {
                         Field[] fields = R.raw.class.getDeclaredFields();
                         try {
-                            currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), "true", "false", fields[1].getName(), 0, fields[1].getInt(R.raw.class));
+                            currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), "true", fields[1].getName(), 0, fields[1].getInt(R.raw.class));
                             currentDevConfig.save();
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
@@ -345,6 +347,12 @@ public class FirstFragment extends Fragment {
                 stopScan();
 
                 DeviceListBean deviceListBean = mDevList.get(position);
+                if (!TextUtils.isEmpty(CURRENT_DEV_MAC) && !CURRENT_DEV_MAC.equals(deviceListBean.getBluetoothDevice().getAddress())) {
+                    T.show(getActivity(), "请先断开连接");
+
+                    return;
+                }
+
                 if (XFBluetooth.getCurrentDevConfig() != null && deviceListBean.getConnectState().equals("已连接")) {
                     T.show(getActivity(), "设备已连接！");
                     Intent intent = new Intent(getActivity(), BlueControlActivity.class);
@@ -359,7 +367,7 @@ public class FirstFragment extends Fragment {
                 deviceListBean.setConnectState(BluetoothGatt.STATE_DISCONNECTED);
                 adapter.notifyDataSetChanged();
                 progressDialog.show();
-                xfBluetooth.connect(deviceListBean.getBluetoothDevice());
+                xfBluetooth.connect(deviceListBean.getBluetoothDevice().getAddress());
             }
         });
 
@@ -375,9 +383,10 @@ public class FirstFragment extends Fragment {
                             .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
+                                    dontAlert = true;
                                     switch (which) {
                                         case 0:
-                                            xfBluetooth.reset();
+                                            xfBluetooth.disconnect();
                                             break;
                                         case 1:
                                             DelDev(deviceListBean, address);
@@ -405,7 +414,7 @@ public class FirstFragment extends Fragment {
                         mDevList.remove(deviceListBean);
                         adapter.setDevList(mDevList);
                         if (deviceListBean.getConnectState().equals("已连接")) {
-                            xfBluetooth.reset();
+                            xfBluetooth.disconnect();
                         }
                         if (bleDevConfig != null) {
                             bleDevConfig.delete();

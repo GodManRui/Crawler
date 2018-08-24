@@ -137,11 +137,21 @@ public class XFBluetooth {
 
     public void reset() {
         try {
+            Log.e("jerry", "reset: 重置");
+            if (mXFBluetoothGatt != null) {
+                mXFBluetoothGatt.close();
+                mXFBluetoothGatt = null;
+            }
+        } catch (Exception e) {
+            Log.e("jerryzhu", "mXFBluetoothGatt.close() 异常！！！ " + e.toString());
+        }
+    }
+
+    public void disconnect() {
+        try {
             Log.e("jerry", "reset: 断开");
             if (mXFBluetoothGatt != null) {
                 mXFBluetoothGatt.disconnect();
-                mXFBluetoothGatt.close();
-                mXFBluetoothGatt = null;
             }
         } catch (Exception e) {
             Log.e("jerryzhu", "mXFBluetoothGatt.close() 异常！！！ " + e.toString());
@@ -223,8 +233,14 @@ public class XFBluetooth {
 
     public void connect(BluetoothDevice device) {
         if (device != null) {
-            reset();
             mXFBluetoothGatt = device.connectGatt(context, true, gattCallback);
+        }
+    }
+
+    public void connect(String mac) {
+        if (mac != null && !TextUtils.isEmpty(mac)) {
+            BluetoothDevice remoteDevice = mBluetoothAdapter.getRemoteDevice(mac);
+            mXFBluetoothGatt = remoteDevice.connectGatt(context, true, gattCallback);
         }
     }
 
