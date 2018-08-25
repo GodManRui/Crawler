@@ -8,20 +8,25 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ListView;
 
 import org.litepal.LitePal;
 
+import java.util.List;
+
 import reeiss.bonree.ble_test.R;
-import reeiss.bonree.ble_test.bean.BleDevConfig;
+import reeiss.bonree.ble_test.bean.WuRaoWifiConfig;
+import reeiss.bonree.ble_test.smarthardware.adapter.MyAdapter;
 import reeiss.bonree.ble_test.utils.T;
 
 public class WifiSpoceActivity extends Activity {
 
-    private TextView tvWifiName;
-    private TextView tvSpoce;
-    private TextView tvCurrentWifi;
+
+    private ListView lvWifiList;
+    private List<WuRaoWifiConfig> wifiList;
+    private MyAdapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -31,14 +36,43 @@ public class WifiSpoceActivity extends Activity {
     }
 
     private void initView() {
-        tvWifiName = findViewById(R.id.tvWifiName);
-        tvSpoce = findViewById(R.id.tvName);
-        tvCurrentWifi = findViewById(R.id.tvCurrentWifi);// 获取系统wifi服务
-
-
+        lvWifiList = findViewById(R.id.lv_wifi_list);
+        wifiList = LitePal.findAll(WuRaoWifiConfig.class);
+        adapter = new MyAdapter(this, wifiList);
+        lvWifiList.setAdapter(adapter);
+        lvWifiList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                AlertDialog.Builder del = new AlertDialog.Builder(WifiSpoceActivity.this)
+                        .setTitle("删除此区域")
+                        .setMessage("确认删除此勿扰区域？")
+                        .setCancelable(false)
+                        .setNegativeButton("删除", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                long configId = wifiList.get(position).getId();
+                                LitePal.delete(WuRaoWifiConfig.class, configId);
+                                wifiList.remove(position);
+                                adapter.setData(wifiList);
+                            }
+                        })
+                        .setPositiveButton("取消", null);
+                del.create().show();
+                return true;
+            }
+        });
     }
 
     public void addWifi(View view) {
+        WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+// 获取当前所连接wifi的信息
+        final WifiInfo wi = wm.getConnectionInfo();
+        final String macAddress = wi.getMacAddress();
+        WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
+        if (has != null) {
+            T.show(this, "当前区域已添加");
+            return;
+        }
         final EditText edit = new EditText(this);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("设置当前区域名字");
@@ -52,23 +86,14 @@ public class WifiSpoceActivity extends Activity {
                     T.show(WifiSpoceActivity.this, "请输入此区域名称！");
                     return;
                 }
-                WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-// 获取当前所连接wifi的信息
-                WifiInfo wi = wm.getConnectionInfo();
+
                 dialog.dismiss();
                 if (wi == null) return;
-                String ssid = wi.getSSID();
-                if (ssid != null) {
-                    tvWifiName.setText(ssid);
-                }
-                tvSpoce.setText(name);
-                BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
-                if (currentDev == null) {
-                    return;
-                }
-                BleDevConfig bleDevConfig = new BleDevConfig();
-                bleDevConfig.setAlert("false");
-                bleDevConfig.update(currentDev.getId());
+                WuRaoWifiConfig wuRaoWifiConfig = new WuRaoWifiConfig(wi.getSSID(), name, macAddress);
+                wuRaoWifiConfig.save();
+                wifiList.add(wuRaoWifiConfig);
+                adapter.setData(wifiList);
+
             }
         });
         builder.setNegativeButton("取消", new DialogInterface.OnClickListener() {
@@ -82,4 +107,6 @@ public class WifiSpoceActivity extends Activity {
 
 
     }
+
+
 }

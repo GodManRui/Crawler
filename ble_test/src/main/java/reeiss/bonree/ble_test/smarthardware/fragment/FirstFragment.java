@@ -274,7 +274,7 @@ public class FirstFragment extends Fragment {
                     if (currentDevConfig == null) {
                         Field[] fields = R.raw.class.getDeclaredFields();
                         try {
-                            currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), "true", fields[1].getName(), 0, fields[1].getInt(R.raw.class));
+                            currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class));
                             currentDevConfig.save();
                         } catch (IllegalAccessException e) {
                             e.printStackTrace();
