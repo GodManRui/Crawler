@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.PictureCallback;
@@ -49,6 +50,7 @@ public class SecondFragment extends Fragment {
     private int mCameraId = CameraInfo.CAMERA_FACING_BACK;
     private String picturePath;
     private ImageView imPicture;
+    private boolean takePicture;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
@@ -56,9 +58,8 @@ public class SecondFragment extends Fragment {
             String value = Arrays.toString(characteristic.getValue());
             if (value.equals("[1]")) {
                 if (mCamera != null) {
-                    //shutter是快门按下时的回调，raw是获取拍照原始数据的回调，jpeg是获取经过压缩成jpg格式的图像数据的回调。
-                    mCamera.takePicture(null, null, mPictureCallback);
-                    playSound();
+                    mCamera.autoFocus(autoFocusCallback);
+                    takePicture = true;
                 }
             }
             Log.e("jerry", "onCharacteristicChanged: " + value);
@@ -109,6 +110,7 @@ public class SecondFragment extends Fragment {
             mCamera.startPreview();
         }
     };
+    private Camera.Parameters parameters;
 
     @Override
     public void onHiddenChanged(boolean hidden) {
@@ -142,9 +144,11 @@ public class SecondFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mCamera != null) {
+                    takePicture = true;
+                    mCamera.autoFocus(autoFocusCallback);
                     //shutter是快门按下时的回调，raw是获取拍照原始数据的回调，jpeg是获取经过压缩成jpg格式的图像数据的回调。
-                    mCamera.takePicture(null, null, mPictureCallback);
-                    playSound();
+                    /*mCamera.takePicture(null, null, mPictureCallback);
+                    playSound();*/
                 }
             }
         });
@@ -165,8 +169,10 @@ public class SecondFragment extends Fragment {
                 if (picturePath == null || picturePath.isEmpty()) return;
                 Intent intent = new Intent(Intent.ACTION_VIEW);    //打开图片得启动ACTION_VIEW意图
                 Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+                if (bitmap == null) return;
                 //将图片转换为bitmap格式
-                Uri uri = Uri.parse(MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, null, null));    //将bitmap转换为uri
+                String uriString = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, null, null);
+                Uri uri = Uri.parse(uriString);    //将bitmap转换为uri
                 intent.setDataAndType(uri, "image/*");    //设置intent数据和图片格式
                 startActivity(intent);
             }
@@ -192,18 +198,6 @@ public class SecondFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-//        openCamera();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-//        releaseCamera();
-    }
-
     // 释放相机
     public void releaseCamera() {
         if (mCamera != null) {
@@ -217,6 +211,7 @@ public class SecondFragment extends Fragment {
     }
 
     // 开始预览相机
+    //  闪光灯      parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
     private void openCamera() {
         if (!checkCameraHardware(getActivity())) {
             T.show(getActivity(), "权限被拒绝！");
@@ -225,22 +220,50 @@ public class SecondFragment extends Fragment {
         mCamera = getCameraInstance();
         mPreview = new CameraPreview(getActivity(), mCamera);
 
-        Camera.Parameters parameters = mCamera.getParameters();
-        //自动对焦
+        parameters = mCamera.getParameters();
+        parameters.setPictureFormat(PixelFormat.JPEG);
+     /*   if (!Build.MODEL.equals("KORIDY H30")) {
+            T.show(getActivity(), "连续对焦");
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);// 1连续对焦  解开这个注释，并且跟手动对焦冲突，需要删掉手动对焦代码
+        } else {
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }*/
         parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        parameters.setPreviewFrameRate(20);
-        mCamera.setDisplayOrientation(90);
         mCamera.setParameters(parameters);
+        mCamera.setDisplayOrientation(90);
+        mCamera.startPreview();
+        mCamera.cancelAutoFocus();// 2如果要实现连续的自动对焦，这一句必须加上
+
 
         mPreview.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                mCamera.autoFocus(null);
+                mCamera.autoFocus(autoFocusCallback);
                 return false;
             }
         });
         mCameraLayout.addView(mPreview);
     }
+
+    private final Camera.AutoFocusCallback autoFocusCallback = new Camera.AutoFocusCallback() {
+        @Override
+        public void onAutoFocus(boolean success, Camera camera) {
+            //success表示对焦成功
+            if (success && takePicture) {
+                T.show(getActivity(), "对焦成功，拍照");
+                //shutter是快门按下时的回调，raw是获取拍照原始数据的回调，jpeg是获取经过压缩成jpg格式的图像数据的回调。
+                mCamera.takePicture(null, null, mPictureCallback);
+                playSound();
+                takePicture = false;
+                Log.i("jerry", "成功:success...");
+                //myCamera.setOneShotPreviewCallback(null);
+            } else {
+                T.show(getActivity(), "对焦失败");
+                //未对焦成功
+                Log.i("jerry", "myAutoFocusCallback: 失败了...");
+            }
+        }
+    };
 
     // 判断相机是否支持
     private boolean checkCameraHardware(Context context) {
@@ -263,5 +286,66 @@ public class SecondFragment extends Fragment {
         return c;
     }
 
+    /*
+     *//**
+     * 手动聚焦
+     *
+     * @param point 触屏坐标
+     *//*
+    protected boolean onFocus(Point point, Camera.AutoFocusCallback callback) {
+        if (mCamera == null) {
+            return false;
+        }
 
+        Camera.Parameters parameters = null;
+        try {
+            parameters = mCamera.getParameters();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        //不支持设置自定义聚焦，则使用自动聚焦，返回
+
+        if (Build.VERSION.SDK_INT >= 14) {
+
+            if (parameters.getMaxNumFocusAreas() <= 0) {
+                return focus(callback);
+            }
+
+            //定点对焦
+            List<Camera.Area> areas = new ArrayList<Camera.Area>();
+            int left = point.x - 300;
+            int top = point.y - 300;
+            int right = point.x + 300;
+            int bottom = point.y + 300;
+            left = left < -1000 ? -1000 : left;
+            top = top < -1000 ? -1000 : top;
+            right = right > 1000 ? 1000 : right;
+            bottom = bottom > 1000 ? 1000 : bottom;
+            areas.add(new Camera.Area(new Rect(left, top, right, bottom), 100));
+            parameters.setFocusAreas(areas);
+            try {
+                //本人使用的小米手机在设置聚焦区域的时候经常会出异常，看日志发现是框架层的字符串转int的时候出错了，
+                //目测是小米修改了框架层代码导致，在此try掉，对实际聚焦效果没影响
+                mCamera.setParameters(parameters);
+            } catch (Exception e) {
+                // TODO: handle exception
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+
+        return focus(callback);
+    }
+
+    private boolean focus(Camera.AutoFocusCallback callback) {
+        try {
+            mCamera.autoFocus(callback);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }*/
 }

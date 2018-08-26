@@ -7,6 +7,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -65,9 +66,12 @@ public class WifiSpoceActivity extends Activity {
 
     public void addWifi(View view) {
         WifiManager wm = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        if (wm == null) return;
 // 获取当前所连接wifi的信息
         final WifiInfo wi = wm.getConnectionInfo();
+        if (wi == null) return;
         final String macAddress = wi.getMacAddress();
+        Log.e("jerry", "Wifi名字: " + wi.getSSID() + "   mac= " + wi.getMacAddress());
         WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
         if (has != null) {
             T.show(this, "当前区域已添加");
@@ -88,7 +92,6 @@ public class WifiSpoceActivity extends Activity {
                 }
 
                 dialog.dismiss();
-                if (wi == null) return;
                 WuRaoWifiConfig wuRaoWifiConfig = new WuRaoWifiConfig(wi.getSSID(), name, macAddress);
                 wuRaoWifiConfig.save();
                 wifiList.add(wuRaoWifiConfig);

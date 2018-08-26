@@ -173,8 +173,6 @@ public class XFBluetooth {
         synchronized (XFBluetooth.class) {
             if (xfBluetooth == null) {
                 xfBluetooth = new XFBluetooth(context);
-            } else {
-                T.show(context.getApplicationContext(), "不需要创建！");
             }
             return xfBluetooth;
         }

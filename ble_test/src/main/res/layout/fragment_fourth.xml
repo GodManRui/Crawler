@@ -43,6 +43,35 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/bg" />
+    <!--
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:color/white"
+            android:gravity="center_vertical"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp">
+
+            <ImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:src="@drawable/ic_brightness_2_black_24dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="40dp"
+                android:text="休眠时段"
+                android:textColor="@android:color/black"
+                android:textSize="18sp" />
+
+            <Switch
+                android:id="@+id/sw_sleep"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true" />
+        </RelativeLayout>-->
 
 
     <RelativeLayout
@@ -55,22 +84,23 @@
 
         <ImageView
             android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:src="@drawable/ic_brightness_2_black_24dp" />
+            android:layout_height="30dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="40dp"
-            android:text="休眠时段"
+            android:text="软件版本"
             android:textColor="@android:color/black"
             android:textSize="18sp" />
 
-        <Switch
-            android:id="@+id/sw_sleep"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentRight="true" />
+            android:layout_alignParentRight="true"
+            android:text="v1.01"
+            android:textColor="@android:color/black"
+            android:textSize="18sp" />
     </RelativeLayout>
 
     <View

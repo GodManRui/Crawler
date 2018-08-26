@@ -24,7 +24,7 @@ import reeiss.bonree.ble_test.smarthardware.activity.WifiSpoceActivity;
 public class FourFragment extends Fragment {
 
     private Switch swWifi;
-    private Switch swSleep;
+//    private Switch swSleep;
     private SharedPreferences myPreference;
 
     @Override
@@ -69,7 +69,7 @@ public class FourFragment extends Fragment {
             }
         });
 
-        swSleep = view.findViewById(R.id.sw_sleep);
+//        swSleep = view.findViewById(R.id.sw_sleep);
     }
 
 }

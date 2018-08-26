@@ -8,10 +8,14 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothProfile;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -44,12 +48,14 @@ import reeiss.bonree.ble_test.bean.BleDevConfig;
 import reeiss.bonree.ble_test.bean.DeviceListBean;
 import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.bean.PreventLosingCommon;
+import reeiss.bonree.ble_test.bean.WuRaoWifiConfig;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.smarthardware.activity.BlueControlActivity;
 import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
 import reeiss.bonree.ble_test.utils.T;
 
+import static android.content.Context.WIFI_SERVICE;
 import static reeiss.bonree.ble_test.bean.CommonHelp.getOnClick;
 import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
 
@@ -108,7 +114,12 @@ public class FirstFragment extends Fragment {
         //链接状态发生改变
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, final int status, final int newState) {
-            StatusChange(status, newState);
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    StatusChange(status, newState);
+                }
+            });
         }
 
         @Override
@@ -195,17 +206,21 @@ public class FirstFragment extends Fragment {
      * @param newState
      */
     private void StatusChange(int status, final int newState) {
-        Log.e("JerryZhu", "链接状态: " + status + "   ==  " + newState);
+        Log.e("JerryZhu", "链接状态: " + status + "   ==  " + newState + " 线程" + Thread.currentThread().getName());
 //            final BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
 
         if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+            final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+
             PreventLosingCommon.Dev_Type = -1;
             if (locationApplication != null) {
                 if (locationApplication.locationService.isStart()) {
                     Log.e("jerryzhu", "first 停止定位: ");
                     locationApplication.locationService.stop();
                 }
+
                 if (!dontAlert) {
+
                     if (!TextUtils.isEmpty(locationApplication.mLocation.getMac())) {
                         boolean save = locationApplication.mLocation.save();
                         T.show(getActivity(), "丢失位置已保存！");
@@ -213,85 +228,98 @@ public class FirstFragment extends Fragment {
                             locationApplication.mLocation = new Location();
                     }
 
-                    final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-                    if (currentDevConfig != null) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (mPlayer != null && mPlayer.isPlaying()) {
-                                    Log.e("jerry", "run: 正在播放断开");
-                                    return;
-                                }
-                                try {
-                                    mPlayer = new MediaPlayer();
-                                    Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
-                                    mPlayer.setDataSource(getActivity(), setDataSourceuri);
-                                    mPlayer.prepare();
-                                    mPlayer.start();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                    //如果开启勿扰，并且当前wifi在设置区域内
+                    if (!checkWuRao()) {
+                        if (currentDevConfig != null) {
+
+                            if (mPlayer != null && mPlayer.isPlaying()) {
+                                Log.e("jerry", "run: 正在播放断开");
+                                return;
+                            }
+                            try {
+                                mPlayer = new MediaPlayer();
+                                Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
+                                mPlayer.setDataSource(getActivity(), setDataSourceuri);
+                                mPlayer.prepare();
+                                mPlayer.start();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
 //                            mPlayer.setVolume(2f, 2f);
 
-                                T.show(getActivity(), "开始报警：" + currentDevConfig.getRingResId());
-                                AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
-                                b.setTitle("丢失报警");
-                                b.setMessage("防丢器已断开连接！");
-                                b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        if (mPlayer != null) {
-                                            mPlayer.stop();
-                                            mPlayer.release();
-                                            mPlayer = null;
-                                        }
-                                        T.show(getActivity(), "取消报警");
+                            T.show(getActivity(), "开始报警：" + currentDevConfig.getRingResId());
+                            AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
+                            b.setTitle("丢失报警");
+                            b.setMessage("防丢器已断开连接！");
+                            b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if (mPlayer != null) {
+                                        mPlayer.stop();
+                                        mPlayer.release();
+                                        mPlayer = null;
                                     }
-                                });
-                                b.setCancelable(false).create().show();
-                            }
-                        });
+                                    T.show(getActivity(), "取消报警");
+                                }
+                            });
+                            b.setCancelable(false).create().show();
+
+                        }
                     }
                 }
             } else {
                 dontAlert = false;
             }
         }
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (progressDialog != null)
-                    progressDialog.dismiss();
 
-                BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-                if (newState == BluetoothProfile.STATE_CONNECTED) {
-                    xfBluetooth.getXFBluetoothGatt().discoverServices();
-                    if (locationApplication != null && !locationApplication.locationService.isStart()) {
-                        Log.e("jerryzhu", " 定位开启: ");
-                        locationApplication.locationService.start();
-                    }
+        if (progressDialog != null)
+            progressDialog.dismiss();
 
-                    if (currentDevConfig == null) {
-                        Field[] fields = R.raw.class.getDeclaredFields();
-                        try {
-                            currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class));
-                            currentDevConfig.save();
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                mDevList.get(position).setConnectState(newState);
-                //如果当前设备以前设置过别名，那么应该先显示别名
-                if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias()))
-                    mDevList.get(position).setDevNick(currentDevConfig.getAlias());
-
-                adapter.setDevList(mDevList);
-                vDevLv.setItemsCanFocus(true);
-
-                Log.e("jerry", "连接成功，服务扫描 : ");
+        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+        if (newState == BluetoothProfile.STATE_CONNECTED) {
+            xfBluetooth.getXFBluetoothGatt().discoverServices();
+            if (locationApplication != null && !locationApplication.locationService.isStart()) {
+                Log.e("jerryzhu", " 定位开启: ");
+                locationApplication.locationService.start();
             }
-        });
+
+            if (currentDevConfig == null) {
+                Field[] fields = R.raw.class.getDeclaredFields();
+                try {
+                    currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class));
+                    currentDevConfig.save();
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        Log.e("jerry", "原来的状态: " + mDevList.get(position).getDevNick() + "  " + mDevList.get(position).getConnectState());
+        mDevList.get(position).setConnectState(newState);
+        //如果当前设备以前设置过别名，那么应该先显示别名
+        if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias()))
+            mDevList.get(position).setDevNick(currentDevConfig.getAlias());
+
+        Log.e("jerry", "更新的状态: " + mDevList.get(position).getDevNick() + "  " + mDevList.get(position).getConnectState());
+        adapter.setDevList(mDevList);
+        vDevLv.setItemsCanFocus(true);
+    }
+
+    private boolean checkWuRao() {
+        SharedPreferences myPreference = ((getActivity()).getSharedPreferences("myPreference", Context.MODE_PRIVATE));
+        boolean isOpenWuRao = myPreference.getBoolean("isOpenWuRao", false);
+        if (isOpenWuRao) {
+            WifiManager wm = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
+            if (wm == null) return true;
+            // 获取当前所连接wifi的信息
+            final WifiInfo wi = wm.getConnectionInfo();
+            if (wi == null) return true;
+            final String macAddress = wi.getMacAddress();
+            WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
+            if (has != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private LocationApplication locationApplication;
@@ -349,7 +377,6 @@ public class FirstFragment extends Fragment {
                 DeviceListBean deviceListBean = mDevList.get(position);
                 if (!TextUtils.isEmpty(CURRENT_DEV_MAC) && !CURRENT_DEV_MAC.equals(deviceListBean.getBluetoothDevice().getAddress())) {
                     T.show(getActivity(), "请先断开连接");
-
                     return;
                 }
 
@@ -453,6 +480,8 @@ public class FirstFragment extends Fragment {
     }
 
     private void startScan() {
+        mDevList.clear();
+        adapter.setDevList(mDevList);
         btScan.setText("停止扫描");
         if (vReScan.getVisibility() == View.VISIBLE) {
             RotateAnimation animation = new RotateAnimation(0f, 360f,
