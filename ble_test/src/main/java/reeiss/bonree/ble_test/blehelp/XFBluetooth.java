@@ -81,6 +81,7 @@ public class XFBluetooth {
                 }
             }
             if (newState != BluetoothProfile.STATE_CONNECTED) {
+                Log.e("jerry", "CURRENT_DEV_MAC  置空: " + CURRENT_DEV_MAC);
                 CURRENT_DEV_MAC = "";
                 reset();
             }
@@ -225,8 +226,12 @@ public class XFBluetooth {
 
     public static BleDevConfig getCurrentDevConfig() {
         if (TextUtils.isEmpty(CURRENT_DEV_MAC)) return null;
-
         return LitePal.where("mac=?", CURRENT_DEV_MAC).findFirst(BleDevConfig.class);
+    }
+
+    public static BleDevConfig getCurrentDevConfig(String mac) {
+        if (TextUtils.isEmpty(mac)) return null;
+        return LitePal.where("mac=?", mac).findFirst(BleDevConfig.class);
     }
 
     public void connect(BluetoothDevice device) {

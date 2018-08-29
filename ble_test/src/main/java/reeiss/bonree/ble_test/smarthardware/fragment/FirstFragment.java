@@ -58,6 +58,7 @@ import reeiss.bonree.ble_test.utils.T;
 import static android.content.Context.WIFI_SERVICE;
 import static reeiss.bonree.ble_test.bean.CommonHelp.getOnClick;
 import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
+import static reeiss.bonree.ble_test.blehelp.XFBluetooth.getCurrentDevConfig;
 
 public class FirstFragment extends Fragment {
 
@@ -113,11 +114,17 @@ public class FirstFragment extends Fragment {
 
         //链接状态发生改变
         @Override
-        public void onConnectionStateChange(BluetoothGatt gatt, final int status, final int newState) {
+        public void onConnectionStateChange(final BluetoothGatt gatt, final int status, final int newState) {
+
+            BleDevConfig currentDevConfig = getCurrentDevConfig();
+            if (currentDevConfig == null) {
+                currentDevConfig = getCurrentDevConfig(gatt.getDevice().getAddress());
+            }
+            final BleDevConfig finalCurrentDevConfig = currentDevConfig;
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    StatusChange(status, newState);
+                    StatusChange(finalCurrentDevConfig, status, newState);
                 }
             });
         }
@@ -202,16 +209,14 @@ public class FirstFragment extends Fragment {
     /**
      * 链接状态发生改变
      *
+     * @param
      * @param status
      * @param newState
      */
-    private void StatusChange(int status, final int newState) {
-        Log.e("JerryZhu", "链接状态: " + status + "   ==  " + newState + " 线程" + Thread.currentThread().getName());
-//            final BleDevConfig currentDev = LitePal.findFirst(BleDevConfig.class);
+    private void StatusChange(BleDevConfig currentDevConfig, int status, final int newState) {
 
         if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-
+//            final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
             PreventLosingCommon.Dev_Type = -1;
             if (locationApplication != null) {
                 if (locationApplication.locationService.isStart()) {
@@ -275,7 +280,7 @@ public class FirstFragment extends Fragment {
         if (progressDialog != null)
             progressDialog.dismiss();
 
-        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+//        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             xfBluetooth.getXFBluetoothGatt().discoverServices();
             if (locationApplication != null && !locationApplication.locationService.isStart()) {
@@ -480,7 +485,12 @@ public class FirstFragment extends Fragment {
     }
 
     private void startScan() {
-        mDevList.clear();
+        for (int i = 0; i < mDevList.size(); i++) {
+            DeviceListBean deviceListBean = mDevList.get(i);
+            if (deviceListBean == null || !"已连接".equals(deviceListBean.getConnectState())) {
+                mDevList.remove(i);
+            }
+        }
         adapter.setDevList(mDevList);
         btScan.setText("停止扫描");
         if (vReScan.getVisibility() == View.VISIBLE) {
