@@ -84,6 +84,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     private boolean isChecked;
     private Switch vAlert;
     private BluetoothGattCharacteristic linkLostAlert;
+    private RelativeLayout rlAlertMargin;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -99,6 +100,8 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         rlRing = (RelativeLayout) findViewById(R.id.rl_ring);
         tvRing = (TextView) findViewById(R.id.tv_ring);
         edDevName = (EditText) findViewById(R.id.ed_devName);
+        rlAlertMargin = (RelativeLayout) findViewById(R.id.rl_alert_margin);
+        rlAlertMargin.setOnClickListener();
         BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         if (currentDevConfig != null) {
             tvRing.setText(currentDevConfig.getRingName());

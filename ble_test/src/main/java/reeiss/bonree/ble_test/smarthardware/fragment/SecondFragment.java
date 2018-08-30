@@ -15,6 +15,7 @@ import android.hardware.Camera.PictureCallback;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -24,7 +25,6 @@ import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -58,8 +58,10 @@ public class SecondFragment extends Fragment {
             String value = Arrays.toString(characteristic.getValue());
             if (value.equals("[1]")) {
                 if (mCamera != null) {
-                    mCamera.autoFocus(autoFocusCallback);
-                    takePicture = true;
+                    /*mCamera.autoFocus(autoFocusCallback);     手动对焦，才设置回调
+                    takePicture = true;*/
+                    mCamera.takePicture(null, null, mPictureCallback);
+                    playSound();
                 }
             }
             Log.e("jerry", "onCharacteristicChanged: " + value);
@@ -144,11 +146,11 @@ public class SecondFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (mCamera != null) {
-                    takePicture = true;
-                    mCamera.autoFocus(autoFocusCallback);
+                   /* takePicture = true;           //手动对焦开启 回调
+                    mCamera.autoFocus(autoFocusCallback);*/
                     //shutter是快门按下时的回调，raw是获取拍照原始数据的回调，jpeg是获取经过压缩成jpg格式的图像数据的回调。
-                    /*mCamera.takePicture(null, null, mPictureCallback);
-                    playSound();*/
+                    mCamera.takePicture(null, null, mPictureCallback);
+                    playSound();
                 }
             }
         });
@@ -222,26 +224,26 @@ public class SecondFragment extends Fragment {
 
         parameters = mCamera.getParameters();
         parameters.setPictureFormat(PixelFormat.JPEG);
-     /*   if (!Build.MODEL.equals("KORIDY H30")) {
+        if (!Build.MODEL.equals("KORIDY H30")) {
             T.show(getActivity(), "连续对焦");
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);// 1连续对焦  解开这个注释，并且跟手动对焦冲突，需要删掉手动对焦代码
         } else {
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-        }*/
-        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+        }
+//        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);       手动对焦，直接用这个模式
         mCamera.setParameters(parameters);
         mCamera.setDisplayOrientation(90);
         mCamera.startPreview();
         mCamera.cancelAutoFocus();// 2如果要实现连续的自动对焦，这一句必须加上
 
 
-        mPreview.setOnTouchListener(new View.OnTouchListener() {
+     /*   mPreview.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 mCamera.autoFocus(autoFocusCallback);
                 return false;
             }
-        });
+        });*/
         mCameraLayout.addView(mPreview);
     }
 
