@@ -156,6 +156,36 @@ public class FirstFragment extends Fragment {
             FoundPhone(characteristic);
         }
 
+        @Override
+        public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, int status) {
+
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+                    if (currentDevConfig == null) return;
+                    int alertMargin = currentDevConfig.getAlertMargin();
+                    switch (alertMargin) {
+                        case 0:
+                            if (rssi < -70) {
+                                PhoneAlert(currentDevConfig, 1);
+                            }
+                            break;
+                        case 1:
+                            if (rssi < -90) {
+                                PhoneAlert(currentDevConfig, 1);
+                            }
+                            break;
+                        case 2:
+                            if (rssi < -110) {
+                                PhoneAlert(currentDevConfig, 1);
+                            }
+                            break;
+                    }
+                }
+            });
+            //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
+        }
     };
     private Button btScan;
     private Handler handler;
@@ -233,42 +263,10 @@ public class FirstFragment extends Fragment {
                             locationApplication.mLocation = new Location();
                     }
 
-                    //如果开启勿扰，并且当前wifi在设置区域内
+                    //如果开启勿扰，并且当前wifi在设置区域内    开始报警
                     if (!checkWuRao()) {
                         if (currentDevConfig != null) {
-
-                            if (mPlayer != null && mPlayer.isPlaying()) {
-                                Log.e("jerry", "run: 正在播放断开");
-                                return;
-                            }
-                            try {
-                                mPlayer = new MediaPlayer();
-                                Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
-                                mPlayer.setDataSource(getActivity(), setDataSourceuri);
-                                mPlayer.prepare();
-                                mPlayer.start();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-//                            mPlayer.setVolume(2f, 2f);
-
-                            T.show(getActivity(), "开始报警：" + currentDevConfig.getRingResId());
-                            AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
-                            b.setTitle("丢失报警");
-                            b.setMessage("防丢器已断开连接！");
-                            b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    if (mPlayer != null) {
-                                        mPlayer.stop();
-                                        mPlayer.release();
-                                        mPlayer = null;
-                                    }
-                                    T.show(getActivity(), "取消报警");
-                                }
-                            });
-                            b.setCancelable(false).create().show();
-
+                            if (PhoneAlert(currentDevConfig, 0)) return;
                         }
                     }
                 }
@@ -291,7 +289,7 @@ public class FirstFragment extends Fragment {
             if (currentDevConfig == null) {
                 Field[] fields = R.raw.class.getDeclaredFields();
                 try {
-                    currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class));
+                    currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 2);
                     currentDevConfig.save();
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
@@ -307,6 +305,41 @@ public class FirstFragment extends Fragment {
         Log.e("jerry", "更新的状态: " + mDevList.get(position).getDevNick() + "  " + mDevList.get(position).getConnectState());
         adapter.setDevList(mDevList);
         vDevLv.setItemsCanFocus(true);
+    }
+
+    private boolean PhoneAlert(BleDevConfig currentDevConfig, int type) {
+        if (mPlayer != null && mPlayer.isPlaying()) {
+            Log.e("jerry", "run: 正在播放断开");
+            return true;
+        }
+        try {
+            mPlayer = new MediaPlayer();
+            Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
+            mPlayer.setDataSource(getActivity(), setDataSourceuri);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//                            mPlayer.setVolume(2f, 2f);
+
+        T.show(getActivity(), "开始报警：" + currentDevConfig.getRingResId());
+        AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
+        b.setTitle("丢失报警");
+        b.setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！");
+        b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (mPlayer != null) {
+                    mPlayer.stop();
+                    mPlayer.release();
+                    mPlayer = null;
+                }
+                T.show(getActivity(), "取消报警");
+            }
+        });
+        b.setCancelable(false).create().show();
+        return false;
     }
 
     private boolean checkWuRao() {

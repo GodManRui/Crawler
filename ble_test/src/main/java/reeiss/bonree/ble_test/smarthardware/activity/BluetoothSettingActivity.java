@@ -44,6 +44,11 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     private ProgressDialog mProgressDialog;
     private XFBluetoothCallBack mXFBluetoothCallBack = new XFBluetoothCallBack() {
         @Override
+        public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+            finish();
+        }
+
+        @Override
         public void onCharacteristicRead(BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, int status) {
             final String value = Arrays.toString(characteristic.getValue());
             Log.e("jerry", "读取数据  : " + value);
@@ -77,14 +82,15 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             });
         }
     };
-    private RelativeLayout rlRing;
     private MediaPlayer mp;
     private TextView tvRing;
     private EditText edDevName;
     private boolean isChecked;
     private Switch vAlert;
     private BluetoothGattCharacteristic linkLostAlert;
-    private RelativeLayout rlAlertMargin;
+    private TextView tvAlertMargin;
+    private BleDevConfig currentDevConfig;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -95,13 +101,35 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     }
 
     private void initView() {
+        currentDevConfig = XFBluetooth.getCurrentDevConfig();
+
         vAlert = (Switch) findViewById(R.id.sw_is_alert);
         tvBattery = (TextView) findViewById(R.id.tv_battery);
-        rlRing = (RelativeLayout) findViewById(R.id.rl_ring);
+        RelativeLayout rlRing = (RelativeLayout) findViewById(R.id.rl_ring);
         tvRing = (TextView) findViewById(R.id.tv_ring);
         edDevName = (EditText) findViewById(R.id.ed_devName);
-        rlAlertMargin = (RelativeLayout) findViewById(R.id.rl_alert_margin);
-        rlAlertMargin.setOnClickListener();
+        tvAlertMargin = (TextView) findViewById(R.id.tv_alert_margin);
+        setAlertMarginText(currentDevConfig.getAlertMargin());
+        findViewById(R.id.rl_alert_margin).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String[] items = new String[]{"近", "中", "远",};
+                AlertDialog.Builder alertDialogBuild = new AlertDialog.Builder(BluetoothSettingActivity.this)
+                        .setTitle("设置报警距离")
+                        .setItems(items, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                setAlertMarginText(which);
+                                if (currentDevConfig != null) {
+                                    currentDevConfig.setAlertMargin(which);
+                                    currentDevConfig.save();
+                                }
+                            }
+                        });
+                AlertDialog alertDialog = alertDialogBuild.create();
+                alertDialog.show();
+            }
+        });
         BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         if (currentDevConfig != null) {
             tvRing.setText(currentDevConfig.getRingName());
@@ -115,6 +143,12 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             }
         });
         mProgressDialog = new ProgressDialog(this);
+    }
+
+    private void setAlertMarginText(int alertMargin) {
+        if (tvAlertMargin != null) {
+            tvAlertMargin.setText(alertMargin == 2 ? "远" : (alertMargin == 1 ? "中" : "近"));
+        }
     }
 
     private void initBlue() {

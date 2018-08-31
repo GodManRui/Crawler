@@ -63,7 +63,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (rssi > -45) {
+                        if (rssi > -50) {
                             imRssi.setImageResource(R.mipmap.ic_rssi_5);
                         } else if (rssi > -65) {
                             imRssi.setImageResource(R.mipmap.ic_rssi_4);

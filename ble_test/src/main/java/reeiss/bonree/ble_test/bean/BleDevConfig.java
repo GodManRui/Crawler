@@ -9,6 +9,15 @@ public class BleDevConfig extends LitePalSupport {
     private int ringPosition;
     private String ringName;
     private int ringResId;
+    private int alertMargin = 2; //0近1中2远
+
+    public int getAlertMargin() {
+        return alertMargin;
+    }
+
+    public void setAlertMargin(int alertMargin) {
+        this.alertMargin = alertMargin;
+    }
 
     public BleDevConfig() {
     }
@@ -34,13 +43,13 @@ public class BleDevConfig extends LitePalSupport {
         this.mac = mac;
     }
 
-    public BleDevConfig(String mac, String alias, String ringName, int ringPosition, int ringResId) {
+    public BleDevConfig(String mac, String alias, String ringName, int ringPosition, int ringResId, int alertMargin) {
         this.mac = mac;
         this.alias = alias;
         this.ringPosition = ringPosition;
         this.ringName = ringName;
         this.ringResId = ringResId;
-
+        this.alertMargin = alertMargin;
     }
 
     public String getRingName() {
