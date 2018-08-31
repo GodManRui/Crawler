@@ -71,6 +71,15 @@ public class FirstFragment extends Fragment {
     private ArrayList<DeviceListBean> mDevList;
     private ProgressDialog progressDialog;
     private MediaPlayer mPlayer;
+    final Runnable runnable = new Runnable() {
+        @Override
+        public void run() {
+            if (xfBluetooth.getXFBluetoothGatt() != null) {
+                xfBluetooth.getXFBluetoothGatt().readRemoteRssi();
+                handler.postDelayed(this, 5000);
+            } else Log.e("jerry", "空 空 空 空 空 空 ");
+        }
+    };
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
 
         /**
@@ -165,14 +174,15 @@ public class FirstFragment extends Fragment {
                     BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
                     if (currentDevConfig == null) return;
                     int alertMargin = currentDevConfig.getAlertMargin();
+                    Log.e("jerry", "run: " + rssi);
                     switch (alertMargin) {
                         case 0:
-                            if (rssi < -70) {
+                            if (rssi < -80) {
                                 PhoneAlert(currentDevConfig, 1);
                             }
                             break;
                         case 1:
-                            if (rssi < -90) {
+                            if (rssi < -96) {
                                 PhoneAlert(currentDevConfig, 1);
                             }
                             break;
@@ -191,12 +201,14 @@ public class FirstFragment extends Fragment {
     private Handler handler;
     private boolean dontAlert;
 
+    //双击寻找手机
     private void FoundPhone(BluetoothGattCharacteristic characteristic) {
         String value = Arrays.toString(characteristic.getValue());
         if (value.equals("[2]")) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    if (!checkWuRao()) return;
                     BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
                     T.show(getActivity(), "寻找手机！！");
                     if (mPlayer != null && mPlayer.isPlaying()) {
@@ -246,6 +258,9 @@ public class FirstFragment extends Fragment {
     private void StatusChange(BleDevConfig currentDevConfig, int status, final int newState) {
 
         if (newState == BluetoothProfile.STATE_DISCONNECTED) {
+            Log.e("jerry", "removeCallbacks 信号解除 ");
+            handler.removeCallbacks(runnable);
+
 //            final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
             PreventLosingCommon.Dev_Type = -1;
             if (locationApplication != null) {
@@ -281,6 +296,7 @@ public class FirstFragment extends Fragment {
 //        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             xfBluetooth.getXFBluetoothGatt().discoverServices();
+            handler.postDelayed(runnable, 1000);
             if (locationApplication != null && !locationApplication.locationService.isStart()) {
                 Log.e("jerryzhu", " 定位开启: ");
                 locationApplication.locationService.start();
@@ -289,7 +305,7 @@ public class FirstFragment extends Fragment {
             if (currentDevConfig == null) {
                 Field[] fields = R.raw.class.getDeclaredFields();
                 try {
-                    currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 2);
+                    currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
                     currentDevConfig.save();
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
@@ -307,9 +323,11 @@ public class FirstFragment extends Fragment {
         vDevLv.setItemsCanFocus(true);
     }
 
+    //报警，断开连接或者超出范围
     private boolean PhoneAlert(BleDevConfig currentDevConfig, int type) {
+        if (!checkWuRao()) return true;
+
         if (mPlayer != null && mPlayer.isPlaying()) {
-            Log.e("jerry", "run: 正在播放断开");
             return true;
         }
         try {
@@ -317,6 +335,7 @@ public class FirstFragment extends Fragment {
             Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
             mPlayer.setDataSource(getActivity(), setDataSourceuri);
             mPlayer.prepare();
+            mPlayer.setLooping(true);
             mPlayer.start();
         } catch (IOException e) {
             e.printStackTrace();
@@ -342,22 +361,21 @@ public class FirstFragment extends Fragment {
         return false;
     }
 
+    //勿扰是否打开，是否在勿扰区域
     private boolean checkWuRao() {
         SharedPreferences myPreference = ((getActivity()).getSharedPreferences("myPreference", Context.MODE_PRIVATE));
         boolean isOpenWuRao = myPreference.getBoolean("isOpenWuRao", false);
         if (isOpenWuRao) {
             WifiManager wm = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
-            if (wm == null) return true;
+            if (wm == null) return false;
             // 获取当前所连接wifi的信息
             final WifiInfo wi = wm.getConnectionInfo();
-            if (wi == null) return true;
+            if (wi == null) return false;
             final String macAddress = wi.getMacAddress();
             WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
-            if (has != null) {
-                return true;
-            }
+            return has == null;
         }
-        return false;
+        return true;
     }
 
     private LocationApplication locationApplication;
@@ -383,7 +401,6 @@ public class FirstFragment extends Fragment {
         xfBluetooth = XFBluetooth.getInstance(getActivity());
         xfBluetooth.addBleCallBack(gattCallback);
         handler = new Handler();
-
     }
 
     private void initView() {
@@ -562,5 +579,7 @@ public class FirstFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         handler.removeCallbacks(scanTimeOut);
+        handler.removeCallbacks(runnable);
+        Log.e("jerry", "removeCallbacks 信号解除 ");
     }
 }

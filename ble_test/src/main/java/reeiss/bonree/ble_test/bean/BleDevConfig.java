@@ -9,7 +9,7 @@ public class BleDevConfig extends LitePalSupport {
     private int ringPosition;
     private String ringName;
     private int ringResId;
-    private int alertMargin = 2; //0近1中2远
+    private int alertMargin; //0近1中2远
 
     public int getAlertMargin() {
         return alertMargin;

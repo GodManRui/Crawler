@@ -90,6 +90,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     private BluetoothGattCharacteristic linkLostAlert;
     private TextView tvAlertMargin;
     private BleDevConfig currentDevConfig;
+    private int alertMargin;
 
 
     @Override
@@ -119,11 +120,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
                         .setItems(items, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                setAlertMarginText(which);
-                                if (currentDevConfig != null) {
-                                    currentDevConfig.setAlertMargin(which);
-                                    currentDevConfig.save();
-                                }
+                                setAlertMarginText(which + 1);
                             }
                         });
                 AlertDialog alertDialog = alertDialogBuild.create();
@@ -146,8 +143,9 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     }
 
     private void setAlertMarginText(int alertMargin) {
+        this.alertMargin = alertMargin;
         if (tvAlertMargin != null) {
-            tvAlertMargin.setText(alertMargin == 2 ? "远" : (alertMargin == 1 ? "中" : "近"));
+            tvAlertMargin.setText(alertMargin == 3 ? "远" : (alertMargin == 2 ? "中" : "近"));
         }
     }
 
@@ -178,7 +176,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             return;
         }
 
-
       /*  Bit0:
         Bit0 = 1 时 Tagelf 被设置成断开连接后报警
                 Bit0 = 0 时 Tagelf 被设置成断开连接后不报警*/
@@ -203,14 +200,15 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         }
         BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         assert currentDevConfig != null;
+        currentDevConfig.setAlertMargin(alertMargin);
         currentDevConfig.setAlias(edDevName.getText().toString());
-        currentDevConfig.update(currentDevConfig.getId());
+        long id = currentDevConfig.getId();
+        int update = currentDevConfig.update(id);
 
         Intent intent = new Intent();
         intent.putExtra("name", edDevName.getText().toString());
         setResult(100, intent);
         finish();
-
     }
 
     @Override
