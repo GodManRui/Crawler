@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
@@ -231,6 +232,21 @@ public class SecondFragment extends Fragment {
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
         }
 //        parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);       手动对焦，直接用这个模式
+
+       /* WindowManager windowManager = getActivity().getWindowManager();
+        Display display = windowManager.getDefaultDisplay();
+        int screenWidth = display.getWidth();
+        int screenHeight = display.getHeight();
+        parameters.setPictureSize(screenWidth, screenHeight);*/
+        parameters.setFlashMode(Camera.Parameters.FLASH_MODE_AUTO);
+        List<Camera.Size> SupportedPreviewSizes = parameters.getSupportedPreviewSizes();// 获取支持预览照片的尺寸
+        Camera.Size previewSize = SupportedPreviewSizes.get(0);// 从List取出Size
+        parameters.setPreviewSize(previewSize.width, previewSize.height);// 设置预览照片的大小
+
+        List<Camera.Size> supportedPictureSizes = parameters.getSupportedPictureSizes();// 获取支持保存图片的尺寸
+        Camera.Size pictureSize = supportedPictureSizes.get(0);// 从List取出Size
+        parameters.setPictureSize(pictureSize.width, pictureSize.height);// 设置照片的大小
+
         mCamera.setParameters(parameters);
         mCamera.setDisplayOrientation(90);
         mCamera.startPreview();

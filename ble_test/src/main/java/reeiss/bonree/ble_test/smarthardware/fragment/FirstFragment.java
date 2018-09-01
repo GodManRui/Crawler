@@ -41,6 +41,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import reeiss.bonree.ble_test.LocationApplication;
 import reeiss.bonree.ble_test.R;
@@ -176,17 +177,17 @@ public class FirstFragment extends Fragment {
                     int alertMargin = currentDevConfig.getAlertMargin();
                     Log.e("jerry", "run: " + rssi);
                     switch (alertMargin) {
-                        case 0:
+                        case 1:
                             if (rssi < -80) {
                                 PhoneAlert(currentDevConfig, 1);
                             }
                             break;
-                        case 1:
+                        case 2:
                             if (rssi < -96) {
                                 PhoneAlert(currentDevConfig, 1);
                             }
                             break;
-                        case 2:
+                        case 3:
                             if (rssi < -110) {
                                 PhoneAlert(currentDevConfig, 1);
                             }
@@ -208,7 +209,8 @@ public class FirstFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (!checkWuRao()) return;
+                    //在勿扰 true
+                    if (checkWuRao()) return;
                     BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
                     T.show(getActivity(), "寻找手机！！");
                     if (mPlayer != null && mPlayer.isPlaying()) {
@@ -325,7 +327,7 @@ public class FirstFragment extends Fragment {
 
     //报警，断开连接或者超出范围
     private boolean PhoneAlert(BleDevConfig currentDevConfig, int type) {
-        if (!checkWuRao()) return true;
+        if (checkWuRao()) return true;
 
         if (mPlayer != null && mPlayer.isPlaying()) {
             return true;
@@ -361,9 +363,9 @@ public class FirstFragment extends Fragment {
         return false;
     }
 
-    //勿扰是否打开，是否在勿扰区域
+    //勿扰是否打开，是否在勿扰区域  在勿扰true 不在false
     private boolean checkWuRao() {
-        SharedPreferences myPreference = ((getActivity()).getSharedPreferences("myPreference", Context.MODE_PRIVATE));
+        SharedPreferences myPreference = ((Objects.requireNonNull(getActivity())).getSharedPreferences("myPreference", Context.MODE_PRIVATE));
         boolean isOpenWuRao = myPreference.getBoolean("isOpenWuRao", false);
         if (isOpenWuRao) {
             WifiManager wm = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
@@ -373,9 +375,9 @@ public class FirstFragment extends Fragment {
             if (wi == null) return false;
             final String macAddress = wi.getMacAddress();
             WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
-            return has == null;
+            return has != null;
         }
-        return true;
+        return false;
     }
 
     private LocationApplication locationApplication;
