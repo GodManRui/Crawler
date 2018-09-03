@@ -3,7 +3,6 @@ package reeiss.bonree.ble_test.smarthardware.fragment;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
@@ -81,6 +80,7 @@ public class FirstFragment extends Fragment {
             } else Log.e("jerry", "空 空 空 空 空 空 ");
         }
     };
+    private double lastRssi;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
 
         /**
@@ -91,7 +91,7 @@ public class FirstFragment extends Fragment {
          * BOND_BONDING  指明和远程设备的匹配正在进行中
          * BOND_NONE      指明远程设备未被匹配。
          */
-        //扫描获取设备的回调
+      /*  //扫描获取设备的回调
         @Override
         public void onScanResult(final BluetoothDevice device) {
             Log.e("jerryzhu", "扫描结果: " + device.getName());
@@ -120,7 +120,7 @@ public class FirstFragment extends Fragment {
                     }
                 });
             }
-        }
+        }*/
 
         //链接状态发生改变
         @Override
@@ -175,24 +175,25 @@ public class FirstFragment extends Fragment {
                     BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
                     if (currentDevConfig == null) return;
                     int alertMargin = currentDevConfig.getAlertMargin();
-                    Log.e("jerry", "run: " + rssi);
+                    T.show(getActivity(), rssi);
                     switch (alertMargin) {
                         case 1:
-                            if (rssi < -80) {
+                            if (rssi < -75 && lastRssi < -75) {
                                 PhoneAlert(currentDevConfig, 1);
                             }
                             break;
                         case 2:
-                            if (rssi < -96) {
+                            if (rssi < -84 && lastRssi < -84) {
                                 PhoneAlert(currentDevConfig, 1);
                             }
                             break;
                         case 3:
-                            if (rssi < -110) {
+                            if (rssi < -90 && lastRssi < -90) {
                                 PhoneAlert(currentDevConfig, 1);
                             }
                             break;
                     }
+                    lastRssi = rssi;
                 }
             });
             //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
@@ -408,7 +409,7 @@ public class FirstFragment extends Fragment {
     private void initView() {
         getActivity().setTitle("设备管理");
         vDevLv = getView().findViewById(R.id.ble_dev_lv);
-        vScan = getView().findViewById(R.id.iv_scan);
+     /*   vScan = getView().findViewById(R.id.iv_scan);
         vReScan = getView().findViewById(R.id.rl_scan);
         btScan = getView().findViewById(R.id.bt_scan);
         btScan.setOnClickListener(new View.OnClickListener() {
@@ -416,7 +417,7 @@ public class FirstFragment extends Fragment {
             public void onClick(View v) {
                 scan();
             }
-        });
+        });*/
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setMessage("正在连接..");
         progressDialog.setCancelable(false);

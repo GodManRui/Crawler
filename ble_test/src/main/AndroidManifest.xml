@@ -50,6 +50,7 @@
         <activity android:name=".smarthardware.activity.BluetoothSettingActivity" />
         <activity android:name=".smarthardware.activity.WifiSpoceActivity" />
         <activity android:name=".smarthardware.activity.LostHistory" />
+        <activity android:name=".smarthardware.activity.BindDevActivity" />
 
         <service
             android:name="com.baidu.location.f"

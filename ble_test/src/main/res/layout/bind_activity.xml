@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <RelativeLayout
-        android:id="@+id/rl_scan"
+        android:id="@+id/rl_bd_scan"
         android:layout_width="match_parent"
-        android:layout_height="240dp"
-        android:layout_below="@id/bt_scan">
+        android:layout_height="match_parent"
+        android:paddingBottom="50dp"
+        android:paddingLeft="30dp"
+        android:paddingRight="30dp">
 
         <ImageView
             android:layout_width="200dp"
@@ -22,15 +24,19 @@
             android:layout_height="200dp"
             android:layout_centerInParent="true"
             android:src="@mipmap/ic_scanning" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_alignParentBottom="true"
+            android:onClick="btStopScan"
+            android:text="停止搜索" />
     </RelativeLayout>
 
-
     <ListView
-        android:id="@+id/lv_dev_list"
+        android:id="@+id/lv_bind_dev"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/bt_scan"
         android:visibility="gone" />
 
-
-</RelativeLayout>
+</LinearLayout>
