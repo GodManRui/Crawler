@@ -16,6 +16,7 @@ import android.widget.ListView;
 
 import org.litepal.LitePal;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import reeiss.bonree.ble_test.R;
@@ -26,26 +27,24 @@ import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
 import reeiss.bonree.ble_test.utils.T;
 
-import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
-
 public class BindDevActivity extends AppCompatActivity {
 
     private View vReScan;
     private View imScan;
     private ListView vDevLv;
     private ArrayList<DeviceListBean> mDevList;
-
+    private XFBluetooth xfBluetooth;
+    private DevListAdapter adapter;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
         @Override
         public void onScanResult(final BluetoothDevice device) {
             Log.e("jerryzhu", "扫描结果: " + device.getName());
-            if (device.getName() != null && device.getName().contains("iTAG")) {
-                // xfBluetooth.stop();
-                for (int i = 0; i < mDevList.size(); i++) {
-                    if (mDevList.get(i).getBluetoothDevice().getAddress().equals(device.getAddress())) {
-                        Log.e("JerryZhu", "onScanResult: 列表已存在!!!!!!");
-                        return;
-                    }
+            if (TextUtils.isEmpty(device.getName()) || !device.getName().contains("iTAG")) return;
+            // xfBluetooth.stop();
+            for (int i = 0; i < mDevList.size(); i++) {
+                if (mDevList.get(i).getBluetoothDevice().getAddress().equals(device.getAddress())) {
+                    Log.e("JerryZhu", "onScanResult: 列表已存在!!!!!!");
+                    return;
                 }
             }
             if (vReScan.getVisibility() == View.VISIBLE) {
@@ -69,8 +68,7 @@ public class BindDevActivity extends AppCompatActivity {
             });
         }
     };
-    private XFBluetooth xfBluetooth;
-    private DevListAdapter adapter;
+    private boolean addSuccess;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,13 +76,6 @@ public class BindDevActivity extends AppCompatActivity {
         setContentView(R.layout.bind_activity);
         initView();
         initBle();
-    }
-
-    private void initBle() {
-        xfBluetooth = XFBluetooth.getInstance(this);
-        xfBluetooth.addBleCallBack(gattCallback);
-        xfBluetooth.scan();
-        startScan();
     }
 
     private void initView() {
@@ -107,30 +98,53 @@ public class BindDevActivity extends AppCompatActivity {
                 if (devConfig != null) {
                     T.show(BindDevActivity.this, "此设备已经添加过");
                 } else {
-                    //没有添加过
-                    BleDevConfig currentDevConfig = new BleDevConfig
-                            (CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
+                    //没有添加过 ， 要往数据库写入设备
+                    Field[] fields = R.raw.class.getDeclaredFields();
+                    BleDevConfig currentDevConfig = null;
+                    try {
+                        BluetoothDevice bluetoothDevice = mDevList.get(position).getBluetoothDevice();
+                        currentDevConfig = new BleDevConfig
+                            (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
                     boolean save = currentDevConfig.save();
                     if (save) {
+                        addSuccess = true;
                         T.show(BindDevActivity.this, "添加成功！");
                     }
-
                 }
             }
         });
+    }
 
+    private void initBle() {
+        xfBluetooth = XFBluetooth.getInstance(this);
+        xfBluetooth.addBleCallBack(gattCallback);
+        xfBluetooth.scan();
+        startScan();
     }
 
     private void startScan() {
         if (vReScan.getVisibility() == View.VISIBLE) {
             RotateAnimation animation = new RotateAnimation(0f, 360f,
-                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
             animation.setInterpolator(new LinearInterpolator());
             animation.setDuration(2000);
             animation.setRepeatCount(-1);
             animation.setFillAfter(true);
             imScan.startAnimation(animation);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (addSuccess) {
+            setResult(200);
+        } else {
+            super.onBackPressed();
+        }
+        finish();
     }
 
     public void btStopScan(View view) {

@@ -24,10 +24,8 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -37,7 +35,6 @@ import org.litepal.LitePal;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -51,6 +48,7 @@ import reeiss.bonree.ble_test.bean.PreventLosingCommon;
 import reeiss.bonree.ble_test.bean.WuRaoWifiConfig;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
+import reeiss.bonree.ble_test.smarthardware.activity.BindDevActivity;
 import reeiss.bonree.ble_test.smarthardware.activity.BlueControlActivity;
 import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
 import reeiss.bonree.ble_test.utils.T;
@@ -68,9 +66,12 @@ public class FirstFragment extends Fragment {
     private View vReScan;
     private DevListAdapter adapter;
     private int position;
-    private ArrayList<DeviceListBean> mDevList;
+    private List<BleDevConfig> mDevList;
     private ProgressDialog progressDialog;
     private MediaPlayer mPlayer;
+    private double lastRssi;
+    private Button btScan;
+    private Handler handler;
     final Runnable runnable = new Runnable() {
         @Override
         public void run() {
@@ -80,7 +81,8 @@ public class FirstFragment extends Fragment {
             } else Log.e("jerry", "空 空 空 空 空 空 ");
         }
     };
-    private double lastRssi;
+    private boolean dontAlert;
+    private LocationApplication locationApplication;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
 
         /**
@@ -162,7 +164,7 @@ public class FirstFragment extends Fragment {
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic
-                characteristic) {
+            characteristic) {
             FoundPhone(characteristic);
         }
 
@@ -199,9 +201,13 @@ public class FirstFragment extends Fragment {
             //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
         }
     };
-    private Button btScan;
-    private Handler handler;
-    private boolean dontAlert;
+  /*  private Runnable scanTimeOut = new Runnable() {
+        @Override
+        public void run() {
+            T.show(getActivity(), "扫描超时已停止");
+//            stopScan();
+        }
+    };*/
 
     //双击寻找手机
     private void FoundPhone(BluetoothGattCharacteristic characteristic) {
@@ -249,6 +255,23 @@ public class FirstFragment extends Fragment {
             });
         }
         Log.e("jerryzhu", "点击了  " + value);
+    }
+
+    //勿扰是否打开，是否在勿扰区域  在勿扰true 不在false
+    private boolean checkWuRao() {
+        SharedPreferences myPreference = ((Objects.requireNonNull(getActivity())).getSharedPreferences("myPreference", Context.MODE_PRIVATE));
+        boolean isOpenWuRao = myPreference.getBoolean("isOpenWuRao", false);
+        if (isOpenWuRao) {
+            WifiManager wm = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
+            if (wm == null) return false;
+            // 获取当前所连接wifi的信息
+            final WifiInfo wi = wm.getConnectionInfo();
+            if (wi == null) return false;
+            final String macAddress = wi.getMacAddress();
+            WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
+            return has != null;
+        }
+        return false;
     }
 
     /**
@@ -364,30 +387,31 @@ public class FirstFragment extends Fragment {
         return false;
     }
 
-    //勿扰是否打开，是否在勿扰区域  在勿扰true 不在false
-    private boolean checkWuRao() {
-        SharedPreferences myPreference = ((Objects.requireNonNull(getActivity())).getSharedPreferences("myPreference", Context.MODE_PRIVATE));
-        boolean isOpenWuRao = myPreference.getBoolean("isOpenWuRao", false);
-        if (isOpenWuRao) {
-            WifiManager wm = (WifiManager) getActivity().getApplicationContext().getSystemService(WIFI_SERVICE);
-            if (wm == null) return false;
-            // 获取当前所连接wifi的信息
-            final WifiInfo wi = wm.getConnectionInfo();
-            if (wi == null) return false;
-            final String macAddress = wi.getMacAddress();
-            WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
-            return has != null;
-        }
-        return false;
-    }
-
-    private LocationApplication locationApplication;
-
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         if (!hidden) {
             getActivity().setTitle("设备管理");
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == 100) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+                    if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias())) {
+                        mDevList.get(position).setDevNick(currentDevConfig.getAlias());
+                    }
+                    adapter.setDevList(mDevList);
+                }
+            });
+        } else if (resultCode == 200) {
+            //todo 更新数据库最新列表
+            adapter.notifyDataSetChanged();
         }
     }
 
@@ -409,6 +433,12 @@ public class FirstFragment extends Fragment {
     private void initView() {
         getActivity().setTitle("设备管理");
         vDevLv = getView().findViewById(R.id.ble_dev_lv);
+        getView().findViewById(R.id.bt_add_dev).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addDev();
+            }
+        });
      /*   vScan = getView().findViewById(R.id.iv_scan);
         vReScan = getView().findViewById(R.id.rl_scan);
         btScan = getView().findViewById(R.id.bt_scan);
@@ -423,16 +453,16 @@ public class FirstFragment extends Fragment {
         progressDialog.setCancelable(false);
         locationApplication = ((LocationApplication) getActivity().getApplication());
 
-        mDevList = new ArrayList<DeviceListBean>();
-        adapter = new DevListAdapter(mDevList, getActivity());
+        mDevList = LitePal.findAll(BleDevConfig.class);
+        adapter = new DevListAdapter(this.mDevList, getActivity());
         vDevLv.setAdapter(adapter);
         vDevLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                stopScan();
+//                stopScan();
 
-                DeviceListBean deviceListBean = mDevList.get(position);
+                DeviceListBean deviceListBean = FirstFragment.this.mDevList.get(position);
                 if (!TextUtils.isEmpty(CURRENT_DEV_MAC) && !CURRENT_DEV_MAC.equals(deviceListBean.getBluetoothDevice().getAddress())) {
                     T.show(getActivity(), "请先断开连接");
                     return;
@@ -459,26 +489,26 @@ public class FirstFragment extends Fragment {
         vDevLv.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, final long id) {
-                final DeviceListBean deviceListBean = mDevList.get(position);
+                final DeviceListBean deviceListBean = FirstFragment.this.mDevList.get(position);
                 if (deviceListBean == null) return true;
                 final String address = deviceListBean.getBluetoothDevice().getAddress();
 
                 if (deviceListBean.getConnectState().equals("已连接") && address.equals(CURRENT_DEV_MAC)) {
                     AlertDialog.Builder seleDia = new AlertDialog.Builder(getActivity())
-                            .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dontAlert = true;
-                                    switch (which) {
-                                        case 0:
-                                            xfBluetooth.disconnect();
-                                            break;
-                                        case 1:
-                                            DelDev(deviceListBean, address);
-                                            break;
-                                    }
+                        .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dontAlert = true;
+                                switch (which) {
+                                    case 0:
+                                        xfBluetooth.disconnect();
+                                        break;
+                                    case 1:
+                                        DelDev(deviceListBean, address);
+                                        break;
                                 }
-                            });
+                            }
+                        });
                     seleDia.create().show();
                 } else
                     DelDev(deviceListBean, address);
@@ -487,46 +517,56 @@ public class FirstFragment extends Fragment {
         });
     }
 
+    //跳转到添加设备界面
+    public void addDev() {
+        Intent intent = new Intent(getActivity(), BindDevActivity.class);
+        startActivityForResult(intent, 10);
+    }
+
+
     private void DelDev(final DeviceListBean deviceListBean, String address) {
         final BleDevConfig bleDevConfig = LitePal.where("mac=?", address).findFirst(BleDevConfig.class);
 
         AlertDialog.Builder delDia = new AlertDialog.Builder(getActivity())
-                .setTitle("删除设备")
-                .setMessage("确认删除" + deviceListBean.getDevNick() + "并清空所有配置信息(包括昵称，定位记录等)？")
-                .setNegativeButton("删除", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDevList.remove(deviceListBean);
-                        adapter.setDevList(mDevList);
-                        if (deviceListBean.getConnectState().equals("已连接")) {
-                            xfBluetooth.disconnect();
-                        }
-                        if (bleDevConfig != null) {
-                            bleDevConfig.delete();
-                        }
+            .setTitle("删除设备")
+            .setMessage("确认删除" + deviceListBean.getDevNick() + "并清空所有配置信息(包括昵称，定位记录等)？")
+            .setNegativeButton("删除", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    mDevList.remove(deviceListBean);
+                    adapter.setDevList(mDevList);
+                    if (deviceListBean.getConnectState().equals("已连接")) {
+                        xfBluetooth.disconnect();
                     }
-                })
-                .setPositiveButton("取消", null)
-                .setCancelable(false);
+                    if (bleDevConfig != null) {
+                        bleDevConfig.delete();
+                    }
+                }
+            })
+            .setPositiveButton("取消", null)
+            .setCancelable(false);
         delDia.create().show();
     }
 
     @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == 100) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-                    if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias())) {
-                        mDevList.get(position).setDevNick(currentDevConfig.getAlias());
-                    }
-                    adapter.setDevList(mDevList);
-                }
-            });
-        }
+    public void onDestroy() {
+        super.onDestroy();
+//        handler.removeCallbacks(scanTimeOut);
+        handler.removeCallbacks(runnable);
+        Log.e("jerry", "removeCallbacks 信号解除 ");
     }
+/*
+
+ private void stopScan() {
+        btScan.setText("开始扫描");
+
+        vScan.clearAnimation();
+
+//        vReScan.setVisibility(View.GONE);
+        xfBluetooth.stop();
+        handler.removeCallbacks(scanTimeOut);
+    }
+
 
     public void scan() {
 
@@ -548,7 +588,7 @@ public class FirstFragment extends Fragment {
         btScan.setText("停止扫描");
         if (vReScan.getVisibility() == View.VISIBLE) {
             RotateAnimation animation = new RotateAnimation(0f, 360f,
-                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
             animation.setInterpolator(new LinearInterpolator());
             animation.setDuration(2000);
             animation.setRepeatCount(-1);
@@ -559,30 +599,6 @@ public class FirstFragment extends Fragment {
 
         handler.postDelayed(scanTimeOut, 20000);
     }
+*/
 
-    private Runnable scanTimeOut = new Runnable() {
-        @Override
-        public void run() {
-            T.show(getActivity(), "扫描超时已停止");
-            stopScan();
-        }
-    };
-
-    private void stopScan() {
-        btScan.setText("开始扫描");
-
-        vScan.clearAnimation();
-
-//        vReScan.setVisibility(View.GONE);
-        xfBluetooth.stop();
-        handler.removeCallbacks(scanTimeOut);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        handler.removeCallbacks(scanTimeOut);
-        handler.removeCallbacks(runnable);
-        Log.e("jerry", "removeCallbacks 信号解除 ");
-    }
 }
