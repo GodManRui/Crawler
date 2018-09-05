@@ -12,12 +12,12 @@ import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.WuRaoWifiConfig;
 import reeiss.bonree.ble_test.smarthardware.activity.WifiSpoceActivity;
 
-public class MyAdapter extends BaseAdapter {
+public class WiFiAdapter extends BaseAdapter {
 
     private List<WuRaoWifiConfig> wifiList;
     private WifiSpoceActivity wifiSpoceActivity;
 
-    public MyAdapter(WifiSpoceActivity wifiSpoceActivity, List<WuRaoWifiConfig> wifiList) {
+    public WiFiAdapter(WifiSpoceActivity wifiSpoceActivity, List<WuRaoWifiConfig> wifiList) {
         this.wifiSpoceActivity = wifiSpoceActivity;
         this.wifiList = wifiList;
     }

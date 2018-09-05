@@ -1,5 +1,7 @@
 package reeiss.bonree.ble_test.bean;
 
+import android.bluetooth.BluetoothGatt;
+
 import org.litepal.crud.LitePalSupport;
 
 public class BleDevConfig extends LitePalSupport {
@@ -10,6 +12,25 @@ public class BleDevConfig extends LitePalSupport {
     private String ringName;
     private int ringResId;
     private int alertMargin; //0近1中2远
+
+
+    private int ConnectState;     //连接状态
+
+    public String getConnectState() {
+        switch (ConnectState) {
+            case BluetoothGatt.STATE_DISCONNECTED:
+                return "未连接";
+            case BluetoothGatt.STATE_CONNECTED:
+                return "已连接";
+            case BluetoothGatt.STATE_CONNECTING:
+                return "正在连接..";
+        }
+        return "";
+    }
+
+    public void setConnectState(int connectState) {
+        ConnectState = connectState;
+    }
 
     public int getAlertMargin() {
         return alertMargin;

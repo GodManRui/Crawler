@@ -1,7 +1,6 @@
 package reeiss.bonree.ble_test.smarthardware.activity;
 
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -21,10 +20,10 @@ import java.util.ArrayList;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.BleDevConfig;
-import reeiss.bonree.ble_test.bean.DeviceListBean;
+import reeiss.bonree.ble_test.bean.DeviceAndRssi;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
-import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
+import reeiss.bonree.ble_test.smarthardware.adapter.ScanResultAdapter;
 import reeiss.bonree.ble_test.utils.T;
 
 public class BindDevActivity extends AppCompatActivity {
@@ -32,20 +31,25 @@ public class BindDevActivity extends AppCompatActivity {
     private View vReScan;
     private View imScan;
     private ListView vDevLv;
-    private ArrayList<DeviceListBean> mDevList;
+    private ArrayList<DeviceAndRssi> mDevList;
     private XFBluetooth xfBluetooth;
-    private DevListAdapter adapter;
+    private ScanResultAdapter adapter;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
         @Override
-        public void onScanResult(final BluetoothDevice device) {
+        public void onScanResult(final BluetoothDevice device, final int rssi) {
             Log.e("jerryzhu", "扫描结果: " + device.getName());
             if (TextUtils.isEmpty(device.getName()) || !device.getName().contains("iTAG")) return;
             // xfBluetooth.stop();
-            for (int i = 0; i < mDevList.size(); i++) {
-                if (mDevList.get(i).getBluetoothDevice().getAddress().equals(device.getAddress())) {
+
+            for (int i = 0; i < mDevList.size(); i++) { //已经在扫描列表里了
+                if (mDevList.get(i).getDevice().getAddress().equals(device.getAddress())) {
                     Log.e("JerryZhu", "onScanResult: 列表已存在!!!!!!");
                     return;
                 }
+            }
+            BleDevConfig devConfig = LitePal.where("mac=?", device.getAddress()).findFirst(BleDevConfig.class);
+            if (devConfig != null) {           //之前数据库内已经有过配置了
+                return;
             }
             if (vReScan.getVisibility() == View.VISIBLE) {
                 imScan.clearAnimation();
@@ -57,12 +61,12 @@ public class BindDevActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    BleDevConfig bleDevConfig = LitePal.where("mac=?", device.getAddress()).findFirst(BleDevConfig.class);
+                  /*  BleDevConfig bleDevConfig = LitePal.where("mac=?", device.getAddress()).findFirst(BleDevConfig.class);
                     if (bleDevConfig != null && !TextUtils.isEmpty(bleDevConfig.getAlias()))
                         mDevList.add(new DeviceListBean(device, BluetoothGatt.STATE_DISCONNECTED, bleDevConfig.getAlias()));
                     else
-                        mDevList.add(new DeviceListBean(device, BluetoothGatt.STATE_DISCONNECTED));
-
+                        mDevList.add(new DeviceListBean(device, BluetoothGatt.STATE_DISCONNECTED));*/
+                    mDevList.add(new DeviceAndRssi(device, rssi));
                     adapter.setDevList(mDevList);
                 }
             });
@@ -83,16 +87,17 @@ public class BindDevActivity extends AppCompatActivity {
         imScan = findViewById(R.id.iv_scan);
         vReScan = findViewById(R.id.rl_bd_scan);
         vDevLv = (ListView) findViewById(R.id.lv_bind_dev);
-        mDevList = new ArrayList<DeviceListBean>();
-        adapter = new DevListAdapter(mDevList, this);
+        mDevList = new ArrayList<>();
+        adapter = new ScanResultAdapter(mDevList, this);
         vDevLv.setAdapter(adapter);
         vDevLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                xfBluetooth.stop();
+//                xfBluetooth.stop();
+                //todo 设置点击添加配置
                 //添加设备，只是添加到本地数据库中，这里不做连接，过滤已添加的设备
-                DeviceListBean deviceListBean = mDevList.get(position);
-                String address = deviceListBean.getBluetoothDevice().getAddress();
+                DeviceAndRssi deviceListBean = mDevList.get(position);
+                String address = deviceListBean.getDevice().getAddress();
                 if (TextUtils.isEmpty(address)) return;
                 BleDevConfig devConfig = LitePal.where("mac=?", address).findFirst(BleDevConfig.class);
                 if (devConfig != null) {
@@ -102,11 +107,12 @@ public class BindDevActivity extends AppCompatActivity {
                     Field[] fields = R.raw.class.getDeclaredFields();
                     BleDevConfig currentDevConfig = null;
                     try {
-                        BluetoothDevice bluetoothDevice = mDevList.get(position).getBluetoothDevice();
+                        BluetoothDevice bluetoothDevice = mDevList.get(position).getDevice();
                         currentDevConfig = new BleDevConfig
-                            (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
+                                (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
+                        return;
                     }
                     boolean save = currentDevConfig.save();
                     if (save) {
@@ -128,7 +134,7 @@ public class BindDevActivity extends AppCompatActivity {
     private void startScan() {
         if (vReScan.getVisibility() == View.VISIBLE) {
             RotateAnimation animation = new RotateAnimation(0f, 360f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
             animation.setInterpolator(new LinearInterpolator());
             animation.setDuration(2000);
             animation.setRepeatCount(-1);

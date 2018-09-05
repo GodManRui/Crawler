@@ -22,6 +22,7 @@ import reeiss.bonree.ble_test.bean.PreventLosingCommon;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.utils.T;
+import reeiss.bonree.ble_test.utils.Utils;
 
 import static reeiss.bonree.ble_test.bean.CommonHelp.getImmediateAlert;
 
@@ -63,19 +64,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        if (rssi > -50) {
-                            imRssi.setImageResource(R.mipmap.ic_rssi_5);
-                        } else if (rssi > -65) {
-                            imRssi.setImageResource(R.mipmap.ic_rssi_4);
-                        } else if (rssi > -85) {
-                            imRssi.setImageResource(R.mipmap.ic_rssi_3);
-                        } else if (rssi > -100) {
-                            imRssi.setImageResource(R.mipmap.ic_rssi_2);
-                        } else if (rssi > -110) {
-                            imRssi.setImageResource(R.mipmap.ic_rssi_1);
-                        } else if (rssi > -120) {
-                            imRssi.setImageResource(R.mipmap.ic_rssi_0);
-                        }
+                        imRssi.setImageResource(Utils.getRssiDrawable(rssi));
                     }
                 });
                 //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);

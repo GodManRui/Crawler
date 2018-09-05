@@ -8,7 +8,7 @@ import reeiss.bonree.ble_test.blehelp.XFBluetooth.XFBluetoothControl;
 
 public abstract class XFBluetoothCallBack implements XFBluetoothControl {
     @Override
-    public void onScanResult(BluetoothDevice device) {
+    public void onScanResult(BluetoothDevice device, int rssi) {
 
     }
 

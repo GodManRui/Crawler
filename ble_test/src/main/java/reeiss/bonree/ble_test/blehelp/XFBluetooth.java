@@ -41,7 +41,7 @@ public class XFBluetooth {
                 if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
                     BluetoothDevice device = result.getDevice();
                     for (int i = 0; i < mListCallBack.size(); i++) {
-                        mListCallBack.get(i).onScanResult(device);
+                        mListCallBack.get(i).onScanResult(device, result.getRssi());
                     }
                 }
         }
@@ -59,10 +59,9 @@ public class XFBluetooth {
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
             Log.e("jerryzhu", "onLeScan: " + isScaning);
-
             if (isScaning)
                 for (int i = 0; i < mListCallBack.size(); i++) {
-                    mListCallBack.get(i).onScanResult(device);
+                    mListCallBack.get(i).onScanResult(device, rssi);
                 }
         }
     };
@@ -253,7 +252,7 @@ public class XFBluetooth {
 
     interface XFBluetoothControl {
         //发现设备的回调
-        void onScanResult(BluetoothDevice device);
+        void onScanResult(BluetoothDevice device, int rssi);
 
         //发现服务的回调
         void onConnectionStateChange(BluetoothGatt gatt, int status, int newState);

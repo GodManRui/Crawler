@@ -4,12 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 /*
  *//**
- * The profile is in disconnected state  The profile is in connecting state  The profile is in connected state
- * The profile is in connecting state  The profile is in connected state
- * The profile is in connecting state  The profile is in connected state
- * The profile is in connecting state  The profile is in connected state
- * The profile is in connecting state  The profile is in connected state
- * The profile is in connecting state  The profile is in connected state
+ * The profile is in disconnected state
  *//*
 public static final int STATE_DISCONNECTED  = 0;
 *//** The profile is in connecting state *//*

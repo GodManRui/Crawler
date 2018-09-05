@@ -19,7 +19,7 @@ import java.util.List;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.WuRaoWifiConfig;
-import reeiss.bonree.ble_test.smarthardware.adapter.MyAdapter;
+import reeiss.bonree.ble_test.smarthardware.adapter.WiFiAdapter;
 import reeiss.bonree.ble_test.utils.T;
 
 public class WifiSpoceActivity extends Activity {
@@ -27,7 +27,7 @@ public class WifiSpoceActivity extends Activity {
 
     private ListView lvWifiList;
     private List<WuRaoWifiConfig> wifiList;
-    private MyAdapter adapter;
+    private WiFiAdapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,7 +39,7 @@ public class WifiSpoceActivity extends Activity {
     private void initView() {
         lvWifiList = findViewById(R.id.lv_wifi_list);
         wifiList = LitePal.findAll(WuRaoWifiConfig.class);
-        adapter = new MyAdapter(this, wifiList);
+        adapter = new WiFiAdapter(this, wifiList);
         lvWifiList.setAdapter(adapter);
         lvWifiList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
