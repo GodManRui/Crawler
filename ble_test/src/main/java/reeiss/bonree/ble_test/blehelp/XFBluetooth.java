@@ -27,33 +27,13 @@ import reeiss.bonree.ble_test.utils.T;
 
 public class XFBluetooth {
     public static XFBluetooth xfBluetooth;
-    private BluetoothAdapter mBluetoothAdapter;
-    private final Context context;
-    private BluetoothLeScanner mBluetoothLeScanner;
-    public boolean isScaning;          //正在扫描？
-    private ArrayList<XFBluetoothCallBack> mListCallBack;
     public static String CURRENT_DEV_MAC = "";
-    private ScanCallback callback = new ScanCallback() {
-
-        @Override
-        public void onScanResult(int callbackType, ScanResult result) {
-            if (isScaning && mListCallBack.size() > 0)
-                if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
-                    BluetoothDevice device = result.getDevice();
-                    for (int i = 0; i < mListCallBack.size(); i++) {
-                        mListCallBack.get(i).onScanResult(device, result.getRssi());
-                    }
-                }
-        }
-
-        @Override
-        public void onScanFailed(int errorCode) {
-            T.show(context.getApplicationContext(), "启动扫描失败:  " + errorCode);
-            Log.e("jerry", "启动扫描失败: " + errorCode);
-            super.onScanFailed(errorCode);
-        }
-    };
-
+    private final Context context;
+    public boolean isScaning;          //正在扫描？
+    private BluetoothAdapter mBluetoothAdapter;
+    private BluetoothLeScanner mBluetoothLeScanner;
+    private ArrayList<XFBluetoothCallBack> mListCallBack;
+    private ScanCallback callback = getCallback();
     private BluetoothAdapter.LeScanCallback mLeScanCallback = new LeScanCallback() {
 
         @Override
@@ -65,6 +45,7 @@ public class XFBluetooth {
                 }
         }
     };
+    private BluetoothGatt mXFBluetoothGatt;
     private BluetoothGattCallback gattCallback = new BluetoothGattCallback() {
         //链接状态的回调
         @Override
@@ -135,6 +116,60 @@ public class XFBluetooth {
         }
     };
 
+    private XFBluetooth(Context context) {
+        this.context = context;
+        //获取蓝牙适配器
+        BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        assert bluetoothManager != null;
+        mBluetoothAdapter = bluetoothManager.getAdapter();
+        mListCallBack = new ArrayList();
+    }
+
+    public static XFBluetooth getInstance(Context context) {
+        synchronized (XFBluetooth.class) {
+            if (xfBluetooth == null) {
+                xfBluetooth = new XFBluetooth(context);
+            }
+            return xfBluetooth;
+        }
+    }
+
+    public static BleDevConfig getCurrentDevConfig() {
+        if (TextUtils.isEmpty(CURRENT_DEV_MAC)) return null;
+        return LitePal.where("mac=?", CURRENT_DEV_MAC).findFirst(BleDevConfig.class);
+    }
+
+    public static BleDevConfig getCurrentDevConfig(String mac) {
+        if (TextUtils.isEmpty(mac)) return null;
+        return LitePal.where("mac=?", mac).findFirst(BleDevConfig.class);
+    }
+
+    public ScanCallback getCallback() {
+        if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+            return new ScanCallback() {
+
+                @Override
+                public void onScanResult(int callbackType, ScanResult result) {
+                    if (isScaning && mListCallBack.size() > 0)
+                        if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+                            BluetoothDevice device = result.getDevice();
+                            for (int i = 0; i < mListCallBack.size(); i++) {
+                                mListCallBack.get(i).onScanResult(device, result.getRssi());
+                            }
+                        }
+                }
+
+                @Override
+                public void onScanFailed(int errorCode) {
+                    T.show(context.getApplicationContext(), "启动扫描失败:  " + errorCode);
+                    Log.e("jerry", "启动扫描失败: " + errorCode);
+                    super.onScanFailed(errorCode);
+                }
+            };
+        }
+        return null;
+    }
+
     public void reset() {
         try {
             Log.e("jerry", "reset: 重置");
@@ -158,26 +193,6 @@ public class XFBluetooth {
         }
     }
 
-    private BluetoothGatt mXFBluetoothGatt;
-
-    private XFBluetooth(Context context) {
-        this.context = context;
-        //获取蓝牙适配器
-        BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        assert bluetoothManager != null;
-        mBluetoothAdapter = bluetoothManager.getAdapter();
-        mListCallBack = new ArrayList();
-    }
-
-    public static XFBluetooth getInstance(Context context) {
-        synchronized (XFBluetooth.class) {
-            if (xfBluetooth == null) {
-                xfBluetooth = new XFBluetooth(context);
-            }
-            return xfBluetooth;
-        }
-    }
-
     public BluetoothGatt getXFBluetoothGatt() {
         return mXFBluetoothGatt;
     }
@@ -189,7 +204,6 @@ public class XFBluetooth {
     public boolean removeBleCallBack(XFBluetoothCallBack mXFBluetoothControl) {
         return mListCallBack.remove(mXFBluetoothControl);
     }
-
 
     public void scan() {
         isScaning = true;
@@ -221,16 +235,6 @@ public class XFBluetooth {
         } else if (mBluetoothAdapter != null) {
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
         }
-    }
-
-    public static BleDevConfig getCurrentDevConfig() {
-        if (TextUtils.isEmpty(CURRENT_DEV_MAC)) return null;
-        return LitePal.where("mac=?", CURRENT_DEV_MAC).findFirst(BleDevConfig.class);
-    }
-
-    public static BleDevConfig getCurrentDevConfig(String mac) {
-        if (TextUtils.isEmpty(mac)) return null;
-        return LitePal.where("mac=?", mac).findFirst(BleDevConfig.class);
     }
 
     public void connect(BluetoothDevice device) {

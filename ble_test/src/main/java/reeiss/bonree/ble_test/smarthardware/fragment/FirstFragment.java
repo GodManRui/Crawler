@@ -51,8 +51,10 @@ import reeiss.bonree.ble_test.smarthardware.activity.BindDevActivity;
 import reeiss.bonree.ble_test.smarthardware.activity.BlueControlActivity;
 import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
 import reeiss.bonree.ble_test.utils.T;
+import reeiss.bonree.ble_test.utils.Utils;
 
 import static android.content.Context.WIFI_SERVICE;
+import static reeiss.bonree.ble_test.bean.CommonHelp.getLinkLostAlert;
 import static reeiss.bonree.ble_test.bean.CommonHelp.getOnClick;
 import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
 import static reeiss.bonree.ble_test.blehelp.XFBluetooth.getCurrentDevConfig;
@@ -163,36 +165,22 @@ public class FirstFragment extends Fragment {
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic
-                characteristic) {
+            characteristic) {
             FoundPhone(characteristic);
         }
 
         @Override
         public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, int status) {
 
-            getActivity().runOnUiThread(new Runnable() {
+            Objects.requireNonNull(getActivity()).runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
                     if (currentDevConfig == null) return;
                     int alertMargin = currentDevConfig.getAlertMargin();
                     T.show(getActivity(), rssi + "");
-                    switch (alertMargin) {
-                        case 1:
-                            if (rssi < -75 && lastRssi < -75) {
-                                PhoneAlert(currentDevConfig, 1);
-                            }
-                            break;
-                        case 2:
-                            if (rssi < -84 && lastRssi < -84) {
-                                PhoneAlert(currentDevConfig, 1);
-                            }
-                            break;
-                        case 3:
-                            if (rssi < -90 && lastRssi < -90) {
-                                PhoneAlert(currentDevConfig, 1);
-                            }
-                            break;
+                    if (Utils.isRemoteAlert(alertMargin, rssi, lastRssi)) {
+                        PhoneAlert(currentDevConfig, 1);
                     }
                     lastRssi = rssi;
                 }
@@ -225,8 +213,9 @@ public class FirstFragment extends Fragment {
                     }
                     try {
                         mPlayer = new MediaPlayer();
+                        assert currentDevConfig != null;
                         Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
-                        mPlayer.setDataSource(getActivity(), setDataSourceuri);
+                        mPlayer.setDataSource(Objects.requireNonNull(getActivity()), setDataSourceuri);
                         mPlayer.prepare();
                         mPlayer.setLooping(true);
                         mPlayer.start();
@@ -320,7 +309,13 @@ public class FirstFragment extends Fragment {
 
 //        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         if (newState == BluetoothProfile.STATE_CONNECTED) {
-            xfBluetooth.getXFBluetoothGatt().discoverServices();
+            BluetoothGatt xfBluetoothGatt = xfBluetooth.getXFBluetoothGatt();
+            BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(xfBluetoothGatt);
+            if (linkLostAlert != null) {
+                linkLostAlert.setValue(new byte[]{1});
+                xfBluetoothGatt.writeCharacteristic(linkLostAlert);
+            }
+            xfBluetoothGatt.discoverServices();
             handler.postDelayed(runnable, 1000);
             if (locationApplication != null && !locationApplication.locationService.isStart()) {
                 Log.e("jerryzhu", " 定位开启: ");
@@ -330,7 +325,7 @@ public class FirstFragment extends Fragment {
             if (currentDevConfig == null) {
                 Field[] fields = R.raw.class.getDeclaredFields();
                 try {
-                    currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetooth.getXFBluetoothGatt().getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
+                    currentDevConfig = new BleDevConfig(CURRENT_DEV_MAC, xfBluetoothGatt.getDevice().getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
                     currentDevConfig.save();
                 } catch (IllegalAccessException e) {
                     e.printStackTrace();
@@ -495,20 +490,20 @@ public class FirstFragment extends Fragment {
 
                 if (deviceListBean.getConnectState().equals("已连接") && address.equals(CURRENT_DEV_MAC)) {
                     AlertDialog.Builder seleDia = new AlertDialog.Builder(getActivity())
-                            .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dontAlert = true;
-                                    switch (which) {
-                                        case 0:
-                                            xfBluetooth.disconnect();
-                                            break;
-                                        case 1:
-                                            DelDev(deviceListBean, address);
-                                            break;
-                                    }
+                        .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dontAlert = true;
+                                switch (which) {
+                                    case 0:
+                                        xfBluetooth.disconnect();
+                                        break;
+                                    case 1:
+                                        DelDev(deviceListBean, address);
+                                        break;
                                 }
-                            });
+                            }
+                        });
                     seleDia.create().show();
                 } else
                     DelDev(deviceListBean, address);
@@ -528,21 +523,21 @@ public class FirstFragment extends Fragment {
 //        final BleDevConfig bleDevConfig = LitePal.where("mac=?", address).findFirst(BleDevConfig.class);
 
         AlertDialog.Builder delDia = new AlertDialog.Builder(getActivity())
-                .setTitle("删除设备")
-                .setMessage("确认删除" + bleDevConfig.getAlias() + "并清空所有配置信息(包括昵称，定位记录等)？")
-                .setNegativeButton("删除", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDevList.remove(bleDevConfig);
-                        adapter.setDevList(mDevList);
-                        if (bleDevConfig.getConnectState().equals("已连接")) {
-                            xfBluetooth.disconnect();
-                        }
-                        bleDevConfig.delete();
+            .setTitle("删除设备")
+            .setMessage("确认删除" + bleDevConfig.getAlias() + "并清空所有配置信息(包括昵称，定位记录等)？")
+            .setNegativeButton("删除", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    mDevList.remove(bleDevConfig);
+                    adapter.setDevList(mDevList);
+                    if (bleDevConfig.getConnectState().equals("已连接")) {
+                        xfBluetooth.disconnect();
                     }
-                })
-                .setPositiveButton("取消", null)
-                .setCancelable(false);
+                    bleDevConfig.delete();
+                }
+            })
+            .setPositiveButton("取消", null)
+            .setCancelable(false);
         delDia.create().show();
     }
 

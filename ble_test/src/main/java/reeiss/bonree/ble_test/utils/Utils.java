@@ -44,4 +44,26 @@ public class Utils {
         }*/
         return R.mipmap.ic_rssi_0;
     }
+
+
+    public static boolean isRemoteAlert(int alertMargin, int rssi, double lastRssi) {
+        switch (alertMargin) {
+            case 1:
+                if (rssi < -75 && lastRssi < -75) {
+                    return true;
+                }
+                break;
+            case 2:
+                if (rssi < -84 && lastRssi < -84) {
+                    return true;
+                }
+                break;
+            case 3:
+                if (rssi < -90 && lastRssi < -90) {
+                    return true;
+                }
+                break;
+        }
+        return false;
+    }
 }

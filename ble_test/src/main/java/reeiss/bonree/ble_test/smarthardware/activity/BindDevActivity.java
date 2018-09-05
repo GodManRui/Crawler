@@ -94,7 +94,6 @@ public class BindDevActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 //                xfBluetooth.stop();
-                //todo 设置点击添加配置
                 //添加设备，只是添加到本地数据库中，这里不做连接，过滤已添加的设备
                 DeviceAndRssi deviceListBean = mDevList.get(position);
                 String address = deviceListBean.getDevice().getAddress();
