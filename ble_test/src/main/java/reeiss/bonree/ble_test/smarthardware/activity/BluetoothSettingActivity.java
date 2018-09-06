@@ -185,7 +185,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
                 linkLostAlert.setValue(new byte[]{1});
 //                linkLostAlert.setValue(new byte[Common_LinkLost_No_Alert]);
                 boolean b = xfBluetoothGatt.writeCharacteristic(linkLostAlert);
-                Log.e("jerry", "写入了: 1  " + b);
             } else {
                 T.show(BluetoothSettingActivity.this, "关闭报警不支持！");
             }
@@ -193,7 +192,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             if (linkLostAlert != null) {
                 linkLostAlert.setValue(new byte[]{0});
                 boolean b = xfBluetoothGatt.writeCharacteristic(linkLostAlert);
-                Log.e("jerry", "写入了: 0  " + b);
             } else {
                 T.show(BluetoothSettingActivity.this, "断开报警不支持！");
             }

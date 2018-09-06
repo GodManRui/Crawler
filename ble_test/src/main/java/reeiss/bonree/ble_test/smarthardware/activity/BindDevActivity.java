@@ -1,6 +1,7 @@
 package reeiss.bonree.ble_test.smarthardware.activity;
 
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -73,6 +74,7 @@ public class BindDevActivity extends AppCompatActivity {
         }
     };
     private boolean addSuccess;
+    private ArrayList<BleDevConfig> mBindList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -109,13 +111,14 @@ public class BindDevActivity extends AppCompatActivity {
                         BluetoothDevice bluetoothDevice = mDevList.get(position).getDevice();
                         currentDevConfig = new BleDevConfig
                                 (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
-                    } catch (IllegalAccessException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                         return;
                     }
                     boolean save = currentDevConfig.save();
                     if (save) {
                         addSuccess = true;
+                        mBindList.add(currentDevConfig);
                         T.show(BindDevActivity.this, "添加成功！");
                     }
                 }
@@ -127,6 +130,7 @@ public class BindDevActivity extends AppCompatActivity {
         xfBluetooth = XFBluetooth.getInstance(this);
         xfBluetooth.addBleCallBack(gattCallback);
         xfBluetooth.scan();
+        mBindList = new ArrayList<>();
         startScan();
     }
 
@@ -145,7 +149,9 @@ public class BindDevActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         if (addSuccess) {
-            setResult(200);
+            Intent intent = new Intent();
+            intent.putExtra("addBindDev",mBindList);
+            setResult(200,intent);
         } else {
             super.onBackPressed();
         }
@@ -157,4 +163,9 @@ public class BindDevActivity extends AppCompatActivity {
         finish();
     }
 
+    @Override
+    protected void onDestroy() {
+        xfBluetooth.stop();
+        super.onDestroy();
+    }
 }

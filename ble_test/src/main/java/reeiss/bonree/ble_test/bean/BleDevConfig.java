@@ -4,7 +4,9 @@ import android.bluetooth.BluetoothGatt;
 
 import org.litepal.crud.LitePalSupport;
 
-public class BleDevConfig extends LitePalSupport {
+import java.io.Serializable;
+
+public class BleDevConfig extends LitePalSupport implements Serializable{
     private long id;
     private String mac;
     private String alias;

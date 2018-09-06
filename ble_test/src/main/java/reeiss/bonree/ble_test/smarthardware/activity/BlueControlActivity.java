@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -71,6 +72,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
             }
         }
     };
+    private String mNewName;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -120,8 +122,14 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
 
     @Override
     public void onBackPressed() {
-        setResult(100);
-        super.onBackPressed();
+        if (!TextUtils.isEmpty(mNewName)) {
+            Intent intent = new Intent();
+            intent.putExtra("newName", mNewName);
+            setResult(100, intent);
+            finish();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -155,12 +163,12 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 100) {
-            final String name = data.getStringExtra("name");
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (name != null && !name.isEmpty()) {
-                        tvDevName.setText(name);
+                    mNewName = data.getStringExtra("name");
+                    if (!TextUtils.isEmpty(mNewName)) {
+                        tvDevName.setText(mNewName);
                     }
                 }
             });
