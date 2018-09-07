@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -86,6 +87,10 @@ public class BindDevActivity extends AppCompatActivity {
 
     private void initView() {
         setTitle("绑定设备");
+        ActionBar mActionBar = getSupportActionBar();
+        assert mActionBar != null;
+        mActionBar.setHomeButtonEnabled(true);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
         imScan = findViewById(R.id.iv_scan);
         vReScan = findViewById(R.id.rl_bd_scan);
         vDevLv = (ListView) findViewById(R.id.lv_bind_dev);
@@ -110,7 +115,7 @@ public class BindDevActivity extends AppCompatActivity {
                     try {
                         BluetoothDevice bluetoothDevice = mDevList.get(position).getDevice();
                         currentDevConfig = new BleDevConfig
-                                (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
+                            (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
                     } catch (Exception e) {
                         e.printStackTrace();
                         return;
@@ -137,7 +142,7 @@ public class BindDevActivity extends AppCompatActivity {
     private void startScan() {
         if (vReScan.getVisibility() == View.VISIBLE) {
             RotateAnimation animation = new RotateAnimation(0f, 360f,
-                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
             animation.setInterpolator(new LinearInterpolator());
             animation.setDuration(2000);
             animation.setRepeatCount(-1);
@@ -147,11 +152,23 @@ public class BindDevActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onDestroy() {
+        xfBluetooth.stop();
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
+
+    @Override
     public void onBackPressed() {
         if (addSuccess) {
             Intent intent = new Intent();
-            intent.putExtra("addBindDev",mBindList);
-            setResult(200,intent);
+            intent.putExtra("addBindDev", mBindList);
+            setResult(200, intent);
         } else {
             super.onBackPressed();
         }
@@ -161,11 +178,5 @@ public class BindDevActivity extends AppCompatActivity {
     public void btStopScan(View view) {
         xfBluetooth.stop();
         finish();
-    }
-
-    @Override
-    protected void onDestroy() {
-        xfBluetooth.stop();
-        super.onDestroy();
     }
 }

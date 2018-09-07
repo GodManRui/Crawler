@@ -1,8 +1,9 @@
 package reeiss.bonree.ble_test.smarthardware.activity;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,7 @@ import reeiss.bonree.ble_test.bean.BleDevConfig;
 import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.utils.T;
 
-public class LostHistory extends Activity {
+public class LostHistory extends AppCompatActivity {
 
     private ListView lv;
     private List<Location> lostHistories;
@@ -33,7 +34,18 @@ public class LostHistory extends Activity {
         initView();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
+
     private void initView() {
+        ActionBar mActionBar = getSupportActionBar();
+        assert mActionBar != null;
+        mActionBar.setHomeButtonEnabled(true);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+        setTitle("丢失记录");
         lostHistories = LitePal.findAll(Location.class);
         if (lostHistories.size() <= 0) {
             findViewById(R.id.tv_nodata).setVisibility(View.VISIBLE);

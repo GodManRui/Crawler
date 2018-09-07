@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -107,7 +108,10 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         btnCall.setOnClickListener(this);
 
         tvDevName.setText(Objects.requireNonNull(XFBluetooth.getCurrentDevConfig()).getAlias());
-
+        ActionBar mActionBar = getSupportActionBar();
+        assert mActionBar != null;
+        mActionBar.setHomeButtonEnabled(true);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -121,7 +125,12 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
     }
 
     @Override
-    public void onBackPressed() {
+    public boolean onSupportNavigateUp() {
+        MyFinish();
+        return super.onSupportNavigateUp();
+    }
+
+    private void MyFinish() {
         if (!TextUtils.isEmpty(mNewName)) {
             Intent intent = new Intent();
             intent.putExtra("newName", mNewName);
@@ -173,5 +182,10 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
                 }
             });
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        MyFinish();
     }
 }
