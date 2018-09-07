@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -42,6 +43,12 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
     private BluetoothGatt xfBluetoothGatt;
     private TextView tvBattery;
     private ProgressDialog mProgressDialog;
+    private MediaPlayer mp;
+    private TextView tvRing;
+    private EditText edDevName;
+    private boolean isChecked;
+    private Switch vAlert;
+    private BluetoothGattCharacteristic linkLostAlert;
     private XFBluetoothCallBack mXFBluetoothCallBack = new XFBluetoothCallBack() {
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -82,12 +89,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             });
         }
     };
-    private MediaPlayer mp;
-    private TextView tvRing;
-    private EditText edDevName;
-    private boolean isChecked;
-    private Switch vAlert;
-    private BluetoothGattCharacteristic linkLostAlert;
     private TextView tvAlertMargin;
     private BleDevConfig currentDevConfig;
     private int alertMargin;
@@ -101,7 +102,18 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         initBlue();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
+
     private void initView() {
+        ActionBar mActionBar = getSupportActionBar();
+        assert mActionBar != null;
+        mActionBar.setHomeButtonEnabled(true);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+        setTitle("设备设置");
         currentDevConfig = XFBluetooth.getCurrentDevConfig();
 
         vAlert = (Switch) findViewById(R.id.sw_is_alert);
@@ -116,13 +128,13 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             public void onClick(View v) {
                 String[] items = new String[]{"近", "中", "远",};
                 AlertDialog.Builder alertDialogBuild = new AlertDialog.Builder(BluetoothSettingActivity.this)
-                        .setTitle("设置报警距离")
-                        .setItems(items, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                setAlertMarginText(which + 1);
-                            }
-                        });
+                    .setTitle("设置报警距离")
+                    .setItems(items, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            setAlertMarginText(which + 1);
+                        }
+                    });
                 AlertDialog alertDialog = alertDialogBuild.create();
                 alertDialog.show();
             }
@@ -142,13 +154,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         mProgressDialog = new ProgressDialog(this);
     }
 
-    private void setAlertMarginText(int alertMargin) {
-        this.alertMargin = alertMargin;
-        if (tvAlertMargin != null) {
-            tvAlertMargin.setText(alertMargin == 3 ? "远" : (alertMargin == 2 ? "中" : "近"));
-        }
-    }
-
     private void initBlue() {
         mXFBlue = XFBluetooth.getInstance(BluetoothSettingActivity.this);
         xfBluetoothGatt = mXFBlue.getXFBluetoothGatt();
@@ -166,6 +171,13 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         if (mBatteryServer != null) {
             BluetoothGattCharacteristic mChBattery = mBatteryServer.getCharacteristic(UUID.fromString(PreventLosingCommon.CH_Battery_Level));
             xfBluetoothGatt.readCharacteristic(mChBattery);
+        }
+    }
+
+    private void setAlertMarginText(int alertMargin) {
+        this.alertMargin = alertMargin;
+        if (tvAlertMargin != null) {
+            tvAlertMargin.setText(alertMargin == 3 ? "远" : (alertMargin == 2 ? "中" : "近"));
         }
     }
 
@@ -251,25 +263,25 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         final int ringPosition = currentDev.getRingPosition();
 
         builder.setSingleChoiceItems(itemName, ringPosition,
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (0 <= which && which <= itemName.length - 1) {
-                            if (itemName[which] != null) {
-                                // T.show(BluetoothSettingActivity.this, itemName[which]);
-                                Integer resID = nameMap.get(itemName[which]);
-                                currentDev.setRingResId(resID);
+            new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (0 <= which && which <= itemName.length - 1) {
+                        if (itemName[which] != null) {
+                            // T.show(BluetoothSettingActivity.this, itemName[which]);
+                            Integer resID = nameMap.get(itemName[which]);
+                            currentDev.setRingResId(resID);
 
-                                if (mp != null) {
-                                    mp.reset();
-                                    mp.release();
-                                }
-                                mp = MediaPlayer.create(BluetoothSettingActivity.this, resID);//重新设置要播放的音频
-                                mp.start();//开始播放
+                            if (mp != null) {
+                                mp.reset();
+                                mp.release();
                             }
+                            mp = MediaPlayer.create(BluetoothSettingActivity.this, resID);//重新设置要播放的音频
+                            mp.start();//开始播放
                         }
                     }
-                });
+                }
+            });
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

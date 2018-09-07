@@ -1,12 +1,13 @@
 package reeiss.bonree.ble_test.smarthardware.activity;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -22,7 +23,7 @@ import reeiss.bonree.ble_test.bean.WuRaoWifiConfig;
 import reeiss.bonree.ble_test.smarthardware.adapter.WiFiAdapter;
 import reeiss.bonree.ble_test.utils.T;
 
-public class WifiSpoceActivity extends Activity {
+public class WifiSpoceActivity extends AppCompatActivity {
 
 
     private ListView lvWifiList;
@@ -36,7 +37,18 @@ public class WifiSpoceActivity extends Activity {
         initView();
     }
 
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
+    }
+
     private void initView() {
+        ActionBar mActionBar = getSupportActionBar();
+        assert mActionBar != null;
+        mActionBar.setHomeButtonEnabled(true);
+        mActionBar.setDisplayHomeAsUpEnabled(true);
+        setTitle("勿扰区域设置");
         lvWifiList = findViewById(R.id.lv_wifi_list);
         wifiList = LitePal.findAll(WuRaoWifiConfig.class);
         adapter = new WiFiAdapter(this, wifiList);
@@ -45,19 +57,19 @@ public class WifiSpoceActivity extends Activity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 AlertDialog.Builder del = new AlertDialog.Builder(WifiSpoceActivity.this)
-                        .setTitle("删除此区域")
-                        .setMessage("确认删除此勿扰区域？")
-                        .setCancelable(false)
-                        .setNegativeButton("删除", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                long configId = wifiList.get(position).getId();
-                                LitePal.delete(WuRaoWifiConfig.class, configId);
-                                wifiList.remove(position);
-                                adapter.setData(wifiList);
-                            }
-                        })
-                        .setPositiveButton("取消", null);
+                    .setTitle("删除此区域")
+                    .setMessage("确认删除此勿扰区域？")
+                    .setCancelable(false)
+                    .setNegativeButton("删除", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            long configId = wifiList.get(position).getId();
+                            LitePal.delete(WuRaoWifiConfig.class, configId);
+                            wifiList.remove(position);
+                            adapter.setData(wifiList);
+                        }
+                    })
+                    .setPositiveButton("取消", null);
                 del.create().show();
                 return true;
             }
@@ -70,7 +82,10 @@ public class WifiSpoceActivity extends Activity {
 // 获取当前所连接wifi的信息
         final WifiInfo wi = wm.getConnectionInfo();
         if (wi == null) return;
-        final String macAddress = wi.getMacAddress();
+        String macAddress = wi.getMacAddress();
+        if ("02:00:00:00:00:00".equals(macAddress)) {
+            macAddress = wi.getBSSID();
+        }
         Log.e("jerry", "Wifi名字: " + wi.getSSID() + "   mac= " + wi.getMacAddress());
         WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
         if (has != null) {
@@ -82,6 +97,7 @@ public class WifiSpoceActivity extends Activity {
         builder.setTitle("设置当前区域名字");
         builder.setIcon(R.mipmap.widget_bar_device_over);
         builder.setView(edit);
+        final String finalMacAddress = macAddress;
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -92,7 +108,7 @@ public class WifiSpoceActivity extends Activity {
                 }
 
                 dialog.dismiss();
-                WuRaoWifiConfig wuRaoWifiConfig = new WuRaoWifiConfig(wi.getSSID(), name, macAddress);
+                WuRaoWifiConfig wuRaoWifiConfig = new WuRaoWifiConfig(wi.getSSID().replace("\"", ""), name, finalMacAddress);
                 wuRaoWifiConfig.save();
                 wifiList.add(wuRaoWifiConfig);
                 adapter.setData(wifiList);
