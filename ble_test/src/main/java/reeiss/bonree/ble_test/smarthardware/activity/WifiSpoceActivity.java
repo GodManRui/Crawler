@@ -82,7 +82,10 @@ public class WifiSpoceActivity extends AppCompatActivity {
 // 获取当前所连接wifi的信息
         final WifiInfo wi = wm.getConnectionInfo();
         if (wi == null) return;
-        final String macAddress = wi.getMacAddress();
+        String macAddress = wi.getMacAddress();
+        if ("02:00:00:00:00:00".equals(macAddress)) {
+            macAddress = wi.getBSSID();
+        }
         Log.e("jerry", "Wifi名字: " + wi.getSSID() + "   mac= " + wi.getMacAddress());
         WuRaoWifiConfig has = LitePal.where("wifiMac=?", macAddress).findFirst(WuRaoWifiConfig.class);
         if (has != null) {
@@ -94,6 +97,7 @@ public class WifiSpoceActivity extends AppCompatActivity {
         builder.setTitle("设置当前区域名字");
         builder.setIcon(R.mipmap.widget_bar_device_over);
         builder.setView(edit);
+        final String finalMacAddress = macAddress;
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -104,7 +108,7 @@ public class WifiSpoceActivity extends AppCompatActivity {
                 }
 
                 dialog.dismiss();
-                WuRaoWifiConfig wuRaoWifiConfig = new WuRaoWifiConfig(wi.getSSID(), name, macAddress);
+                WuRaoWifiConfig wuRaoWifiConfig = new WuRaoWifiConfig(wi.getSSID(), name, finalMacAddress);
                 wuRaoWifiConfig.save();
                 wifiList.add(wuRaoWifiConfig);
                 adapter.setData(wifiList);
