@@ -80,7 +80,9 @@ public class FirstFragment extends Fragment {
             if (xfBluetooth.getXFBluetoothGatt() != null) {
                 xfBluetooth.getXFBluetoothGatt().readRemoteRssi();
                 handler.postDelayed(this, 5000);
-            } else Log.e("jerry", "空 空 空 空 空 空 ");
+            } else {
+                handler.removeCallbacks(this);
+            }
         }
     };
     private boolean dontAlert;
@@ -142,7 +144,6 @@ public class FirstFragment extends Fragment {
         //链接状态发生改变
         @Override
         public void onConnectionStateChange(final BluetoothGatt gatt, final int status, final int newState) {
-
             BleDevConfig currentDevConfig = getCurrentDevConfig();
             if (currentDevConfig == null) {
                 currentDevConfig = getCurrentDevConfig(gatt.getDevice().getAddress());
@@ -174,7 +175,7 @@ public class FirstFragment extends Fragment {
                         }
                     }
                 }
-
+                //开启断开报警
                 BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(xfBluetooth.getXFBluetoothGatt());
                 if (linkLostAlert != null) {
                     linkLostAlert.setValue(new byte[]{1});
@@ -291,9 +292,7 @@ public class FirstFragment extends Fragment {
      * @param newState
      */
     private void StatusChange(BleDevConfig currentDevConfig, int status, final int newState) {
-
-        if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            Log.e("jerry", "removeCallbacks 信号解除 ");
+        if (status == BluetoothProfile.STATE_CONNECTED && newState == BluetoothProfile.STATE_DISCONNECTED) {
             handler.removeCallbacks(rssiRunnable);
 
 //            final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
@@ -349,7 +348,7 @@ public class FirstFragment extends Fragment {
                 }
             }
         }
-        Log.e("jerry", "原来的状态: " + mDevList.get(position).getAlias() + "  " + mDevList.get(position).getConnectState());
+        Log.e("jerry", "原来的状态: " + mDevList.get(position).getAlias() + "  " + mDevList.get(position).getConnectState() + "    " + status + "   " + newState);
         mDevList.get(position).setConnectState(newState);
         //如果当前设备以前设置过别名，那么应该先显示别名
     /*    if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias()))
@@ -438,10 +437,10 @@ public class FirstFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        handler = new Handler();
         initView();
         xfBluetooth = XFBluetooth.getInstance(getActivity());
         xfBluetooth.addBleCallBack(gattCallback);
-        handler = new Handler();
     }
 
     private void initView() {
@@ -464,8 +463,15 @@ public class FirstFragment extends Fragment {
         });*/
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle("正在连接设备");
-        progressDialog.setMessage("请确保设备开机并在您周围..");
-        progressDialog.setCancelable(false);
+        progressDialog.setMessage("请确保设备开机并在您周围...");
+        progressDialog.setCanceledOnTouchOutside(false);
+        progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                xfBluetooth.disconnect();
+                xfBluetooth.reset();
+            }
+        });
         locationApplication = ((LocationApplication) getActivity().getApplication());
 
         mDevList = LitePal.findAll(BleDevConfig.class);

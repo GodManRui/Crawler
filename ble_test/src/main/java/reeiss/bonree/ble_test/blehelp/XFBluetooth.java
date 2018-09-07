@@ -50,7 +50,7 @@ public class XFBluetooth {
         //链接状态的回调
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
-            Log.e("jerryzhu", "主类回调连接状态: " + newState);
+            Log.e("jerryzhu", status + " 主类回调连接状态: " + newState);
             if (newState == BluetoothProfile.STATE_CONNECTED) {
                 CURRENT_DEV_MAC = gatt.getDevice().getAddress();
             }
@@ -88,7 +88,7 @@ public class XFBluetooth {
 
         //写操作的回调
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.e("jerry", "写操作的回调: " + Arrays.toString(characteristic.getValue()));
+            Log.e("jerry", "写操作的回调: " + Arrays.toString(characteristic.getValue()) + (status == BluetoothGatt.GATT_SUCCESS ? "成功" : "失败"));
             if (mListCallBack.size() > 0) {
                 for (int i = 0; i < mListCallBack.size(); i++) {
                     mListCallBack.get(i).onCharacteristicWrite(gatt, characteristic, status);

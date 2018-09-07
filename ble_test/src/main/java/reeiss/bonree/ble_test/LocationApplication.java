@@ -72,6 +72,7 @@ public class LocationApplication extends Application {
                         mLocation.setAddStr(location.getAddrStr());
                         mLocation.setLocationDescribe(location.getLocationDescribe());
                     } else {
+                        locationService.stop();
                         Log.e("JerryZhu", "空！！！！！！！！当前位置Str: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe());
                     }
 
