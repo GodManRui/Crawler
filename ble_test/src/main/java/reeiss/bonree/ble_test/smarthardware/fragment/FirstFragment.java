@@ -80,7 +80,7 @@ public class FirstFragment extends Fragment {
         public void run() {
             if (xfBluetooth.getXFBluetoothGatt() != null) {
                 xfBluetooth.getXFBluetoothGatt().readRemoteRssi();
-                handler.postDelayed(this, 5000);
+                handler.postDelayed(this, 3800);
             } else {
                 handler.removeCallbacks(this);
             }
@@ -88,7 +88,6 @@ public class FirstFragment extends Fragment {
     };
     private boolean dontAlert;
     private LocationApplication locationApplication;
-    private Builder dialogAlert;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
 
         //链接状态发生改变
@@ -115,7 +114,7 @@ public class FirstFragment extends Fragment {
                 PreventLosingCommon.getDeviceType(xfBluetooth.getXFBluetoothGatt());
 
                 Log.e("JerryZhu", "onServicesDiscovered: 服务扫描成功，开启按键通知！");
-                BluetoothGattCharacteristic chOnclick = getOnClick(xfBluetooth.getXFBluetoothGatt());
+               /* BluetoothGattCharacteristic chOnclick = getOnClick(xfBluetooth.getXFBluetoothGatt());
                 boolean isEnable = xfBluetooth.getXFBluetoothGatt().setCharacteristicNotification(chOnclick, true);
                 if (isEnable) {
                     List<BluetoothGattDescriptor> descriptorList = chOnclick.getDescriptors();
@@ -125,112 +124,41 @@ public class FirstFragment extends Fragment {
                             gatt.writeDescriptor(descriptor);
                         }
                     }
-                }
+                }*/
 
                 BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(xfBluetooth.getXFBluetoothGatt());
                 if (linkLostAlert != null) {
                     linkLostAlert.setValue(new byte[]{1});
                     boolean b = xfBluetooth.getXFBluetoothGatt().writeCharacteristic(linkLostAlert);
-                    T.show(getActivity(), "开启报警" + b);
+                    Log.e("jerry", "开启报警: " + b);
                 }
             }
         }
 
-        /**
-         * device.getBondState()
-         * BOND_BONDED     指明远程设备已经匹配。   和远程设备的匹配并不意味着设备间已经成功连接。它只意味着匹配过程已经在稍早之前完成，
-         * 并且连接键已经存储在本地，准备在下次连接的时候使用。
-         * <p>
-         * BOND_BONDING  指明和远程设备的匹配正在进行中
-         * BOND_NONE      指明远程设备未被匹配。
-         */
-      /*  //扫描获取设备的回调
-        @Override
-        public void onScanResult(final BluetoothDevice device) {
-            Log.e("jerryzhu", "扫描结果: " + device.getName());
-            if (device.getName() != null && device.getName().contains("iTAG")) {
-                // xfBluetooth.stop();
-                for (int i = 0; i < mDevList.size(); i++) {
-                    if (mDevList.get(i).getBluetoothDevice().getAddress().equals(device.getAddress())) {
-                        Log.e("JerryZhu", "onScanResult: 列表已存在!!!!!!");
-                        return;
-                    }
-                }
-                getActivity().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (vDevLv.getVisibility() != View.VISIBLE) {
-                            vReScan.setVisibility(View.GONE);
-                            vDevLv.setVisibility(View.VISIBLE);
-                        }
-                        BleDevConfig bleDevConfig = LitePal.where("mac=?", device.getAddress()).findFirst(BleDevConfig.class);
-                        if (bleDevConfig != null && !TextUtils.isEmpty(bleDevConfig.getAlias()))
-                            mDevList.add(new DeviceListBean(device, BluetoothGatt.STATE_DISCONNECTED, bleDevConfig.getAlias()));
-                        else
-                            mDevList.add(new DeviceListBean(device, BluetoothGatt.STATE_DISCONNECTED));
-
-                        adapter.setDevList(mDevList);
-                    }
-                });
-            }
-        }*/
         @Override
         public void onCharacteristicWrite(final BluetoothGatt gatt, final BluetoothGattCharacteristic characteristic, final int status) {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (status == BluetoothGatt.GATT_SUCCESS) {
-                        Log.e("jerry", "run: 写入成功");
+                        Log.e("jerry", "run: 写入开始报警成功" + Arrays.toString(characteristic.getValue()));
                     } else {
-                        Log.e("jerry", "run: 写入失败");
+                        Log.e("jerry", "run: 写入开始报警失败" + Arrays.toString(characteristic.getValue()));
                     }
-                }
-            });
-        }
-
-        //链接状态发生改变
-        @Override
-        public void onConnectionStateChange(final BluetoothGatt gatt, final int status, final int newState) {
-
-            BleDevConfig currentDevConfig = getCurrentDevConfig();
-            if (currentDevConfig == null) {
-                currentDevConfig = getCurrentDevConfig(gatt.getDevice().getAddress());
-            }
-            final BleDevConfig finalCurrentDevConfig = currentDevConfig;
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    StatusChange(finalCurrentDevConfig, status, newState);
-                }
-            });
-        }
-
-        @Override
-        public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-
-                PreventLosingCommon.getDeviceType(xfBluetooth.getXFBluetoothGatt());
-
-                Log.e("JerryZhu", "onServicesDiscovered: 服务扫描成功，开启按键通知！");
-                BluetoothGattCharacteristic chOnclick = getOnClick(xfBluetooth.getXFBluetoothGatt());
-                boolean isEnable = xfBluetooth.getXFBluetoothGatt().setCharacteristicNotification(chOnclick, true);
-                if (isEnable) {
-                    List<BluetoothGattDescriptor> descriptorList = chOnclick.getDescriptors();
-                    if (descriptorList != null && descriptorList.size() > 0) {
-                        for (BluetoothGattDescriptor descriptor : descriptorList) {
-                            descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
-                            gatt.writeDescriptor(descriptor);
+                    Log.e("JerryZhu", "onServicesDiscovered: 写入开启报警完成，开启按键通知！");
+                    BluetoothGattCharacteristic chOnclick = getOnClick(xfBluetooth.getXFBluetoothGatt());
+                    boolean isEnable = xfBluetooth.getXFBluetoothGatt().setCharacteristicNotification(chOnclick, true);
+                    if (isEnable) {
+                        List<BluetoothGattDescriptor> descriptorList = chOnclick.getDescriptors();
+                        if (descriptorList != null && descriptorList.size() > 0) {
+                            for (BluetoothGattDescriptor descriptor : descriptorList) {
+                                descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                                gatt.writeDescriptor(descriptor);
+                            }
                         }
                     }
                 }
-
-                BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(xfBluetooth.getXFBluetoothGatt());
-                if (linkLostAlert != null) {
-                    linkLostAlert.setValue(new byte[]{1});
-                    boolean b = xfBluetooth.getXFBluetoothGatt().writeCharacteristic(linkLostAlert);
-                    T.show(getActivity(), "开启报警" + b);
-                }
-            }
+            });
         }
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
@@ -252,20 +180,27 @@ public class FirstFragment extends Fragment {
                     if (Utils.isRemoteAlert(alertMargin, rssi, lastRssi)) {
                         PhoneAlert(currentDevConfig, 1);
                     } else {
+                        lastRssi = rssi;
+                        if (!isDialogMargin) return;
                         if (mPlayer != null && mPlayer.isPlaying()) {
                             mPlayer.stop();
                             mPlayer.release();
-                            mPlayer.reset();
+//                            mPlayer.reset();
                             mPlayer = null;
                         }
+                        if (alertDialog != null && alertDialog.isShowing()) {
+                            alertDialog.cancel();
+                            alertDialog = null;
+                        }
                     }
-                    lastRssi = rssi;
                 }
             });
             //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
         }
     };
-  /*  private Runnable scanTimeOut = new Runnable() {
+    private AlertDialog alertDialog;
+    private boolean isDialogMargin;
+    /*  private Runnable scanTimeOut = new Runnable() {
         @Override
         public void run() {
             T.show(getActivity(), "扫描超时已停止");
@@ -347,6 +282,8 @@ public class FirstFragment extends Fragment {
      * @param newState
      */
     private void StatusChange(BleDevConfig currentDevConfig, int status, final int newState) {
+        if (progressDialog != null)
+            progressDialog.dismiss();
         if (status == BluetoothProfile.STATE_CONNECTED && newState == BluetoothProfile.STATE_DISCONNECTED) {
             handler.removeCallbacks(rssiRunnable);
 
@@ -378,9 +315,6 @@ public class FirstFragment extends Fragment {
                 dontAlert = false;
             }
         }
-
-        if (progressDialog != null)
-            progressDialog.dismiss();
 
 //        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         //已连接
@@ -433,20 +367,40 @@ public class FirstFragment extends Fragment {
         }
 //                            mPlayer.setVolume(2f, 2f);
 
-        dialogAlert = new Builder(getActivity());
-        dialogAlert.setTitle("丢失报警");
-        dialogAlert.setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！");
-        dialogAlert.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+        Builder dialogAlert = new Builder(getActivity());
+        dialogAlert.setTitle("丢失报警")
+                .setCancelable(false)
+                .setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！")
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (mPlayer != null) {
+                            mPlayer.stop();
+                            mPlayer.release();
+                            mPlayer = null;
+                        }
+                        alertDialog = null;
+                    }
+                });
+        alertDialog = dialogAlert.create();
+        alertDialog.show();
+        if (type != 0) {     //那么此次创建的是超出范围的dialog，需要监听范围靠近，取消dialog
+            isDialogMargin = true;
+        }
+        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (mPlayer != null) {
-                    mPlayer.stop();
-                    mPlayer.release();
-                    mPlayer = null;
-                }
+            public void onDismiss(DialogInterface dialog) {
+                Log.e("jerrydialog", "onDismiss: ");
+                isDialogMargin = false;
             }
         });
-        dialogAlert.setCancelable(false).create().show();
+        alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                Log.e("jerrydialog", "onCancel: ");
+                isDialogMargin = false;
+            }
+        });
         return false;
     }
 
