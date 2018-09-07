@@ -108,7 +108,7 @@ public class WifiSpoceActivity extends AppCompatActivity {
                 }
 
                 dialog.dismiss();
-                WuRaoWifiConfig wuRaoWifiConfig = new WuRaoWifiConfig(wi.getSSID(), name, finalMacAddress);
+                WuRaoWifiConfig wuRaoWifiConfig = new WuRaoWifiConfig(wi.getSSID().replace("\"", ""), name, finalMacAddress);
                 wuRaoWifiConfig.save();
                 wifiList.add(wuRaoWifiConfig);
                 adapter.setData(wifiList);
