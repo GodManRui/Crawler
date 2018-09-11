@@ -6,8 +6,8 @@ import android.bluetooth.BluetoothGattService;
 import java.util.UUID;
 
 public class PreventLosingCommon {
+    public static final int Dev_Type_Shuidi = 100;
     static final String Server_ShuiDi = "00001802-0000-1000-8000-00805f9b34fb";
-    static final int Dev_Type_Shuidi = 100;
     static final String Server_Rectangle = "00001804-0000-1000-8000-00805f9b34fb";
     static final int Dev_Type_Rectangle = 200;
     //电池电量显示
@@ -106,7 +106,7 @@ public class PreventLosingCommon {
         return null;
     }
 
-    public static void getDeviceType(BluetoothGatt xfBluetoothGatt) {
+    public static void setDeviceType(BluetoothGatt xfBluetoothGatt) {
         BluetoothGattService shuidi = xfBluetoothGatt.getService(UUID.fromString(Server_ShuiDi));
         if (shuidi != null) {
             Dev_Type = Dev_Type_Shuidi;

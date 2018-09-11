@@ -50,16 +50,16 @@ public class MainActivity extends AppCompatActivity {
     private void onTabItemSelected(int id) {
         switch (id) {
             case R.id.tab_menu_home:
-                FragmentFactory.getInstance().changeFragment(FIRST, R.id.fragment, getSupportFragmentManager());
+                FragmentFactory.getInstance().changeFragment(FIRST, R.id.fragment, getFragmentManager());
                 break;
             case R.id.tab_menu_discovery:
-                FragmentFactory.getInstance().changeFragment(SECOND, R.id.fragment, getSupportFragmentManager());
+                FragmentFactory.getInstance().changeFragment(SECOND, R.id.fragment, getFragmentManager());
                 break;
             case R.id.tab_menu_attention:
-                FragmentFactory.getInstance().changeFragment(THREE, R.id.fragment, getSupportFragmentManager());
+                FragmentFactory.getInstance().changeFragment(THREE, R.id.fragment, getFragmentManager());
                 break;
             case R.id.tab_menu_profile:
-                FragmentFactory.getInstance().changeFragment(FOUR, R.id.fragment, getSupportFragmentManager());
+                FragmentFactory.getInstance().changeFragment(FOUR, R.id.fragment, getFragmentManager());
                 break;
         }
 

@@ -1,8 +1,9 @@
 package reeiss.bonree.ble_test.utils;
 
 
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.util.Log;
 
 import reeiss.bonree.ble_test.smarthardware.fragment.FirstFragment;
 import reeiss.bonree.ble_test.smarthardware.fragment.FourFragment;
@@ -67,12 +68,14 @@ public class FragmentFactory {
      */
     public void changeFragment(int type, int resourceId,
                                FragmentManager fragmentManager) {
+        Log.e("JerryZhuMM", " Factory : " + type);
+
         Fragment target = getFragment(type);
         // 缓存cache第一次进来是空的要单独处理
         if (cacheFragment == null) {
             // 第一次进来要切换的fragment作为当前fragment加入到transaction中并显示
             fragmentManager.beginTransaction().add(resourceId, target)
-                    .show(target).commit();
+                .show(target).commit();
             cacheFragment = target;
             return;
         }
@@ -86,7 +89,7 @@ public class FragmentFactory {
         }
         // 隐藏当前的fragment示目标的fragment
         fragmentManager.beginTransaction().hide(cacheFragment).show(target)
-                .commit();
+            .commit();
         //将目标fragment复制给缓存标记
         cacheFragment = target;
     }
@@ -98,9 +101,11 @@ public class FragmentFactory {
      * @return fragment
      */
     public Fragment getFragment(int type) {
+        Log.e("JerryZhuMM", " Factory :getFrag   " + onlineTestFragment);
         switch (type) {
             case FIRST:
                 if (onlineTestFragment == null) {
+                    Log.e("JerryZhuMM", " Factory :onlineTestFragment是空   " + onlineTestFragment);
                     onlineTestFragment = new FirstFragment();
                 }
                 return onlineTestFragment;

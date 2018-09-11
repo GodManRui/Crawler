@@ -1,6 +1,7 @@
 package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
+import android.app.Fragment;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
@@ -21,7 +22,6 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -52,33 +52,17 @@ public class SecondFragment extends Fragment {
     private String picturePath;
     private ImageView imPicture;
     private boolean takePicture;
-    private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            super.onCharacteristicChanged(gatt, characteristic);
-            String value = Arrays.toString(characteristic.getValue());
-            if (value.equals("[1]")) {
-                if (mCamera != null) {
-                    /*mCamera.autoFocus(autoFocusCallback);     手动对焦，才设置回调
-                    takePicture = true;*/
-                    mCamera.takePicture(null, null, mPictureCallback);
-                    playSound();
-                }
-            }
-            Log.e("jerry", "onCharacteristicChanged: " + value);
-        }
-    };
     // 拍照回调
     private PictureCallback mPictureCallback = new PictureCallback() {
         @Override
         public void onPictureTaken(final byte[] data, Camera camera) {
             File pictureDir = Environment
-                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
             picturePath = pictureDir
-                    + File.separator
-                    + new DateFormat().format("yyyyMMddHHmmss", new Date())
-                    .toString() + ".jpg";
+                + File.separator
+                + new DateFormat().format("yyyyMMddHHmmss", new Date())
+                .toString() + ".jpg";
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -92,7 +76,7 @@ public class SecondFragment extends Fragment {
                             bitmap = CameraPreview.rotateBitmapByDegree(bitmap, -90);
                         }
                         BufferedOutputStream bos = new BufferedOutputStream(
-                                new FileOutputStream(file));
+                            new FileOutputStream(file));
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                         bos.flush();
                         bos.close();
@@ -111,6 +95,41 @@ public class SecondFragment extends Fragment {
             }).start();
 
             mCamera.startPreview();
+        }
+    };
+    private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicChanged(gatt, characteristic);
+            String value = Arrays.toString(characteristic.getValue());
+            if (value.equals("[1]")) {
+                if (mCamera != null) {
+                    /*mCamera.autoFocus(autoFocusCallback);     手动对焦，才设置回调
+                    takePicture = true;*/
+                    mCamera.takePicture(null, null, mPictureCallback);
+                    playSound();
+                }
+            }
+            Log.e("jerry", "onCharacteristicChanged: " + value);
+        }
+    };
+    private final Camera.AutoFocusCallback autoFocusCallback = new Camera.AutoFocusCallback() {
+        @Override
+        public void onAutoFocus(boolean success, Camera camera) {
+            //success表示对焦成功
+            if (success && takePicture) {
+                T.show(getActivity(), "对焦成功，拍照");
+                //shutter是快门按下时的回调，raw是获取拍照原始数据的回调，jpeg是获取经过压缩成jpg格式的图像数据的回调。
+                mCamera.takePicture(null, null, mPictureCallback);
+                playSound();
+                takePicture = false;
+                Log.i("jerry", "成功:success...");
+                //myCamera.setOneShotPreviewCallback(null);
+            } else {
+                T.show(getActivity(), "对焦失败");
+                //未对焦成功
+                Log.i("jerry", "myAutoFocusCallback: 失败了...");
+            }
         }
     };
     private Camera.Parameters parameters;
@@ -194,7 +213,7 @@ public class SecondFragment extends Fragment {
         if (volume != 0) {
             if (mediaPlayer == null)
                 mediaPlayer = MediaPlayer.create(getActivity(),
-                        Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                    Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
             if (mediaPlayer != null) {
                 mediaPlayer.start();
             }
@@ -263,30 +282,10 @@ public class SecondFragment extends Fragment {
         mCameraLayout.addView(mPreview);
     }
 
-    private final Camera.AutoFocusCallback autoFocusCallback = new Camera.AutoFocusCallback() {
-        @Override
-        public void onAutoFocus(boolean success, Camera camera) {
-            //success表示对焦成功
-            if (success && takePicture) {
-                T.show(getActivity(), "对焦成功，拍照");
-                //shutter是快门按下时的回调，raw是获取拍照原始数据的回调，jpeg是获取经过压缩成jpg格式的图像数据的回调。
-                mCamera.takePicture(null, null, mPictureCallback);
-                playSound();
-                takePicture = false;
-                Log.i("jerry", "成功:success...");
-                //myCamera.setOneShotPreviewCallback(null);
-            } else {
-                T.show(getActivity(), "对焦失败");
-                //未对焦成功
-                Log.i("jerry", "myAutoFocusCallback: 失败了...");
-            }
-        }
-    };
-
     // 判断相机是否支持
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_CAMERA)) {
+            PackageManager.FEATURE_CAMERA)) {
             return true;
         } else {
             return false;

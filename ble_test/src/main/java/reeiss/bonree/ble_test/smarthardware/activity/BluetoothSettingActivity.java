@@ -35,6 +35,7 @@ import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.utils.T;
 
 import static reeiss.bonree.ble_test.bean.CommonHelp.getLinkLostAlert;
+import static reeiss.bonree.ble_test.bean.PreventLosingCommon.Dev_Type_Shuidi;
 
 public class BluetoothSettingActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -64,10 +65,18 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
                     @Override
                     public void run() {
                         if (linkLostAlert != null && characteristic == linkLostAlert) {
-                            vAlert.setChecked(value.equals("[1]") ? true : false);
+                            vAlert.setChecked(value.equals("[1]"));
                         } else {
-                            if (tvBattery != null)
+                            if (tvBattery != null) {
                                 tvBattery.setText(Arrays.toString(characteristic.getValue()) + " %");
+
+                                //获取断开报警的配置
+                                if (PreventLosingCommon.Dev_Type != Dev_Type_Shuidi) {
+                                    linkLostAlert = getLinkLostAlert(xfBluetoothGatt);
+                                    if (linkLostAlert != null)
+                                        xfBluetoothGatt.readCharacteristic(linkLostAlert);
+                                }
+                            }
                         }
                     }
                 });
@@ -122,6 +131,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         tvRing = (TextView) findViewById(R.id.tv_ring);
         edDevName = (EditText) findViewById(R.id.ed_devName);
         tvAlertMargin = (TextView) findViewById(R.id.tv_alert_margin);
+
         setAlertMarginText(currentDevConfig.getAlertMargin());
         findViewById(R.id.rl_alert_margin).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,12 +155,16 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             edDevName.setText(currentDevConfig.getAlias());
         }
         rlRing.setOnClickListener(this);
-        vAlert.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                BluetoothSettingActivity.this.isChecked = isChecked;
-            }
-        });
+        if (PreventLosingCommon.Dev_Type == Dev_Type_Shuidi) {
+            findViewById(R.id.rl_disconnect).setVisibility(View.GONE);
+            findViewById(R.id.vi_disconnect).setVisibility(View.GONE);
+        } else
+            vAlert.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    BluetoothSettingActivity.this.isChecked = isChecked;
+                }
+            });
         mProgressDialog = new ProgressDialog(this);
     }
 
@@ -158,14 +172,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         mXFBlue = XFBluetooth.getInstance(BluetoothSettingActivity.this);
         xfBluetoothGatt = mXFBlue.getXFBluetoothGatt();
         mXFBlue.addBleCallBack(mXFBluetoothCallBack);
-        for (int i = 0; i < xfBluetoothGatt.getServices().size(); i++) {
-            Log.e("jerryzhu", "initBlue: " + xfBluetoothGatt.getServices().get(i).getUuid());
-        }
 
-        //获取
-        linkLostAlert = getLinkLostAlert(xfBluetoothGatt);
-        if (linkLostAlert != null)
-            xfBluetoothGatt.readCharacteristic(linkLostAlert);
         //读取当前电量
         BluetoothGattService mBatteryServer = xfBluetoothGatt.getService(UUID.fromString(PreventLosingCommon.Server_Battery_Level));
         if (mBatteryServer != null) {

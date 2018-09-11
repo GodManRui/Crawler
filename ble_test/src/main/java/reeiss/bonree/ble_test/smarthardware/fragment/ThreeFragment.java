@@ -1,11 +1,11 @@
 package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
+import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,20 +83,12 @@ public class ThreeFragment extends Fragment {
         return view;
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void EventLocation(EventBusLocation messageEvent) {
-        // 在地图上添加Marker，并显示
-        mBaiduMap.addOverlay(messageEvent.options);
-        mBaiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(messageEvent.point));
-    }
-
     @Override
     public void onResume() {
         super.onResume();
         // 在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
         map.onResume();
     }
-
 
     @Override
     public void onPause() {
@@ -114,6 +106,13 @@ public class ThreeFragment extends Fragment {
 //        locationService.unregisterListener(listener);
 //        locationService.stop();
         map.onDestroy();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void EventLocation(EventBusLocation messageEvent) {
+        // 在地图上添加Marker，并显示
+        mBaiduMap.addOverlay(messageEvent.options);
+        mBaiduMap.setMapStatus(MapStatusUpdateFactory.newLatLng(messageEvent.point));
     }
 
 
