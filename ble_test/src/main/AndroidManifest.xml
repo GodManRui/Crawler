@@ -9,6 +9,7 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <uses-feature android:name="android.permission.BLUETOOTH_ADMIN" />
     <!--蓝牙权限-->
@@ -61,6 +62,7 @@
                 <action android:name="com.baidu.location.service_v2.4" />
             </intent-filter>
         </service>
+        <service android:name=".smarthardware.BlueService" />
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"

@@ -31,6 +31,8 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
         }
+        Intent intent = new Intent(this, BlueService.class);
+        startService(intent);
     }
 
     private void initView() {
