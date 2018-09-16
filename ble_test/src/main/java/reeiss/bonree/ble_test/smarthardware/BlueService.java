@@ -16,7 +16,9 @@ import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -65,17 +67,23 @@ public class BlueService extends Service {
     private MediaPlayer mPlayer;
     private double lastRssi;
     private Button btScan;
-    private Handler handler = new Handler() {
+
+    private final class ServiceHandler extends Handler {
+        public ServiceHandler(Looper looper) {
+            super(looper);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case 100:
-                    BluetoothGattCharacteristic characteristic = (BluetoothGattCharacteristic) msg.obj;
-                    FoundPhone(characteristic);
+                    FoundPhone();
                     break;
             }
         }
-    };
+    }
+
+    private ServiceHandler handler;
     final Runnable rssiRunnable = new Runnable() {
         @Override
         public void run() {
@@ -151,16 +159,27 @@ public class BlueService extends Service {
                             //说明是写入报警返回的，排除水滴
                         }*/
             }
-
         }
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic
                 characteristic) {
-            Message message = handler.obtainMessage();
-            message.what = 100;
-            message.obj = characteristic;
-            handler.sendMessage(message);
+            String value = Arrays.toString(characteristic.getValue());
+            if (PreventLosingCommon.Dev_Type == Dev_Type_Shuidi) {
+                long currentTimeMillis = System.currentTimeMillis();
+                if ((currentTimeMillis - lastTimeMillis) < 500) {
+                    if (value.equals("[1]")) {
+                        value = "[2]";
+                        lastTimeMillis = 0;
+                    }
+                } else lastTimeMillis = currentTimeMillis;
+
+            }
+            if (value.equals("[2]")) {
+                Message message = handler.obtainMessage(100);
+//                message.what = 100;
+                handler.sendMessage(message);
+            }
         }
 
         @Override
@@ -193,7 +212,18 @@ public class BlueService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        handler = new Handler();
+//        handler = new Handler();
+        // 默认情况下Service是运行在主线程中，而服务一般又十分耗费时间，如果
+        // 放在主线程中，将会影响程序与用户的交互，因此把Service
+        // 放在一个单独的线程中执行
+        HandlerThread thread = new HandlerThread("MessageDemoThread", Thread.MAX_PRIORITY);
+        thread.start();
+        // 获取当前线程中的looper对象
+        Looper looper = thread.getLooper();
+        //创建Handler对象，把looper传递过来使得handler、
+        //looper和messageQueue三者建立联系
+        handler = new ServiceHandler(looper);
+
         xfBluetooth = XFBluetooth.getInstance(getApplicationContext());
         xfBluetooth.addBleCallBack(gattCallback);
     }
@@ -211,61 +241,46 @@ public class BlueService extends Service {
     }
 
     //双击寻找手机
-    private void FoundPhone(BluetoothGattCharacteristic characteristic) {
-        String value = Arrays.toString(characteristic.getValue());
-        if (PreventLosingCommon.Dev_Type == Dev_Type_Shuidi) {
-            long currentTimeMillis = System.currentTimeMillis();
-            if ((currentTimeMillis - lastTimeMillis) < 500) {
-                if (value.equals("[1]")) {
-                    value = "[2]";
-                    lastTimeMillis = 0;
-                }
-            } else lastTimeMillis = currentTimeMillis;
-
+    private void FoundPhone() {
+        //在勿扰 true
+        if (checkWuRao()) return;
+        if (mPlayer != null && mPlayer.isPlaying()) {
+            return;
         }
-        if (value.equals("[2]")) {
-            //在勿扰 true
-            if (checkWuRao()) return;
-            BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-            T.show(this, "寻找手机！！");
-            if (mPlayer != null && mPlayer.isPlaying()) {
-                Log.e("jerry", "run: 正在播放");
-                return;
-            }
-            try {
-                mPlayer = new MediaPlayer();
-                assert currentDevConfig != null;
-                Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
-                mPlayer.setDataSource(this, setDataSourceuri);
-                mPlayer.prepare();
-                mPlayer.setLooping(true);
-                mPlayer.start();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
+        try {
+            mPlayer = new MediaPlayer();
+            assert currentDevConfig != null;
+            Uri setDataSourceuri = Uri.parse("android.resource://reeiss.bonree.ble_test/" + currentDevConfig.getRingResId());
+            mPlayer.setDataSource(this, setDataSourceuri);
+            mPlayer.prepare();
+            mPlayer.setLooping(true);
+            mPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
                  /*   final MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), currentDev.getRingResId());//重新设置要播放的音频
                     mediaPlayer.start();*/
-            AlertDialog.Builder b = new AlertDialog.Builder(this);
-            b.setTitle("寻找手机");
-            b.setMessage(currentDevConfig.getAlias().isEmpty() ? xfBluetooth.getXFBluetoothGatt().getDevice().getName() : currentDevConfig.getAlias());
-            b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (mPlayer != null) {
-                        mPlayer.stop();
-                        mPlayer.release();
-                        mPlayer = null;
-                    }
-                    T.show(BlueService.this, "取消");
+        AlertDialog.Builder b = new AlertDialog.Builder(this);
+        b.setTitle("寻找手机");
+        b.setMessage(currentDevConfig.getAlias().isEmpty() ? xfBluetooth.getXFBluetoothGatt().getDevice().getName() : currentDevConfig.getAlias());
+        b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (mPlayer != null) {
+                    mPlayer.stop();
+                    mPlayer.release();
+                    mPlayer = null;
                 }
-            });
-            AlertDialog alertDialog = b.setCancelable(false).create();
-            alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-            Log.e("jerryzhu", "service 弹窗  ");
-            alertDialog.show();
-        }
-        Log.e("jerryzhu", "service 点击了  " + value);
+                T.show(BlueService.this, "取消");
+            }
+        });
+        AlertDialog alertDialog = b.setCancelable(false).create();
+        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+        Log.e("jerryzhu", "service 弹窗  ");
+        alertDialog.show();
     }
+
 
     //勿扰是否打开，是否在勿扰区域  在勿扰true 不在false
     private boolean checkWuRao() {

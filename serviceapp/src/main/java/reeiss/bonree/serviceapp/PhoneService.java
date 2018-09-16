@@ -44,6 +44,7 @@ public class PhoneService extends Service {
         if (index > 1) {
             AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
             alertDialog.setMessage("有新消息，是否查看？");
+            alertDialog.setTitle("丢失报警");
             alertDialog.setPositiveButton("否",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -57,7 +58,6 @@ public class PhoneService extends Service {
                 });
 
             ad = alertDialog.create();
-
             ad.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
             ad.setCanceledOnTouchOutside(false);//点击外面区域不会让dialog消失
             Toast.makeText(this, "弹窗出来", Toast.LENGTH_SHORT).show();
