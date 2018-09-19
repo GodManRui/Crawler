@@ -1,6 +1,7 @@
-package reeiss.bonree.ble_test.smarthardware;
+package reeiss.bonree.ble_test.smarthardware.service;
 
 import android.app.AlertDialog;
+import android.app.Notification;
 import android.app.ProgressDialog;
 import android.app.Service;
 import android.bluetooth.BluetoothGatt;
@@ -15,6 +16,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Binder;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -228,16 +230,43 @@ public class BlueService extends Service {
         xfBluetooth.addBleCallBack(gattCallback);
     }
 
+    int GRAY_SERVICE_ID = 1001;
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        //设置service为前台服务，提高优先级
+       /* if (Build.VERSION.SDK_INT < 18) {
+            //Android4.3以下 ，此方法能有效隐藏Notification上的图标
+            startForeground(GRAY_SERVICE_ID, new Notification());
+        } else if (Build.VERSION.SDK_INT > 18 && Build.VERSION.SDK_INT < 25) {
+            //Android4.3 - Android7.0，此方法能有效隐藏Notification上的图标
+            Intent innerIntent = new Intent(this, GrayInnerService.class);
+            startService(innerIntent);
+            startForeground(GRAY_SERVICE_ID, new Notification());
+        } else {*/
+        //Android7.1 google修复了此漏洞，暂无解决方法（现状：Android7.1以上app启动后通知栏会出现一条"正在运行"的通知消息）
+        startForeground(GRAY_SERVICE_ID, new Notification());
+//        }
         return START_STICKY;
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        return new MyBinder();
+    }
 
-        return null;
+    private class MyBinder extends Binder implements IService {
+
+        @Override
+        public void init(String path) {
+
+        }
+
+        @Override
+        public void connect(String mac) {
+
+        }
     }
 
     //双击寻找手机
@@ -261,7 +290,7 @@ public class BlueService extends Service {
         }
                  /*   final MediaPlayer mediaPlayer = MediaPlayer.create(getActivity(), currentDev.getRingResId());//重新设置要播放的音频
                     mediaPlayer.start();*/
-        AlertDialog.Builder b = new AlertDialog.Builder(this);
+        AlertDialog.Builder b = new AlertDialog.Builder(this, R.style.AlertDialog);
         b.setTitle("寻找手机");
         b.setMessage(currentDevConfig.getAlias().isEmpty() ? xfBluetooth.getXFBluetoothGatt().getDevice().getName() : currentDevConfig.getAlias());
         b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
@@ -392,7 +421,7 @@ public class BlueService extends Service {
         }
 //                            mPlayer.setVolume(2f, 2f);
 
-        AlertDialog.Builder dialogAlert = new AlertDialog.Builder(getApplicationContext());
+        AlertDialog.Builder dialogAlert = new AlertDialog.Builder(this, R.style.AlertDialog);
         dialogAlert.setTitle("丢失报警")
                 .setCancelable(false)
                 .setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！")

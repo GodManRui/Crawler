@@ -366,13 +366,15 @@ public class FirstFragment extends Fragment {
                 }
                 //点的是可以连接的设备，开始连接
                 vDevLv.setItemsCanFocus(false);
-                FirstFragment.this.position = position;/*
-                deviceListBean.setConnectState(BluetoothGatt.STATE_CONNECTING);
-                adapter.setDevList(mDevList);*/
-                deviceListBean.setConnectState(BluetoothGatt.STATE_DISCONNECTED);
-                adapter.notifyDataSetChanged();
+                FirstFragment.this.position = position;
                 progressDialog.show();
                 xfBluetooth.connect(deviceListBean.getMac());
+                /*
+                deviceListBean.setConnectState(BluetoothGatt.STATE_CONNECTING);
+                adapter.setDevList(mDevList);*/
+               /* deviceListBean.setConnectState(BluetoothGatt.STATE_DISCONNECTED);
+                adapter.notifyDataSetChanged();*/
+
             }
         });
 
