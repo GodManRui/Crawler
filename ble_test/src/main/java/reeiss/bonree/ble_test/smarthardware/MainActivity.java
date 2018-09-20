@@ -26,7 +26,7 @@ import static reeiss.bonree.ble_test.utils.FragmentFactory.THREE;
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView mBottomNavigationView;
-    private IService iService;
+    public IService iService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,20 +36,22 @@ public class MainActivity extends AppCompatActivity {
         initView();
         if (savedInstanceState == null) {
             mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
+
+            Intent intent = new Intent(this, BlueService.class);
+            startService(intent);
+            bindService(intent, new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    iService = (IService) service;
+                    iService.init("");
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+
+                }
+            }, BIND_AUTO_CREATE);
         }
-        Intent intent = new Intent(this, BlueService.class);
-        startService(intent);
-        bindService(intent, new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-                iService = (IService) service;
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-
-            }
-        },BIND_AUTO_CREATE);
     }
 
     private void initView() {

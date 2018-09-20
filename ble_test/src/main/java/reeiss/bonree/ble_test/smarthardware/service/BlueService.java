@@ -214,6 +214,8 @@ public class BlueService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e("jerry", "onCreate: ");
+
 //        handler = new Handler();
         // 默认情况下Service是运行在主线程中，而服务一般又十分耗费时间，如果
         // 放在主线程中，将会影响程序与用户的交互，因此把Service
@@ -226,8 +228,6 @@ public class BlueService extends Service {
         //looper和messageQueue三者建立联系
         handler = new ServiceHandler(looper);
 
-        xfBluetooth = XFBluetooth.getInstance(getApplicationContext());
-        xfBluetooth.addBleCallBack(gattCallback);
     }
 
     int GRAY_SERVICE_ID = 1001;
@@ -247,12 +247,14 @@ public class BlueService extends Service {
         //Android7.1 google修复了此漏洞，暂无解决方法（现状：Android7.1以上app启动后通知栏会出现一条"正在运行"的通知消息）
         startForeground(GRAY_SERVICE_ID, new Notification());
 //        }
+        Log.e("jerry", "onStartCommand: ");
         return START_STICKY;
     }
 
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        Log.e("jerry", "onBind: ");
         return new MyBinder();
     }
 
@@ -260,12 +262,19 @@ public class BlueService extends Service {
 
         @Override
         public void init(String path) {
-
+            xfBluetooth = XFBluetooth.getInstance(getApplicationContext());
+            xfBluetooth.addBleCallBack(gattCallback);
         }
 
         @Override
         public void connect(String mac) {
+            Log.e("jerry", "connect: " + Thread.currentThread().getName());
+            xfBluetooth.connect(mac);
+        }
 
+        @Override
+        public void setDontAlert(boolean isDontAlert) {
+            dontAlert = isDontAlert;
         }
     }
 
