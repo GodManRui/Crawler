@@ -42,8 +42,9 @@ public class PhoneService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         index++;
         if (index > 1) {
-            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+            AlertDialog.Builder alertDialog = new AlertDialog.Builder(this,R.style.AlertDialog);
             alertDialog.setMessage("有新消息，是否查看？");
+            alertDialog.setTitle("丢失报警");
             alertDialog.setPositiveButton("否",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
@@ -57,8 +58,8 @@ public class PhoneService extends Service {
                 });
 
             ad = alertDialog.create();
-
             ad.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+            ad.setCancelable(false);
             ad.setCanceledOnTouchOutside(false);//点击外面区域不会让dialog消失
             Toast.makeText(this, "弹窗出来", Toast.LENGTH_SHORT).show();
             ad.show();

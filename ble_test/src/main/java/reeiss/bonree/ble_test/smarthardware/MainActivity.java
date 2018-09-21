@@ -1,7 +1,10 @@
 package reeiss.bonree.ble_test.smarthardware;
 
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -10,6 +13,8 @@ import android.util.Log;
 import android.view.MenuItem;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.smarthardware.service.BlueService;
+import reeiss.bonree.ble_test.smarthardware.service.IService;
 import reeiss.bonree.ble_test.utils.BottomNavigationViewHelper;
 import reeiss.bonree.ble_test.utils.FragmentFactory;
 
@@ -21,6 +26,7 @@ import static reeiss.bonree.ble_test.utils.FragmentFactory.THREE;
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView mBottomNavigationView;
+    public IService iService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +36,21 @@ public class MainActivity extends AppCompatActivity {
         initView();
         if (savedInstanceState == null) {
             mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
+
+            Intent intent = new Intent(this, BlueService.class);
+            startService(intent);
+            bindService(intent, new ServiceConnection() {
+                @Override
+                public void onServiceConnected(ComponentName name, IBinder service) {
+                    iService = (IService) service;
+                    iService.init("");
+                }
+
+                @Override
+                public void onServiceDisconnected(ComponentName name) {
+
+                }
+            }, BIND_AUTO_CREATE);
         }
     }
 
