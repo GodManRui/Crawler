@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+    <title>Server-报警详情</title>
+    <link rel="stylesheet" href="../../public/css/common.css" type="text/css"/>
+    <script type="text/javascript" src="../../public/js/common.js"></script>
+    <script type="text/javascript" src="../../public/js/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="../../public/js/zepto_min.js"></script>
+    <script type="text/javascript" src="../../public/js/touchslider.js"></script>
+    <script type="text/javascript" src="../../public/js/netVo.js"></script>
+    <script type="text/javascript" src="../../public/js/util.js"></script>
+    <script type="text/javascript" src="../../public/js/map.js"></script>
+    <script type="text/javascript" src="../../public/js/net.js"></script>
+
+    <link rel="stylesheet" href="css/server.css" type="text/css"/>
+    <link rel="stylesheet" href="css/swiper.min.css" type="text/css"/>
+    <script type="text/javascript" src="js/swiper.min.js"></script>
+    <script type="text/javascript" src="js/alert.js"></script>
+
+</head>
+<body>
+
+<!--报警详情第一部分开始-->
+<div class="alertFirst">
+    <i class="alertIco5"></i>
+    <p><span>报警名称</span><label id="alertName" class="alertName"></label></p>
+    <p><span>应用名称</span><label id="appName" class="alertName"></label></p>
+    <p><span>报警类型</span><label id="alertType" class="alertName"></label></p>
+    <p><span>报警时间</span><label id="alertTime"></label></p>
+</div>
+<!--报警详情第一部分结束-->
+
+
+<!--报警详情第二部分开始-->
+<div class="alertSecond">
+    <!-- Swiper -->
+    <div class="alertBox">
+        <div class="swiper-container" id="tabMenu">
+            <ul id="tabTitle" class="swiper-wrapper menuBox">
+            </ul>
+        </div>
+    </div>
+    <div class="swiper-container" id="tabContent">
+        <div class="swiper-wrapper content" id="divContent">
+
+        </div>
+    </div>
+</div>
+<!--报警详情第二部分结束-->
+</body>
+</html>

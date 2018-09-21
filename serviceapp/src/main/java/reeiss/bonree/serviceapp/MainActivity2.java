@@ -2,13 +2,11 @@ package reeiss.bonree.serviceapp;
 
 import android.app.Activity;
 import android.content.ComponentName;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.IBinder;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AlertDialog.Builder;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -41,10 +39,11 @@ public class MainActivity2 extends Activity implements OnClickListener {
         bt_stop.setOnClickListener(this);
         bt_play.setOnClickListener(this);
         et_path = (EditText) findViewById(R.id.et_path);
-
+        et_path.setText(Environment.getExternalStorageDirectory().getAbsolutePath() + "/aaa.mp3");
         // 绑定服务
         Intent intent = new Intent(this, MusicService.class);
         myConn = new MyConn();
+        startService(intent);
         bindService(intent, myConn, BIND_AUTO_CREATE);
     }
 
@@ -54,28 +53,28 @@ public class MainActivity2 extends Activity implements OnClickListener {
         super.onDestroy();
     }
 
-    @Override
-    public void onBackPressed() {
-        AlertDialog.Builder builder = new Builder(this);
-        builder.setTitle("提醒:");
-        builder.setMessage("是否在后台继续播放音乐?");
-        builder.setPositiveButton("继续播放",
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    //finish();
-                    Toast.makeText(MainActivity2.this, "此功能在只绑定服务的条件下不能实现！", Toast.LENGTH_SHORT).show();
-                    dialog.dismiss();
-                }
-            });
-        builder.setNegativeButton("停止播放",
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    finish();
-                }
-            });
-        builder.show();
-    }
-
+    /*  @Override
+      public void onBackPressed() {
+          AlertDialog.Builder builder = new Builder(this);
+          builder.setTitle("提醒:");
+          builder.setMessage("是否在后台继续播放音乐?");
+          builder.setPositiveButton("继续播放",
+              new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dialog, int which) {
+                      //finish();
+                      Toast.makeText(MainActivity2.this, "此功能在只绑定服务的条件下不能实现！", Toast.LENGTH_SHORT).show();
+                      dialog.dismiss();
+                  }
+              });
+          builder.setNegativeButton("停止播放",
+              new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dialog, int which) {
+                      finish();
+                  }
+              });
+          builder.show();
+      }
+  */
     public void onClick(View v) {
         String path = et_path.getText().toString().trim();
         if (TextUtils.isEmpty(path)) {

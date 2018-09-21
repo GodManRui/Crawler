@@ -25,7 +25,8 @@
 
         <service
             android:name=".PhoneService"
-            android:icon="@drawable/ic_launcher_foreground" />
+            android:icon="@drawable/ic_launcher_foreground"
+            android:process=":remote" />
         <service android:name=".MusicService" />
     </application>
 

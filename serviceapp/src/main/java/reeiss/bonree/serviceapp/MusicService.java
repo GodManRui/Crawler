@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Binder;
 import android.os.IBinder;
+import android.util.Log;
 import android.widget.Toast;
 
 public class MusicService extends Service {
@@ -15,15 +16,18 @@ public class MusicService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.e("JerryZhu", "onCreate: ");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        return super.onStartCommand(intent, flags, startId);
+        Log.e("JerryZhu", "onStartCommand: ");
+        return START_REDELIVER_INTENT;
     }
 
     @Override
     public void onDestroy() {
+        Log.e("JerryZhu", "onDestroy: ");
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();//释放播放器.
@@ -33,6 +37,7 @@ public class MusicService extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
+        Log.e("JerryZhu", "onBind: ");
         return new MyBinder();
     }
 
@@ -102,6 +107,7 @@ public class MusicService extends Service {
 
         @Override
         public void init(String path) {
+            Log.e("JerryZhu", "播放器呗初始化: ");
             initMediaPlayer(path);
         }
     }
