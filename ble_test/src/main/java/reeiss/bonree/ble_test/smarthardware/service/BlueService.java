@@ -2,7 +2,6 @@ package reeiss.bonree.ble_test.smarthardware.service;
 
 import android.app.AlertDialog;
 import android.app.Notification;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
@@ -25,11 +24,7 @@ import android.os.Message;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
 
 import org.litepal.LitePal;
 
@@ -46,9 +41,7 @@ import reeiss.bonree.ble_test.bean.PreventLosingCommon;
 import reeiss.bonree.ble_test.bean.WuRaoWifiConfig;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
-import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
 import reeiss.bonree.ble_test.utils.T;
-import reeiss.bonree.ble_test.utils.Utils;
 
 import static reeiss.bonree.ble_test.bean.CommonHelp.getLinkLostAlert;
 import static reeiss.bonree.ble_test.bean.CommonHelp.getOnClick;
@@ -58,49 +51,13 @@ import static reeiss.bonree.ble_test.blehelp.XFBluetooth.getCurrentDevConfig;
 
 public class BlueService extends Service {
 
+    int GRAY_SERVICE_ID = 1001;
     private XFBluetooth xfBluetooth;
-    private ListView vDevLv;
-    private ImageView vScan;
-    private View vReScan;
-    private DevListAdapter adapter;
-    private int position;
-    private List<BleDevConfig> mDevList;
-    private ProgressDialog progressDialog;
     private MediaPlayer mPlayer;
-    private double lastRssi;
-    private Button btScan;
-
-    private final class ServiceHandler extends Handler {
-        public ServiceHandler(Looper looper) {
-            super(looper);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case 100:
-                    FoundPhone();
-                    break;
-            }
-        }
-    }
-
     private ServiceHandler handler;
-    final Runnable rssiRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (xfBluetooth.getXFBluetoothGatt() != null) {
-                xfBluetooth.getXFBluetoothGatt().readRemoteRssi();
-                handler.postDelayed(this, 3800);
-            } else {
-                handler.removeCallbacks(this);
-            }
-        }
-    };
     private boolean dontAlert;
     private LocationApplication locationApplication;
     private AlertDialog alertDialog;
-    private boolean isDialogMargin;
     private long lastTimeMillis;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
 
@@ -165,7 +122,7 @@ public class BlueService extends Service {
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic
-                characteristic) {
+            characteristic) {
             String value = Arrays.toString(characteristic.getValue());
             if (PreventLosingCommon.Dev_Type == Dev_Type_Shuidi) {
                 long currentTimeMillis = System.currentTimeMillis();
@@ -184,31 +141,6 @@ public class BlueService extends Service {
             }
         }
 
-        @Override
-        public void onReadRemoteRssi(BluetoothGatt gatt, final int rssi, int status) {
-
-            BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-            if (currentDevConfig == null) return;
-            int alertMargin = currentDevConfig.getAlertMargin();
-            T.show(BlueService.this, "service " + rssi);
-            if (Utils.isRemoteAlert(alertMargin, rssi, lastRssi)) {
-                PhoneAlert(currentDevConfig, 1);
-            } else {
-                lastRssi = rssi;
-                if (!isDialogMargin) return;
-                if (mPlayer != null && mPlayer.isPlaying()) {
-                    mPlayer.stop();
-                    mPlayer.release();
-                    mPlayer = null;
-                }
-                if (alertDialog != null && alertDialog.isShowing()) {
-                    alertDialog.cancel();
-                    alertDialog = null;
-                }
-            }
-
-            //  Log.e("JerryZhu", "onReadRemoteRssi: " + rssi);
-        }
     };
 
     @Override
@@ -229,8 +161,6 @@ public class BlueService extends Service {
         handler = new ServiceHandler(looper);
 
     }
-
-    int GRAY_SERVICE_ID = 1001;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -256,26 +186,6 @@ public class BlueService extends Service {
     public IBinder onBind(Intent intent) {
         Log.e("jerry", "onBind: ");
         return new MyBinder();
-    }
-
-    private class MyBinder extends Binder implements IService {
-
-        @Override
-        public void init(String path) {
-            xfBluetooth = XFBluetooth.getInstance(getApplicationContext());
-            xfBluetooth.addBleCallBack(gattCallback);
-        }
-
-        @Override
-        public void connect(String mac) {
-            Log.e("jerry", "connect: " + Thread.currentThread().getName());
-            xfBluetooth.connect(mac);
-        }
-
-        @Override
-        public void setDontAlert(boolean isDontAlert) {
-            dontAlert = isDontAlert;
-        }
     }
 
     //双击寻找手机
@@ -319,7 +229,6 @@ public class BlueService extends Service {
         alertDialog.show();
     }
 
-
     //勿扰是否打开，是否在勿扰区域  在勿扰true 不在false
     private boolean checkWuRao() {
         SharedPreferences myPreference = (getSharedPreferences("myPreference", Context.MODE_PRIVATE));
@@ -345,12 +254,7 @@ public class BlueService extends Service {
      * @param newState
      */
     private void StatusChange(BleDevConfig currentDevConfig, int status, final int newState) {
-        if (progressDialog != null)
-            progressDialog.dismiss();
         if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            handler.removeCallbacks(rssiRunnable);
-
-//            final BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
             PreventLosingCommon.Dev_Type = -1;
             if (locationApplication != null) {
                 if (locationApplication.locationService.isStart()) {
@@ -384,7 +288,6 @@ public class BlueService extends Service {
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             BluetoothGatt xfBluetoothGatt = xfBluetooth.getXFBluetoothGatt();
             xfBluetoothGatt.discoverServices();
-            handler.postDelayed(rssiRunnable, 1000);
             if (locationApplication != null && !locationApplication.locationService.isStart()) {
                 Log.e("jerryzhu", " 定位开启: ");
                 locationApplication.locationService.start();
@@ -400,15 +303,6 @@ public class BlueService extends Service {
                 }
             }
         }
-        Log.e("jerry", "原来的状态: " + mDevList.get(position).getAlias() + "  " + mDevList.get(position).getConnectState() + "    " + status + "   " + newState);
-        mDevList.get(position).setConnectState(newState);
-        //如果当前设备以前设置过别名，那么应该先显示别名
-    /*    if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias()))
-            mDevList.get(position).setA(currentDevConfig.getAlias());*/
-
-//        Log.e("jerry", "更新的状态: " + mDevList.get(position).getDevNick() + "  " + mDevList.get(position).getConnectState());
-        adapter.setDevList(mDevList);
-        vDevLv.setItemsCanFocus(true);
     }
 
     //报警，断开连接或者超出范围
@@ -432,40 +326,59 @@ public class BlueService extends Service {
 
         AlertDialog.Builder dialogAlert = new AlertDialog.Builder(this, R.style.AlertDialog);
         dialogAlert.setTitle("丢失报警")
-                .setCancelable(false)
-                .setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！")
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (mPlayer != null) {
-                            mPlayer.stop();
-                            mPlayer.release();
-                            mPlayer = null;
-                        }
-                        alertDialog = null;
+            .setCancelable(false)
+            .setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！")
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (mPlayer != null) {
+                        mPlayer.stop();
+                        mPlayer.release();
+                        mPlayer = null;
                     }
-                });
+                    alertDialog = null;
+                }
+            });
         alertDialog = dialogAlert.create();
         alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         alertDialog.show();
-        if (type != 0) {     //那么此次创建的是超出范围的dialog，需要监听范围靠近，取消dialog
-            isDialogMargin = true;
-        }
-        alertDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                Log.e("jerrydialog", "onDismiss: ");
-                isDialogMargin = false;
-            }
-        });
-        alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-            @Override
-            public void onCancel(DialogInterface dialog) {
-                Log.e("jerrydialog", "onCancel: ");
-                isDialogMargin = false;
-            }
-        });
+
         return false;
+    }
+
+    private final class ServiceHandler extends Handler {
+        ServiceHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 100:
+                    FoundPhone();
+                    break;
+            }
+        }
+    }
+
+    private class MyBinder extends Binder implements IService {
+
+        @Override
+        public void init(String path) {
+            xfBluetooth = XFBluetooth.getInstance(getApplicationContext());
+            xfBluetooth.addBleCallBack(gattCallback);
+        }
+
+        @Override
+        public void connect(String mac) {
+            Log.e("jerry", "connect: " + Thread.currentThread().getName());
+            xfBluetooth.connect(mac);
+        }
+
+        @Override
+        public void setDontAlert(boolean isDontAlert) {
+            dontAlert = isDontAlert;
+        }
     }
 
 }
