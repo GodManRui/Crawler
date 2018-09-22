@@ -7,17 +7,18 @@
 
     <ImageView
         android:id="@+id/im_setting"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
+        android:layout_gravity="right"
         android:layout_marginRight="10dp"
         android:src="@drawable/ic_settings_black_24dp" />
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="240dp"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="30dp"
         android:src="@mipmap/device_main" />
 
     <TextView

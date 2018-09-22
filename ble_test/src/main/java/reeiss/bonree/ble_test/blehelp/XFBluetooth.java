@@ -119,10 +119,16 @@ public class XFBluetooth {
     private XFBluetooth(Context context) {
         this.context = context;
         //获取蓝牙适配器
-        BluetoothManager bluetoothManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
+        BluetoothManager
+                bluetoothManager = (BluetoothManager) context
+                .getSystemService(Context.BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
         mBluetoothAdapter = bluetoothManager.getAdapter();
-        mListCallBack = new ArrayList();
+        mListCallBack = new ArrayList<XFBluetoothCallBack>();
+    }
+
+    public boolean isOpenBlueTooth() {
+        return mBluetoothAdapter != null && mBluetoothAdapter.enable();
     }
 
     public static XFBluetooth getInstance(Context context) {

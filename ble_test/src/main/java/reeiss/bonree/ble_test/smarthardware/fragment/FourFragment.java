@@ -14,6 +14,7 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.smarthardware.activity.HtmlUsedActivity;
 import reeiss.bonree.ble_test.smarthardware.activity.WifiSpoceActivity;
 
 /**
@@ -26,6 +27,7 @@ public class FourFragment extends Fragment {
     private Switch swWifi;
     //    private Switch swSleep;
     private SharedPreferences myPreference;
+    private View rlUsed;
 
     @Override
     public void onHiddenChanged(boolean hidden) {
@@ -46,6 +48,13 @@ public class FourFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         getActivity().setTitle("更多");
         swWifi = view.findViewById(R.id.sw_wifi_wurao);
+        rlUsed = view.findViewById(R.id.rl_used);
+        rlUsed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), HtmlUsedActivity.class));
+            }
+        });
         myPreference = ((getActivity()).getSharedPreferences("myPreference", Context.MODE_PRIVATE));
         boolean isOpenWuRao = myPreference.getBoolean("isOpenWuRao", false);
         swWifi.setChecked(isOpenWuRao);

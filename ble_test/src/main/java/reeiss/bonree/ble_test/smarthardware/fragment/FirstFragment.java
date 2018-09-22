@@ -105,10 +105,6 @@ public class FirstFragment extends Fragment {
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-//                    BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
-//                    if (currentDevConfig != null && !TextUtils.isEmpty(currentDevConfig.getAlias())) {
-//                        mDevList.get(position).setDevNick(currentDevConfig.getAlias());
-//                    }
                     String newName = data.getStringExtra("newName");
                     mDevList.get(position).setAlias(newName);
                     adapter.setDevList(mDevList);
@@ -170,7 +166,7 @@ public class FirstFragment extends Fragment {
                 //点击的是未连接的设备，但此时有其他设备已连接
                 BleDevConfig deviceListBean = FirstFragment.this.mDevList.get(position);
                 if (!TextUtils.isEmpty(CURRENT_DEV_MAC) && !CURRENT_DEV_MAC.equals(deviceListBean.getMac())) {
-                    T.show(getActivity(), "请先断开连接");
+                    T.show(getActivity(), "如需连接本防丢器，请先断开当前连接防丢器");
                     return;
                 }
                 //点击的是已连接的设备

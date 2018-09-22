@@ -98,9 +98,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
             });
         }
     };
-    private TextView tvAlertMargin;
     private BleDevConfig currentDevConfig;
-    private int alertMargin;
 
 
     @Override
@@ -130,25 +128,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         RelativeLayout rlRing = (RelativeLayout) findViewById(R.id.rl_ring);
         tvRing = (TextView) findViewById(R.id.tv_ring);
         edDevName = (EditText) findViewById(R.id.ed_devName);
-        tvAlertMargin = (TextView) findViewById(R.id.tv_alert_margin);
 
-        setAlertMarginText(currentDevConfig.getAlertMargin());
-        findViewById(R.id.rl_alert_margin).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String[] items = new String[]{"近", "中", "远",};
-                AlertDialog.Builder alertDialogBuild = new AlertDialog.Builder(BluetoothSettingActivity.this)
-                    .setTitle("设置报警距离")
-                    .setItems(items, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            setAlertMarginText(which + 1);
-                        }
-                    });
-                AlertDialog alertDialog = alertDialogBuild.create();
-                alertDialog.show();
-            }
-        });
         BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         if (currentDevConfig != null) {
             tvRing.setText(currentDevConfig.getRingName());
@@ -181,12 +161,12 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         }
     }
 
-    private void setAlertMarginText(int alertMargin) {
+    /*private void setAlertMarginText(int alertMargin) {
         this.alertMargin = alertMargin;
         if (tvAlertMargin != null) {
             tvAlertMargin.setText(alertMargin == 3 ? "远" : (alertMargin == 2 ? "中" : "近"));
         }
-    }
+    }*/
 
     public void saveConfig(View view) {
 
@@ -217,7 +197,6 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         }
         BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         assert currentDevConfig != null;
-        currentDevConfig.setAlertMargin(alertMargin);
         currentDevConfig.setAlias(edDevName.getText().toString());
         long id = currentDevConfig.getId();
         int update = currentDevConfig.update(id);

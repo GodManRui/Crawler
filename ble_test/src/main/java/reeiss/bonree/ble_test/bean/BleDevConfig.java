@@ -6,14 +6,14 @@ import org.litepal.crud.LitePalSupport;
 
 import java.io.Serializable;
 
-public class BleDevConfig extends LitePalSupport implements Serializable{
+public class BleDevConfig extends LitePalSupport implements Serializable {
     private long id;
     private String mac;
     private String alias;
     private int ringPosition;
     private String ringName;
     private int ringResId;
-    private int alertMargin; //0近1中2远
+//    private int alertMargin; //0近1中2远
 
 
     private int ConnectState;     //连接状态
@@ -32,14 +32,6 @@ public class BleDevConfig extends LitePalSupport implements Serializable{
 
     public void setConnectState(int connectState) {
         ConnectState = connectState;
-    }
-
-    public int getAlertMargin() {
-        return alertMargin;
-    }
-
-    public void setAlertMargin(int alertMargin) {
-        this.alertMargin = alertMargin;
     }
 
     public BleDevConfig() {
@@ -66,13 +58,12 @@ public class BleDevConfig extends LitePalSupport implements Serializable{
         this.mac = mac;
     }
 
-    public BleDevConfig(String mac, String alias, String ringName, int ringPosition, int ringResId, int alertMargin) {
+    public BleDevConfig(String mac, String alias, String ringName, int ringPosition, int ringResId) {
         this.mac = mac;
         this.alias = alias;
         this.ringPosition = ringPosition;
         this.ringName = ringName;
         this.ringResId = ringResId;
-        this.alertMargin = alertMargin;
     }
 
     public String getRingName() {

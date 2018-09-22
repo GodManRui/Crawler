@@ -63,11 +63,6 @@ public class BindDevActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                  /*  BleDevConfig bleDevConfig = LitePal.where("mac=?", device.getAddress()).findFirst(BleDevConfig.class);
-                    if (bleDevConfig != null && !TextUtils.isEmpty(bleDevConfig.getAlias()))
-                        mDevList.add(new DeviceListBean(device, BluetoothGatt.STATE_DISCONNECTED, bleDevConfig.getAlias()));
-                    else
-                        mDevList.add(new DeviceListBean(device, BluetoothGatt.STATE_DISCONNECTED));*/
                     mDevList.add(new DeviceAndRssi(device, rssi));
                     adapter.setDevList(mDevList);
                 }
@@ -115,7 +110,7 @@ public class BindDevActivity extends AppCompatActivity {
                     try {
                         BluetoothDevice bluetoothDevice = mDevList.get(position).getDevice();
                         currentDevConfig = new BleDevConfig
-                            (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class), 3);
+                                (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class));
                     } catch (Exception e) {
                         e.printStackTrace();
                         return;
@@ -142,7 +137,7 @@ public class BindDevActivity extends AppCompatActivity {
     private void startScan() {
         if (vReScan.getVisibility() == View.VISIBLE) {
             RotateAnimation animation = new RotateAnimation(0f, 360f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
             animation.setInterpolator(new LinearInterpolator());
             animation.setDuration(2000);
             animation.setRepeatCount(-1);

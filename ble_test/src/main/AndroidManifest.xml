@@ -62,9 +62,16 @@
                 <action android:name="com.baidu.location.service_v2.4" />
             </intent-filter>
         </service>
-        <service
-            android:name=".smarthardware.service.BlueService"
-            android:icon="@drawable/tab_icon_device" />
+        <service android:name=".smarthardware.service.BlueService" />
+
+        <activity
+            android:name=".smarthardware.activity.SinglePixelActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|navigation|keyboard"
+            android:excludeFromRecents="true"
+            android:finishOnTaskLaunch="false"
+            android:launchMode="singleInstance"
+            android:theme="@style/SingleActivityStyle" />
+        <activity android:name=".smarthardware.activity.HtmlUsedActivity" />
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"

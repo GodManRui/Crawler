@@ -13,10 +13,12 @@ import android.util.Log;
 import android.view.MenuItem;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.smarthardware.service.BlueService;
 import reeiss.bonree.ble_test.smarthardware.service.IService;
 import reeiss.bonree.ble_test.utils.BottomNavigationViewHelper;
 import reeiss.bonree.ble_test.utils.FragmentFactory;
+import reeiss.bonree.ble_test.utils.T;
 
 import static reeiss.bonree.ble_test.utils.FragmentFactory.FIRST;
 import static reeiss.bonree.ble_test.utils.FragmentFactory.FOUR;
@@ -51,6 +53,9 @@ public class MainActivity extends AppCompatActivity {
 
                 }
             }, BIND_AUTO_CREATE);
+        }
+        if (!XFBluetooth.getInstance(getApplicationContext()).isOpenBlueTooth()) {
+            T.show(this, "设备尚未开启蓝牙或没有相关权限");
         }
     }
 
