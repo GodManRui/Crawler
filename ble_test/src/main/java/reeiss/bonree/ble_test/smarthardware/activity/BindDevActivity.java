@@ -154,12 +154,16 @@ public class BindDevActivity extends AppCompatActivity {
 
     @Override
     public boolean onSupportNavigateUp() {
-        finish();
+        MyFinish();
         return super.onSupportNavigateUp();
     }
 
     @Override
     public void onBackPressed() {
+        MyFinish();
+    }
+
+    private void MyFinish() {
         if (addSuccess) {
             Intent intent = new Intent();
             intent.putExtra("addBindDev", mBindList);

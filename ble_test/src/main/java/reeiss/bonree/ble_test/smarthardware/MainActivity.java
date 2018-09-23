@@ -29,33 +29,38 @@ public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView mBottomNavigationView;
     public IService iService;
+    private Intent intent;
+    private ServiceConnection conn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            iService = (IService) service;
+            iService.init("");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainbaidu);
-        Log.e("JerryZhuMM", "Main onCreate: " + savedInstanceState);
-        initView();
+        Log.e("JerryZhuMM", "Main onCreate: 创建activity实例 " + savedInstanceState);
         if (savedInstanceState == null) {
+            initView();
             mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
 
-            Intent intent = new Intent(this, BlueService.class);
+            intent = new Intent(this, BlueService.class);
             startService(intent);
-            bindService(intent, new ServiceConnection() {
-                @Override
-                public void onServiceConnected(ComponentName name, IBinder service) {
-                    iService = (IService) service;
-                    iService.init("");
-                }
-
-                @Override
-                public void onServiceDisconnected(ComponentName name) {
-
-                }
-            }, BIND_AUTO_CREATE);
+            bindService(intent, conn, BIND_AUTO_CREATE);
+        } else {
+            T.show(this, "显示是否异常？？？");
         }
         if (!XFBluetooth.getInstance(getApplicationContext()).isOpenBlueTooth()) {
-            T.show(this, "设备尚未开启蓝牙或没有相关权限");
+            T.show(this, "设备不支持蓝牙或没有相关权限");
         }
     }
 
@@ -105,6 +110,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        FragmentFactory.getInstance().exit(getFragmentManager());
+        /*unbindService(conn);
+        stopService(intent);*/
         super.onDestroy();
         Log.e("JerryZhuMM", " Main onDestroy");
     }
@@ -112,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Log.e("JerryZhuMM", " Main onSaveInstanceState(Bundle outState");
+        Log.e("JerryZhuMM", " Main onSaveInstanceState(Bundle outState保存状态)");
     }
 
     @Override
@@ -124,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        Log.e("JerryZhuMM", " Main onNewIntent");
+        Log.e("JerryZhuMM", " Main onNewIntent 新的意图");
     }
 
     @Override

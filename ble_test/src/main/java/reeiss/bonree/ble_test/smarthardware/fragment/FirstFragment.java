@@ -162,7 +162,10 @@ public class FirstFragment extends Fragment {
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                stopScan();
+                if (!XFBluetooth.getInstance(getActivity()).getAdapter().isEnabled()) {
+                    T.show(getActivity(), "请先打开蓝牙再链接防丢器");
+                    return;
+                }
                 //点击的是未连接的设备，但此时有其他设备已连接
                 BleDevConfig deviceListBean = FirstFragment.this.mDevList.get(position);
                 if (!TextUtils.isEmpty(CURRENT_DEV_MAC) && !CURRENT_DEV_MAC.equals(deviceListBean.getMac())) {
@@ -219,6 +222,10 @@ public class FirstFragment extends Fragment {
 
     //跳转到添加设备界面
     public void addDev() {
+        if (!XFBluetooth.getInstance(getActivity()).getAdapter().isEnabled()) {
+            T.show(getActivity(), "请先打开蓝牙再扫描");
+            return;
+        }
         Intent intent = new Intent(getActivity(), BindDevActivity.class);
         startActivityForResult(intent, 10);
     }

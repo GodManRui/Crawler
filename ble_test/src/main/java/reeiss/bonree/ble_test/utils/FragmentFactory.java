@@ -32,12 +32,12 @@ public class FragmentFactory {
      */
     public final static int FOUR = 4;
 
-    public static FirstFragment onlineTestFragment;
-    private static SecondFragment userSettingFragment;
-    private static ThreeFragment netTaskFragment;
-    private static FourFragment alertFragment;
+    private FirstFragment onlineTestFragment;
+    private SecondFragment userSettingFragment;
+    private ThreeFragment netTaskFragment;
+    private FourFragment alertFragment;
 
-    private static Fragment cacheFragment;
+    private Fragment cacheFragment;
     private static FragmentFactory mFactory;
 
     private FragmentFactory() {
@@ -75,7 +75,7 @@ public class FragmentFactory {
         if (cacheFragment == null) {
             // 第一次进来要切换的fragment作为当前fragment加入到transaction中并显示
             fragmentManager.beginTransaction().add(resourceId, target)
-                .show(target).commit();
+                    .show(target).commit();
             cacheFragment = target;
             return;
         }
@@ -89,7 +89,7 @@ public class FragmentFactory {
         }
         // 隐藏当前的fragment示目标的fragment
         fragmentManager.beginTransaction().hide(cacheFragment).show(target)
-            .commit();
+                .commit();
         //将目标fragment复制给缓存标记
         cacheFragment = target;
     }
@@ -150,4 +150,13 @@ public class FragmentFactory {
     }
 
 
+    public void exit(FragmentManager fragmentManager) {
+        fragmentManager.beginTransaction().remove(onlineTestFragment).remove(userSettingFragment).remove(netTaskFragment).remove(alertFragment).commit();
+        onlineTestFragment = null;
+        userSettingFragment = null;
+        netTaskFragment = null;
+        alertFragment = null;
+        cacheFragment = null;
+        mFactory = null;
+    }
 }
