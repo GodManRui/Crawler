@@ -3,6 +3,7 @@ package reeiss.bonree.ble_test.utils;
 
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.os.Bundle;
 import android.util.Log;
 
 import reeiss.bonree.ble_test.smarthardware.fragment.FirstFragment;
@@ -32,10 +33,10 @@ public class FragmentFactory {
      */
     public final static int FOUR = 4;
 
-    private FirstFragment onlineTestFragment;
-    private SecondFragment userSettingFragment;
-    private ThreeFragment netTaskFragment;
-    private FourFragment alertFragment;
+    private FirstFragment firstFragment;
+    private SecondFragment secondFragment;
+    private ThreeFragment threeFragment;
+    private FourFragment fourFragment;
 
     private Fragment cacheFragment;
     private static FragmentFactory mFactory;
@@ -45,6 +46,7 @@ public class FragmentFactory {
     }
 
     public static FragmentFactory getInstance() {
+        Log.e("jerry", "工厂实例地址 : " + mFactory);
         if (mFactory == null) {
             synchronized (FragmentFactory.class) {
                 if (mFactory == null) {
@@ -68,7 +70,6 @@ public class FragmentFactory {
      */
     public void changeFragment(int type, int resourceId,
                                FragmentManager fragmentManager) {
-        Log.e("JerryZhuMM", " Factory : " + type);
 
         Fragment target = getFragment(type);
         // 缓存cache第一次进来是空的要单独处理
@@ -101,31 +102,31 @@ public class FragmentFactory {
      * @return fragment
      */
     public Fragment getFragment(int type) {
-        Log.e("JerryZhuMM", " Factory :getFrag   " + onlineTestFragment);
+        Log.e("JerryZhuMM", " Factory :getFrag   " + firstFragment);
         switch (type) {
             case FIRST:
-                if (onlineTestFragment == null) {
-                    Log.e("JerryZhuMM", " Factory :onlineTestFragment是空   " + onlineTestFragment);
-                    onlineTestFragment = new FirstFragment();
+                if (firstFragment == null) {
+                    Log.e("JerryZhuMM", " Factory :onlineTestFragment是空   " + firstFragment);
+                    firstFragment = new FirstFragment();
                 }
-                return onlineTestFragment;
+                return firstFragment;
 
             case SECOND:
-                if (userSettingFragment == null) {
-                    userSettingFragment = new SecondFragment();
+                if (secondFragment == null) {
+                    secondFragment = new SecondFragment();
                 }
-                return userSettingFragment;
+                return secondFragment;
 
             case THREE:
-                if (netTaskFragment == null) {
-                    netTaskFragment = new ThreeFragment();
+                if (threeFragment == null) {
+                    threeFragment = new ThreeFragment();
                 }
-                return netTaskFragment;
+                return threeFragment;
             case FOUR:
-                if (alertFragment == null) {
-                    alertFragment = new FourFragment();
+                if (fourFragment == null) {
+                    fourFragment = new FourFragment();
                 }
-                return alertFragment;
+                return fourFragment;
 
         }
         return null;
@@ -134,14 +135,14 @@ public class FragmentFactory {
     public boolean getFragmentStatus(int type) {
         switch (type) {
             case FIRST:
-                if (onlineTestFragment == null)
+                if (firstFragment == null)
                     return false;
                 else return true;
             case SECOND:
-                if (userSettingFragment == null) return false;
+                if (secondFragment == null) return false;
                 else return true;
             case THREE:
-                if (netTaskFragment == null) return false;
+                if (threeFragment == null) return false;
                 else return true;
             case FOUR:
                 return false;
@@ -151,12 +152,27 @@ public class FragmentFactory {
 
 
     public void exit(FragmentManager fragmentManager) {
-        fragmentManager.beginTransaction().remove(onlineTestFragment).remove(userSettingFragment).remove(netTaskFragment).remove(alertFragment).commit();
-        onlineTestFragment = null;
-        userSettingFragment = null;
-        netTaskFragment = null;
-        alertFragment = null;
+        if (fragmentManager != null)
+            fragmentManager.beginTransaction().remove(firstFragment).remove(secondFragment).remove(threeFragment).remove(fourFragment).commit();
+        firstFragment = null;
+        secondFragment = null;
+        threeFragment = null;
+        fourFragment = null;
         cacheFragment = null;
-        mFactory = null;
+    }
+
+    public void saveInstanceState(Bundle outState, FragmentManager fragmentManager) {
+        if (firstFragment != null)
+            fragmentManager.putFragment(outState, FIRST + "", firstFragment);
+        if (secondFragment != null)
+            fragmentManager.putFragment(outState, SECOND + "", secondFragment);
+        if (threeFragment != null)
+            fragmentManager.putFragment(outState, THREE + "", threeFragment);
+        if (fourFragment != null)
+            fragmentManager.putFragment(outState, FOUR + "", fourFragment);
+    }
+
+    public void finish() {
+        cacheFragment = null;
     }
 }

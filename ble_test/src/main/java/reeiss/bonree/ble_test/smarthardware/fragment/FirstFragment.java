@@ -21,7 +21,6 @@ import android.widget.ListView;
 
 import org.litepal.LitePal;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import reeiss.bonree.ble_test.R;
@@ -111,15 +110,25 @@ public class FirstFragment extends Fragment {
                 }
             });
         } else if (resultCode == 200) {
-            ArrayList<BleDevConfig> addBindDev = (ArrayList<BleDevConfig>) data.getSerializableExtra("addBindDev");
-            mDevList.addAll(addBindDev);
+//            ArrayList<BleDevConfig> addBindDev = (ArrayList<BleDevConfig>) data.getSerializableExtra("addBindDev");
+            boolean addBindDev = data.getBooleanExtra("addBindDev", true);
+            if (addBindDev) {
+                mDevList = LitePal.findAll(BleDevConfig.class);
+            }
             adapter.notifyDataSetChanged();
         }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        Log.e("jerry", "onCreate: Fragment的bundle  " + savedInstanceState);
+        super.onCreate(savedInstanceState);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        Log.e("jerry", "onCreateView: Fragment的bundle  " + savedInstanceState);
         return inflater.inflate(R.layout.activity_main, null);
     }
 
@@ -251,4 +260,9 @@ public class FirstFragment extends Fragment {
         delDia.create().show();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        Log.e("JerryZhuMM", " Fragment onSaveInstanceState(Bundle outState保存状态)");
+    }
 }

@@ -1,5 +1,6 @@
 package reeiss.bonree.ble_test.smarthardware;
 
+import android.app.FragmentManager;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -15,7 +16,6 @@ import android.view.MenuItem;
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.smarthardware.service.BlueService;
-import reeiss.bonree.ble_test.smarthardware.service.IService;
 import reeiss.bonree.ble_test.utils.BottomNavigationViewHelper;
 import reeiss.bonree.ble_test.utils.FragmentFactory;
 import reeiss.bonree.ble_test.utils.T;
@@ -28,13 +28,12 @@ import static reeiss.bonree.ble_test.utils.FragmentFactory.THREE;
 public class MainActivity extends AppCompatActivity {
 
     private BottomNavigationView mBottomNavigationView;
-    public IService iService;
-    private Intent intent;
+    public BlueService iService;
     private ServiceConnection conn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            iService = (IService) service;
-            iService.init("");
+            BlueService.MyBinder binder = (BlueService.MyBinder) service;
+            iService = binder.getService();
         }
 
         @Override
@@ -49,20 +48,35 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainbaidu);
         Log.e("JerryZhuMM", "Main onCreate: 创建activity实例 " + savedInstanceState);
-        if (savedInstanceState == null) {
-            initView();
-            mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
+//        FragmentFactory.getInstance().exit(null);
+        initView();
 
-            intent = new Intent(this, BlueService.class);
-            startService(intent);
-            bindService(intent, conn, BIND_AUTO_CREATE);
-        } else {
-            T.show(this, "显示是否异常？？？");
-        }
+        Intent intent = new Intent(this, BlueService.class);
+        startService(intent);
+        bindService(intent, conn, BIND_AUTO_CREATE);
+        mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
+
         if (!XFBluetooth.getInstance(getApplicationContext()).isOpenBlueTooth()) {
             T.show(this, "设备不支持蓝牙或没有相关权限");
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
+    }
+
+  /*  @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
+        return true;
+    }*/
 
     private void initView() {
         mBottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation_view);
@@ -70,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         mBottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Log.e("JerryZhuMM", "Main setOnNavigationItemSelectedListener: " + item.getItemId());
                 onTabItemSelected(item.getItemId());
                 return true;
             }
@@ -110,7 +123,8 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        FragmentFactory.getInstance().exit(getFragmentManager());
+        FragmentFactory.getInstance().finish();
+//        FragmentFactory.getInstance().exit(null);
         /*unbindService(conn);
         stopService(intent);*/
         super.onDestroy();
@@ -119,6 +133,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
+//        outState.put(mBottomNavigationView
+        FragmentManager fragmentManager = getFragmentManager();
+        Log.e("jerry", "Main onSaveInstanceState:   " + fragmentManager);
+        FragmentFactory.getInstance().saveInstanceState(outState, fragmentManager);
         super.onSaveInstanceState(outState);
         Log.e("JerryZhuMM", " Main onSaveInstanceState(Bundle outState保存状态)");
     }
@@ -144,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        Log.e("JerryZhuMM", " Main onRestoreInstanceState(Bundle savedInstanceState)");
+        Log.e("JerryZhuMM", " Main onRestoreInstanceState(Bundle savedInstanceState)" + savedInstanceState);
     }
 
     @Override

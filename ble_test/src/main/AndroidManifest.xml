@@ -7,6 +7,9 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-permission android:name="android.permission.DEVICE_POWER" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
@@ -64,7 +67,12 @@
                 <action android:name="com.baidu.location.service_v2.4" />
             </intent-filter>
         </service>
-        <service android:name=".smarthardware.service.BlueService" />
+
+        <service
+            android:name=".smarthardware.service.BlueService"
+            android:enabled="true"
+            android:persistent="true"
+            android:priority="1000" />
 
         <activity
             android:name=".smarthardware.activity.SinglePixelActivity"

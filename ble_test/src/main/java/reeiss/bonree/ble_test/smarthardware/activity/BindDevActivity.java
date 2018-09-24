@@ -70,7 +70,7 @@ public class BindDevActivity extends AppCompatActivity {
         }
     };
     private boolean addSuccess;
-    private ArrayList<BleDevConfig> mBindList;
+//    private ArrayList<BleDevConfig> mBindList;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -118,7 +118,7 @@ public class BindDevActivity extends AppCompatActivity {
                     boolean save = currentDevConfig.save();
                     if (save) {
                         addSuccess = true;
-                        mBindList.add(currentDevConfig);
+//                        mBindList.add(currentDevConfig);
                         T.show(BindDevActivity.this, "添加成功！");
                     }
                 }
@@ -130,7 +130,6 @@ public class BindDevActivity extends AppCompatActivity {
         xfBluetooth = XFBluetooth.getInstance(this);
         xfBluetooth.addBleCallBack(gattCallback);
         xfBluetooth.scan();
-        mBindList = new ArrayList<>();
         startScan();
     }
 
@@ -166,7 +165,7 @@ public class BindDevActivity extends AppCompatActivity {
     private void MyFinish() {
         if (addSuccess) {
             Intent intent = new Intent();
-            intent.putExtra("addBindDev", mBindList);
+            intent.putExtra("addBindDev", addSuccess);
             setResult(200, intent);
         } else {
             super.onBackPressed();
