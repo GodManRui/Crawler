@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 
 import reeiss.bonree.ble_test.R;
@@ -51,9 +52,13 @@ public class MainActivity extends AppCompatActivity {
 //        FragmentFactory.getInstance().exit(null);
         initView();
 
+
         Intent intent = new Intent(this, BlueService.class);
         startService(intent);
         bindService(intent, conn, BIND_AUTO_CREATE);
+        int selectedItemId = mBottomNavigationView.getSelectedItemId();
+        if (selectedItemId != R.id.tab_menu_home)
+            onTabItemSelected(selectedItemId);
         mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
 
         if (!XFBluetooth.getInstance(getApplicationContext()).isOpenBlueTooth()) {
@@ -61,22 +66,22 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*   @Override
+       public void onBackPressed() {
+           Intent intent = new Intent(Intent.ACTION_MAIN);
+           intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+           intent.addCategory(Intent.CATEGORY_HOME);
+           startActivity(intent);
+       }
+   */
     @Override
-    public void onBackPressed() {
-        Intent intent = new Intent(Intent.ACTION_MAIN);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addCategory(Intent.CATEGORY_HOME);
-        startActivity(intent);
-    }
-
-  /*  @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addCategory(Intent.CATEGORY_HOME);
         startActivity(intent);
         return true;
-    }*/
+    }
 
     private void initView() {
         mBottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation_view);

@@ -102,7 +102,7 @@ public class FragmentFactory {
      * @return fragment
      */
     public Fragment getFragment(int type) {
-        Log.e("JerryZhuMM", " Factory :getFrag   " + firstFragment);
+        Log.e("JerryZhuMM", type + "  Factory :getFrag   " + firstFragment);
         switch (type) {
             case FIRST:
                 if (firstFragment == null) {
