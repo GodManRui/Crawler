@@ -1,7 +1,6 @@
 package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
-import android.app.Fragment;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.Context;
@@ -22,6 +21,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -137,6 +137,7 @@ public class SecondFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        Log.e("JerryZhu", "onHiddenChanged: Second");
         if (hidden) {
             releaseCamera();
             XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
@@ -157,7 +158,7 @@ public class SecondFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getActivity().setTitle("拍照");
+//        getActivity().setTitle("拍照");
         mCameraLayout = (FrameLayout) getView().findViewById(R.id.camera_preview);
         XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
         //Button mTakePictureBtn = (Button) getView().findViewById(R.id.button_capture);

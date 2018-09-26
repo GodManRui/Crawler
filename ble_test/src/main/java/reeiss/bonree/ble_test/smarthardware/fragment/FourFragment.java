@@ -1,12 +1,13 @@
 package reeiss.bonree.ble_test.smarthardware.fragment;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +33,7 @@ public class FourFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        Log.e("JerryZhu", "onHiddenChanged: Four");
         if (!hidden) {
             getActivity().setTitle("更多");
         }
@@ -46,7 +48,7 @@ public class FourFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        getActivity().setTitle("更多");
+//        getActivity().setTitle("更多");
         swWifi = view.findViewById(R.id.sw_wifi_wurao);
         rlUsed = view.findViewById(R.id.rl_used);
         rlUsed.setOnClickListener(new View.OnClickListener() {

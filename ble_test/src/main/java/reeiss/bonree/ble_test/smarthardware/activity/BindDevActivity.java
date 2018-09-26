@@ -39,8 +39,8 @@ public class BindDevActivity extends AppCompatActivity {
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
         @Override
         public void onScanResult(final BluetoothDevice device, final int rssi) {
-            Log.e("jerryzhu", "扫描结果: " + device.getName());
             if (TextUtils.isEmpty(device.getName()) || !device.getName().contains("iTAG")) return;
+            Log.e("jerryzhu", "扫描结果: " + device.getName());
             // xfBluetooth.stop();
 
             for (int i = 0; i < mDevList.size(); i++) { //已经在扫描列表里了
@@ -110,7 +110,7 @@ public class BindDevActivity extends AppCompatActivity {
                     try {
                         BluetoothDevice bluetoothDevice = mDevList.get(position).getDevice();
                         currentDevConfig = new BleDevConfig
-                                (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class));
+                            (bluetoothDevice.getAddress(), bluetoothDevice.getName(), fields[1].getName(), 0, fields[1].getInt(R.raw.class));
                     } catch (Exception e) {
                         e.printStackTrace();
                         return;
@@ -136,7 +136,7 @@ public class BindDevActivity extends AppCompatActivity {
     private void startScan() {
         if (vReScan.getVisibility() == View.VISIBLE) {
             RotateAnimation animation = new RotateAnimation(0f, 360f,
-                    Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
             animation.setInterpolator(new LinearInterpolator());
             animation.setDuration(2000);
             animation.setRepeatCount(-1);
@@ -157,11 +157,6 @@ public class BindDevActivity extends AppCompatActivity {
         return super.onSupportNavigateUp();
     }
 
-    @Override
-    public void onBackPressed() {
-        MyFinish();
-    }
-
     private void MyFinish() {
         if (addSuccess) {
             Intent intent = new Intent();
@@ -171,6 +166,11 @@ public class BindDevActivity extends AppCompatActivity {
             super.onBackPressed();
         }
         finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        MyFinish();
     }
 
     public void btStopScan(View view) {

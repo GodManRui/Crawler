@@ -2,7 +2,6 @@ package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothGatt;
 import android.content.DialogInterface;
@@ -10,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,6 +22,7 @@ import android.widget.ListView;
 import org.litepal.LitePal;
 
 import java.util.List;
+import java.util.Objects;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.BleDevConfig;
@@ -92,8 +93,9 @@ public class FirstFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        Log.e("JerryZhu", "onHiddenChanged: First");
         if (!hidden) {
-            getActivity().setTitle("设备管理");
+            Objects.requireNonNull(getActivity()).setTitle("设备管理");
         }
     }
 
@@ -143,7 +145,7 @@ public class FirstFragment extends Fragment {
     }
 
     private void initView() {
-        getActivity().setTitle("设备管理");
+//        getActivity().setTitle("设备管理");
         vDevLv = getView().findViewById(R.id.ble_dev_lv);
         getView().findViewById(R.id.bt_add_dev).setOnClickListener(new OnClickListener() {
             @Override
@@ -264,5 +266,11 @@ public class FirstFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         Log.e("JerryZhuMM", " Fragment onSaveInstanceState(Bundle outState保存状态)");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        Log.e("JerryZhuMM", "Fragment onDestroy: ");
     }
 }

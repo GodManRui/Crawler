@@ -1,11 +1,12 @@
 package reeiss.bonree.ble_test.smarthardware.fragment;
 
 
-import android.app.Fragment;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,6 +49,7 @@ public class ThreeFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
+        Log.e("JerryZhu", "onHiddenChanged: Three");
         if (!hidden) {
             getActivity().setTitle("定位");
         }
@@ -58,7 +60,7 @@ public class ThreeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_three, null);
-        getActivity().setTitle("定位");
+//        getActivity().setTitle("定位");
         map = view.findViewById(R.id.map);
         view.findViewById(R.id.bt_lost).setOnClickListener(new View.OnClickListener() {
             @Override
