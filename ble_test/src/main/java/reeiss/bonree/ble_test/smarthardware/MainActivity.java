@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
         BottomNavigationViewHelper.disableShiftMode(mBottomNavigationView);
         vpFragment = (NoScrollViewPager) findViewById(R.id.vp_fragment);
         vpFragment.setScroll(false);
-        vpFragment.setOffscreenPageLimit(1);
+        vpFragment.setOffscreenPageLimit(4);
         mBottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
@@ -91,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
         vpFragment.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.e("JerryZhuTitle", "onPageScrolled: ");
             }
 
             @Override
@@ -114,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
         vpFragment.setAdapter(myAdapter);
         mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
 //        onTabItemSelected(R.id.tab_menu_home);
-        vpFragment.setCurrentItem(0);
     }
 
     private boolean onTabItemSelected(int itemId) {

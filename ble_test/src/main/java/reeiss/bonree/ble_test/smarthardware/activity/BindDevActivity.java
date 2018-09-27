@@ -162,8 +162,6 @@ public class BindDevActivity extends AppCompatActivity {
             Intent intent = new Intent();
             intent.putExtra("addBindDev", addSuccess);
             setResult(200, intent);
-        } else {
-            super.onBackPressed();
         }
         finish();
     }

@@ -100,6 +100,24 @@ public class FirstFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        Log.e("jerry", "Fragment onResume: ");
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.e("jerry", "Fragment onDestroyView: ");
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        Log.e("jerry", "Fragment onViewStateRestored: " + savedInstanceState);
+    }
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 100) {
@@ -117,7 +135,9 @@ public class FirstFragment extends Fragment {
             if (addBindDev) {
                 mDevList = LitePal.findAll(BleDevConfig.class);
             }
-            adapter.notifyDataSetChanged();
+            adapter.setDevList(mDevList);
+            Log.e("jerry", "onActivityResult: Fragment notifyDataSetChanged");
+//            adapter.notifyDataSetChanged();
         }
     }
 
@@ -265,7 +285,7 @@ public class FirstFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Log.e("JerryZhuMM", " Fragment onSaveInstanceState(Bundle outState保存状态)");
+        Log.e("JerryZhuMM", " Fragment onSaveInstanceState(Bundle outState保存状态)" + outState);
     }
 
     @Override
