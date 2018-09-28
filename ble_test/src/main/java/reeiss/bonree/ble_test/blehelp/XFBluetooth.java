@@ -252,9 +252,8 @@ public class XFBluetooth {
     public void connect(String mac) {
         if (mac != null && !TextUtils.isEmpty(mac)) {
             BluetoothDevice remoteDevice = mBluetoothAdapter.getRemoteDevice(mac);
-            Log.e("jerry", "准备连接: ");
             mXFBluetoothGatt = remoteDevice.connectGatt(context, true, gattCallback);
-            Log.e("jerry", "正在连接: ");
+            Log.e("jerry", "正在连接: " + Thread.currentThread().getName());
         }
     }
 

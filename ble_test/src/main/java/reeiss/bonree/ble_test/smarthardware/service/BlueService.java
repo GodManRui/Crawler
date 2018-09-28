@@ -385,7 +385,6 @@ public class BlueService extends Service {
             }
         }
 
-//        BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         //已连接
         if (newState == BluetoothProfile.STATE_CONNECTED) {
             BluetoothGatt xfBluetoothGatt = xfBluetooth.getXFBluetoothGatt();

@@ -36,6 +36,7 @@ import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
@@ -57,12 +58,12 @@ public class SecondFragment extends Fragment {
         @Override
         public void onPictureTaken(final byte[] data, Camera camera) {
             File pictureDir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
             picturePath = pictureDir
-                + File.separator
-                + new DateFormat().format("yyyyMMddHHmmss", new Date())
-                .toString() + ".jpg";
+                    + File.separator
+                    + new DateFormat().format("yyyyMMddHHmmss", new Date())
+                    .toString() + ".jpg";
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -76,7 +77,7 @@ public class SecondFragment extends Fragment {
                             bitmap = CameraPreview.rotateBitmapByDegree(bitmap, -90);
                         }
                         BufferedOutputStream bos = new BufferedOutputStream(
-                            new FileOutputStream(file));
+                                new FileOutputStream(file));
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                         bos.flush();
                         bos.close();
@@ -152,15 +153,18 @@ public class SecondFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.e("jerry", "333 onCreateView: ");
         return inflater.inflate(R.layout.fragment_second, null);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        Log.e("jerry", "333 onViewCreated: ");
+
 //        getActivity().setTitle("拍照");
         mCameraLayout = (FrameLayout) getView().findViewById(R.id.camera_preview);
-        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
+//        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
         //Button mTakePictureBtn = (Button) getView().findViewById(R.id.button_capture);
         // Button mChangeCarema = (Button) getView().findViewById(R.id.change);
         getView().findViewById(R.id.button_capture).setOnClickListener(new View.OnClickListener() {
@@ -200,7 +204,27 @@ public class SecondFragment extends Fragment {
                 startActivity(intent);
             }
         });
+//        openCamera();
+    }
+
+   /* @Override
+    public void onResume() {
+        super.onResume();
+        Objects.requireNonNull(getActivity()).setTitle("拍照");
         openCamera();
+        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
+    }*/
+
+    /*@Override
+    public void onPause() {
+        super.onPause();
+        releaseCamera();
+        XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
+    }*/
+
+    public void onMyPause() {
+        releaseCamera();
+        XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
     }
 
     /**
@@ -214,7 +238,7 @@ public class SecondFragment extends Fragment {
         if (volume != 0) {
             if (mediaPlayer == null)
                 mediaPlayer = MediaPlayer.create(getActivity(),
-                    Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                        Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
             if (mediaPlayer != null) {
                 mediaPlayer.start();
             }
@@ -230,7 +254,8 @@ public class SecondFragment extends Fragment {
             mCamera = null;
         }
         mPreview = null;
-        mCameraLayout.removeAllViews();
+        if (mCameraLayout != null)
+            mCameraLayout.removeAllViews();
     }
 
     // 开始预览相机
@@ -286,7 +311,7 @@ public class SecondFragment extends Fragment {
     // 判断相机是否支持
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(
-            PackageManager.FEATURE_CAMERA)) {
+                PackageManager.FEATURE_CAMERA)) {
             return true;
         } else {
             return false;
@@ -302,6 +327,12 @@ public class SecondFragment extends Fragment {
             e.printStackTrace();
         }
         return c;
+    }
+
+    public void onMyResume() {
+        Objects.requireNonNull(getActivity()).setTitle("拍照");
+        openCamera();
+        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
     }
 
     /*

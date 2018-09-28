@@ -21,6 +21,7 @@ import android.widget.ListView;
 
 import org.litepal.LitePal;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -75,6 +76,7 @@ public class FirstFragment extends Fragment {
      * @param newState
      */
     private void StatusChange(BleDevConfig currentDevConfig, int status, final int newState) {
+        Log.e("jerry", "StatusChange: " + progressDialog);
         if (progressDialog != null)
             progressDialog.dismiss();
 
@@ -113,8 +115,19 @@ public class FirstFragment extends Fragment {
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        instanceListData(savedInstanceState);
         super.onViewStateRestored(savedInstanceState);
         Log.e("jerry", "Fragment onViewStateRestored: " + savedInstanceState);
+    }
+
+    private void instanceListData(@Nullable Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            ArrayList devListData = (ArrayList) savedInstanceState.getSerializable("devListData");
+            if (devListData != null) {
+                mDevList = devListData;
+                adapter.setDevList(mDevList);
+            }
+        }
     }
 
     @Override
@@ -162,6 +175,7 @@ public class FirstFragment extends Fragment {
         initView();
         xfBluetooth = XFBluetooth.getInstance(getActivity());
         xfBluetooth.addBleCallBack(gattCallback);
+        instanceListData(savedInstanceState);
     }
 
     private void initView() {
@@ -284,6 +298,7 @@ public class FirstFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable("devListData", (ArrayList) mDevList);
         super.onSaveInstanceState(outState);
         Log.e("JerryZhuMM", " Fragment onSaveInstanceState(Bundle outState保存状态)" + outState);
     }

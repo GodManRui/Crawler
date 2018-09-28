@@ -84,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         mBottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                Log.e("JerryZhuTitle", "onNavigationItemSelected: ");
                 return onTabItemSelected(item.getItemId());
             }
         });
@@ -95,13 +94,11 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                Log.e("JerryZhuTitle", "onPageSelected:  " + position);
                 mBottomNavigationView.getMenu().getItem(position).setChecked(true);
             }
 
             @Override
             public void onPageScrollStateChanged(int state) {
-                Log.e("JerryZhuTitle", "onPageScrollStateChanged: ");
             }
         });
         listFragment = new ArrayList<>();
@@ -140,6 +137,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setSelectTitle(int selectTitle) {
+        SecondFragment fragment = (SecondFragment) listFragment.get(1);
+        if (selectTitle == 1) {
+            fragment.onMyResume();
+        } else {
+            fragment.onMyPause();
+        }
         switch (selectTitle) {
             case 0:
                 currentName = "设备管理";
