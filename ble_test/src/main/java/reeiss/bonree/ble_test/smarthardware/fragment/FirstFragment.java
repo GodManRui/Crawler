@@ -102,35 +102,6 @@ public class FirstFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Log.e("jerry", "Fragment onResume: ");
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.e("jerry", "Fragment onDestroyView: ");
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        instanceListData(savedInstanceState);
-        super.onViewStateRestored(savedInstanceState);
-        Log.e("jerry", "Fragment onViewStateRestored: " + savedInstanceState);
-    }
-
-    private void instanceListData(@Nullable Bundle savedInstanceState) {
-        if (savedInstanceState != null) {
-            ArrayList devListData = (ArrayList) savedInstanceState.getSerializable("devListData");
-            if (devListData != null) {
-                mDevList = devListData;
-                adapter.setDevList(mDevList);
-            }
-        }
-    }
-
-    @Override
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 100) {
@@ -176,6 +147,39 @@ public class FirstFragment extends Fragment {
         xfBluetooth = XFBluetooth.getInstance(getActivity());
         xfBluetooth.addBleCallBack(gattCallback);
         instanceListData(savedInstanceState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        instanceListData(savedInstanceState);
+        super.onViewStateRestored(savedInstanceState);
+        Log.e("jerry", "Fragment onViewStateRestored: " + savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Log.e("jerry", "Fragment onResume: ");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable("devListData", (ArrayList) mDevList);
+        super.onSaveInstanceState(outState);
+        Log.e("JerryZhuMM", " Fragment onSaveInstanceState(Bundle outState保存状态)" + outState);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        Log.e("jerry", "Fragment onDestroyView: ");
+    }
+
+    @Override
+    public void onDestroy() {
+        xfBluetooth.removeBleCallBack(gattCallback);
+        super.onDestroy();
+        Log.e("JerryZhuMM", "Fragment onDestroy: ");
     }
 
     private void initView() {
@@ -243,26 +247,37 @@ public class FirstFragment extends Fragment {
 
                 if (deviceListBean.getConnectState().equals("已连接") && address.equals(CURRENT_DEV_MAC)) {
                     AlertDialog.Builder seleDia = new AlertDialog.Builder(getActivity())
-                            .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which) {
-                                        case 0:
-                                            mainActivity.iService.setDontAlert(true);
-                                            xfBluetooth.disconnect();
-                                            break;
-                                        case 1:
-                                            DelDev(deviceListBean, address);
-                                            break;
-                                    }
+                        .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                switch (which) {
+                                    case 0:
+                                        mainActivity.iService.setDontAlert(true);
+                                        xfBluetooth.disconnect();
+                                        break;
+                                    case 1:
+                                        DelDev(deviceListBean, address);
+                                        break;
                                 }
-                            });
+                            }
+                        });
                     seleDia.create().show();
                 } else
                     DelDev(deviceListBean, address);
                 return true;
             }
         });
+    }
+
+    private void instanceListData(@Nullable Bundle savedInstanceState) {
+        if (XFBluetooth.getCurrentDevConfig() == null) return;
+        if (savedInstanceState != null) {
+            ArrayList devListData = (ArrayList) savedInstanceState.getSerializable("devListData");
+            if (devListData != null) {
+                mDevList = devListData;
+                adapter.setDevList(mDevList);
+            }
+        }
     }
 
     //跳转到添加设备界面
@@ -278,34 +293,21 @@ public class FirstFragment extends Fragment {
     private void DelDev(final BleDevConfig bleDevConfig, String address) {
 
         AlertDialog.Builder delDia = new AlertDialog.Builder(getActivity())
-                .setTitle("删除设备")
-                .setMessage("确认删除" + bleDevConfig.getAlias() + "并清空所有配置信息(包括昵称，定位记录等)？")
-                .setNegativeButton("删除", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        mDevList.remove(bleDevConfig);
-                        adapter.setDevList(mDevList);
-                        if (bleDevConfig.getConnectState().equals("已连接")) {
-                            xfBluetooth.disconnect();
-                        }
-                        bleDevConfig.delete();
+            .setTitle("删除设备")
+            .setMessage("确认删除" + bleDevConfig.getAlias() + "并清空所有配置信息(包括昵称，定位记录等)？")
+            .setNegativeButton("删除", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    mDevList.remove(bleDevConfig);
+                    adapter.setDevList(mDevList);
+                    if (bleDevConfig.getConnectState().equals("已连接")) {
+                        xfBluetooth.disconnect();
                     }
-                })
-                .setPositiveButton("取消", null)
-                .setCancelable(false);
+                    bleDevConfig.delete();
+                }
+            })
+            .setPositiveButton("取消", null)
+            .setCancelable(false);
         delDia.create().show();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable("devListData", (ArrayList) mDevList);
-        super.onSaveInstanceState(outState);
-        Log.e("JerryZhuMM", " Fragment onSaveInstanceState(Bundle outState保存状态)" + outState);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Log.e("JerryZhuMM", "Fragment onDestroy: ");
     }
 }

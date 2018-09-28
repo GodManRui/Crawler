@@ -60,6 +60,7 @@ import static reeiss.bonree.ble_test.blehelp.XFBluetooth.getCurrentDevConfig;
 public class BlueService extends Service {
 
     int GRAY_SERVICE_ID = 1001;
+    PowerManager.WakeLock wakeLock = null;
     private XFBluetooth xfBluetooth;
     private MediaPlayer mPlayer;
     private ServiceHandler handler;
@@ -128,7 +129,7 @@ public class BlueService extends Service {
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic
-                characteristic) {
+            characteristic) {
             String value = Arrays.toString(characteristic.getValue());
             if (PreventLosingCommon.Dev_Type == Dev_Type_Shuidi) {
                 long currentTimeMillis = System.currentTimeMillis();
@@ -154,7 +155,7 @@ public class BlueService extends Service {
     private ScreenManager mScreenManager;
     // 代码省略...
     private ScreenReceiverUtil.SreenStateListener
-            mScreenListenerer = new ScreenReceiverUtil.SreenStateListener() {
+        mScreenListenerer = new ScreenReceiverUtil.SreenStateListener() {
         @Override
         public void onSreenOn() {
             // 移除"1像素"
@@ -178,32 +179,6 @@ public class BlueService extends Service {
             // 解锁，暂不用，保留
         }
     };
-    PowerManager.WakeLock wakeLock = null;
-
-    /*  PARTIAL_WAKE_LOCK:保持CPU 运转，屏幕和键盘灯有可能是关闭的。
-      SCREEN_DIM_WAKE_LOCK：保持CPU 运转，允许保持屏幕显示但有可能是灰的，允许关闭键盘灯
-      SCREEN_BRIGHT_WAKE_LOCK：保持CPU 运转，允许保持屏幕高亮显示，允许关闭键盘灯
-      FULL_WAKE_LOCK：保持CPU 运转，保持屏幕高亮显示，键盘灯也保持亮度
-      ACQUIRE_CAUSES_WAKEUP：强制使屏幕亮起，这种锁主要针对一些必须通知用户的操作.
-              ON_AFTER_RELEASE：当锁被释放时，保持屏幕亮起一段时间*/
-    //获取电源锁，保持该服务在屏幕熄灭时仍然获取CPU时，保持运行
-    private void acquireWakeLock() {
-        if (null == wakeLock) {
-            PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "PostLocationService");
-            if (null != wakeLock) {
-                wakeLock.acquire();
-            }
-        }
-    }
-
-    //释放设备电源锁
-    private void releaseWakeLock() {
-        if (null != wakeLock) {
-            wakeLock.release();
-            wakeLock = null;
-        }
-    }
 
     @Override
     public void onCreate() {
@@ -222,6 +197,47 @@ public class BlueService extends Service {
         handler = new ServiceHandler(looper);
         xfBluetooth = XFBluetooth.getInstance(getApplicationContext());
         xfBluetooth.addBleCallBack(gattCallback);
+    }
+
+    /*  PARTIAL_WAKE_LOCK:保持CPU 运转，屏幕和键盘灯有可能是关闭的。
+      SCREEN_DIM_WAKE_LOCK：保持CPU 运转，允许保持屏幕显示但有可能是灰的，允许关闭键盘灯
+      SCREEN_BRIGHT_WAKE_LOCK：保持CPU 运转，允许保持屏幕高亮显示，允许关闭键盘灯
+      FULL_WAKE_LOCK：保持CPU 运转，保持屏幕高亮显示，键盘灯也保持亮度
+      ACQUIRE_CAUSES_WAKEUP：强制使屏幕亮起，这种锁主要针对一些必须通知用户的操作.
+              ON_AFTER_RELEASE：当锁被释放时，保持屏幕亮起一段时间*/
+    //获取电源锁，保持该服务在屏幕熄灭时仍然获取CPU时，保持运行
+    private void acquireWakeLock() {
+        if (null == wakeLock) {
+            PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "PostLocationService");
+            if (null != wakeLock) {
+                wakeLock.acquire();
+            }
+        }
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+     /*   //设置service为前台服务，提高优先级
+        if (Build.VERSION.SDK_INT < 18) {
+            //Android4.3以下 ，此方法能有效隐藏Notification上的图标
+            startForeground(GRAY_SERVICE_ID, new Notification());
+        } else if (Build.VERSION.SDK_INT > 18 && Build.VERSION.SDK_INT < 25) {
+            //Android4.3 - Android7.0，此方法能有效隐藏Notification上的图标
+            Intent innerIntent = new Intent(this, BlueService.class);
+            startService(innerIntent);
+            startForeground(GRAY_SERVICE_ID, new Notification());
+        } else {
+            //Android7.1 google修复了此漏洞，暂无解决方法（现状：Android7.1以上app启动后通知栏会出现一条"正在运行"的通知消息）
+            startForeground(GRAY_SERVICE_ID, new Notification());
+        }*/
+        Log.e("jerry", "Service: onStartCommand: ");
+        createNotification();
+        // 1. 注册锁屏广播监听器
+        mScreenListener = new ScreenReceiverUtil(this);
+        mScreenManager = ScreenManager.getScreenManagerInstance(this);
+        mScreenListener.setScreenReceiverListener(mScreenListenerer);
+        return super.onStartCommand(intent, flags, startId);
     }
 
     /**
@@ -259,27 +275,18 @@ public class BlueService extends Service {
     }
 
     @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-     /*   //设置service为前台服务，提高优先级
-        if (Build.VERSION.SDK_INT < 18) {
-            //Android4.3以下 ，此方法能有效隐藏Notification上的图标
-            startForeground(GRAY_SERVICE_ID, new Notification());
-        } else if (Build.VERSION.SDK_INT > 18 && Build.VERSION.SDK_INT < 25) {
-            //Android4.3 - Android7.0，此方法能有效隐藏Notification上的图标
-            Intent innerIntent = new Intent(this, BlueService.class);
-            startService(innerIntent);
-            startForeground(GRAY_SERVICE_ID, new Notification());
-        } else {
-            //Android7.1 google修复了此漏洞，暂无解决方法（现状：Android7.1以上app启动后通知栏会出现一条"正在运行"的通知消息）
-            startForeground(GRAY_SERVICE_ID, new Notification());
-        }*/
-        Log.e("jerry", "Service: onStartCommand: ");
-        createNotification();
-        // 1. 注册锁屏广播监听器
-        mScreenListener = new ScreenReceiverUtil(this);
-        mScreenManager = ScreenManager.getScreenManagerInstance(this);
-        mScreenListener.setScreenReceiverListener(mScreenListenerer);
-        return super.onStartCommand(intent, flags, startId);
+    public void onDestroy() {
+        super.onDestroy();
+        releaseWakeLock();
+        mScreenListener.stopScreenReceiverListener();
+    }
+
+    //释放设备电源锁
+    private void releaseWakeLock() {
+        if (null != wakeLock) {
+            wakeLock.release();
+            wakeLock = null;
+        }
     }
 
     @Nullable
@@ -356,7 +363,6 @@ public class BlueService extends Service {
      */
     private void connectionStateChange(BleDevConfig currentDevConfig, int status, final int newState) {
         if (newState == BluetoothProfile.STATE_DISCONNECTED) {
-            PreventLosingCommon.Dev_Type = -1;
             if (locationApplication != null) {
                 if (locationApplication.locationService.isStart()) {
                     Log.e("jerryzhu", "first 停止定位: ");
@@ -365,7 +371,7 @@ public class BlueService extends Service {
             }
             if (!dontAlert) { //手动断开为true，不需要报警
                 if (locationApplication != null && locationApplication.mLocation != null &&
-                        !TextUtils.isEmpty(locationApplication.mLocation.getMac())) {
+                    !TextUtils.isEmpty(locationApplication.mLocation.getMac())) {
                     boolean save = locationApplication.mLocation.save();
                     T.show(this, "丢失位置已保存！");
                     if (save)
@@ -427,24 +433,32 @@ public class BlueService extends Service {
 
         AlertDialog.Builder dialogAlert = new AlertDialog.Builder(this, R.style.AlertDialog);
         dialogAlert.setTitle("丢失报警")
-                .setCancelable(false)
-                .setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！")
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (mPlayer != null) {
-                            mPlayer.stop();
-                            mPlayer.release();
-                            mPlayer = null;
-                        }
-                        alertDialog = null;
+            .setCancelable(false)
+            .setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！")
+            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (mPlayer != null) {
+                        mPlayer.stop();
+                        mPlayer.release();
+                        mPlayer = null;
                     }
-                });
+                    alertDialog = null;
+                }
+            });
         alertDialog = dialogAlert.create();
         alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         alertDialog.show();
 
         return false;
+    }
+
+    public void connect(String mac) {
+        xfBluetooth.connect(mac);
+    }
+
+    public void setDontAlert(boolean isDontAlert) {
+        dontAlert = isDontAlert;
     }
 
     private final class ServiceHandler extends Handler {
@@ -466,25 +480,10 @@ public class BlueService extends Service {
         }
     }
 
-    public void connect(String mac) {
-        xfBluetooth.connect(mac);
-    }
-
-    public void setDontAlert(boolean isDontAlert) {
-        dontAlert = isDontAlert;
-    }
-
     public class MyBinder extends Binder {
         public BlueService getService() {
             // 返回当前对象LocalService,这样我们就可在客户端端调用Service的公共方法了
             return BlueService.this;
         }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        releaseWakeLock();
-        mScreenListener.stopScreenReceiverListener();
     }
 }

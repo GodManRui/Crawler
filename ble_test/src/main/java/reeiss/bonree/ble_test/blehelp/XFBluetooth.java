@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import reeiss.bonree.ble_test.bean.BleDevConfig;
+import reeiss.bonree.ble_test.bean.PreventLosingCommon;
 import reeiss.bonree.ble_test.utils.T;
 
 public class XFBluetooth {
@@ -61,8 +62,8 @@ public class XFBluetooth {
                 }
             }
             if (newState != BluetoothProfile.STATE_CONNECTED) {
-                Log.e("jerry", "CURRENT_DEV_MAC  置空: " + CURRENT_DEV_MAC);
                 CURRENT_DEV_MAC = "";
+                PreventLosingCommon.Dev_Type = -1;
                 reset();
             }
         }
@@ -120,15 +121,11 @@ public class XFBluetooth {
         this.context = context;
         //获取蓝牙适配器
         BluetoothManager
-                bluetoothManager = (BluetoothManager) context
-                .getSystemService(Context.BLUETOOTH_SERVICE);
+            bluetoothManager = (BluetoothManager) context
+            .getSystemService(Context.BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
         mBluetoothAdapter = bluetoothManager.getAdapter();
         mListCallBack = new ArrayList<XFBluetoothCallBack>();
-    }
-
-    public boolean isOpenBlueTooth() {
-        return mBluetoothAdapter != null && mBluetoothAdapter.enable();
     }
 
     public static XFBluetooth getInstance(Context context) {
@@ -148,6 +145,10 @@ public class XFBluetooth {
     public static BleDevConfig getCurrentDevConfig(String mac) {
         if (TextUtils.isEmpty(mac)) return null;
         return LitePal.where("mac=?", mac).findFirst(BleDevConfig.class);
+    }
+
+    public boolean isOpenBlueTooth() {
+        return mBluetoothAdapter != null && mBluetoothAdapter.enable();
     }
 
     public ScanCallback getCallback() {
@@ -252,7 +253,7 @@ public class XFBluetooth {
     public void connect(String mac) {
         if (mac != null && !TextUtils.isEmpty(mac)) {
             BluetoothDevice remoteDevice = mBluetoothAdapter.getRemoteDevice(mac);
-            mXFBluetoothGatt = remoteDevice.connectGatt(context, true, gattCallback);
+            mXFBluetoothGatt = remoteDevice.connectGatt(context, false, gattCallback);
             Log.e("jerry", "正在连接: " + Thread.currentThread().getName());
         }
     }

@@ -58,12 +58,12 @@ public class SecondFragment extends Fragment {
         @Override
         public void onPictureTaken(final byte[] data, Camera camera) {
             File pictureDir = Environment
-                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
             picturePath = pictureDir
-                    + File.separator
-                    + new DateFormat().format("yyyyMMddHHmmss", new Date())
-                    .toString() + ".jpg";
+                + File.separator
+                + new DateFormat().format("yyyyMMddHHmmss", new Date())
+                .toString() + ".jpg";
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -77,7 +77,7 @@ public class SecondFragment extends Fragment {
                             bitmap = CameraPreview.rotateBitmapByDegree(bitmap, -90);
                         }
                         BufferedOutputStream bos = new BufferedOutputStream(
-                                new FileOutputStream(file));
+                            new FileOutputStream(file));
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                         bos.flush();
                         bos.close();
@@ -98,22 +98,6 @@ public class SecondFragment extends Fragment {
             mCamera.startPreview();
         }
     };
-    private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
-        @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            super.onCharacteristicChanged(gatt, characteristic);
-            String value = Arrays.toString(characteristic.getValue());
-            if (value.equals("[1]")) {
-                if (mCamera != null) {
-                    /*mCamera.autoFocus(autoFocusCallback);     手动对焦，才设置回调
-                    takePicture = true;*/
-                    mCamera.takePicture(null, null, mPictureCallback);
-                    playSound();
-                }
-            }
-            Log.e("jerry", "onCharacteristicChanged: " + value);
-        }
-    };
     private final Camera.AutoFocusCallback autoFocusCallback = new Camera.AutoFocusCallback() {
         @Override
         public void onAutoFocus(boolean success, Camera camera) {
@@ -131,6 +115,22 @@ public class SecondFragment extends Fragment {
                 //未对焦成功
                 Log.i("jerry", "myAutoFocusCallback: 失败了...");
             }
+        }
+    };
+    private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
+        @Override
+        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            super.onCharacteristicChanged(gatt, characteristic);
+            String value = Arrays.toString(characteristic.getValue());
+            if (value.equals("[1]")) {
+                if (mCamera != null) {
+                    /*mCamera.autoFocus(autoFocusCallback);     手动对焦，才设置回调
+                    takePicture = true;*/
+                    mCamera.takePicture(null, null, mPictureCallback);
+                    playSound();
+                }
+            }
+            Log.e("jerry", "onCharacteristicChanged: " + value);
         }
     };
     private Camera.Parameters parameters;
@@ -207,6 +207,12 @@ public class SecondFragment extends Fragment {
 //        openCamera();
     }
 
+    @Override
+    public void onDestroy() {
+        XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
+        super.onDestroy();
+    }
+
    /* @Override
     public void onResume() {
         super.onResume();
@@ -222,11 +228,6 @@ public class SecondFragment extends Fragment {
         XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
     }*/
 
-    public void onMyPause() {
-        releaseCamera();
-        XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
-    }
-
     /**
      * 播放系统拍照声音
      */
@@ -238,7 +239,7 @@ public class SecondFragment extends Fragment {
         if (volume != 0) {
             if (mediaPlayer == null)
                 mediaPlayer = MediaPlayer.create(getActivity(),
-                        Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                    Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
             if (mediaPlayer != null) {
                 mediaPlayer.start();
             }
@@ -311,7 +312,7 @@ public class SecondFragment extends Fragment {
     // 判断相机是否支持
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(
-                PackageManager.FEATURE_CAMERA)) {
+            PackageManager.FEATURE_CAMERA)) {
             return true;
         } else {
             return false;
@@ -327,6 +328,11 @@ public class SecondFragment extends Fragment {
             e.printStackTrace();
         }
         return c;
+    }
+
+    public void onMyPause() {
+        releaseCamera();
+        XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
     }
 
     public void onMyResume() {
