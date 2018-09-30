@@ -14,11 +14,13 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import org.litepal.LitePal;
 
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ import reeiss.bonree.ble_test.smarthardware.MainActivity;
 import reeiss.bonree.ble_test.smarthardware.activity.BindDevActivity;
 import reeiss.bonree.ble_test.smarthardware.activity.BlueControlActivity;
 import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
+import reeiss.bonree.ble_test.utils.Event;
 import reeiss.bonree.ble_test.utils.T;
 
 import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
@@ -128,6 +131,7 @@ public class FirstFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         Log.e("jerry", "onCreate: Fragment的bundle  " + savedInstanceState);
+        EventBus.getDefault().register(this);
         super.onCreate(savedInstanceState);
     }
 
@@ -177,6 +181,7 @@ public class FirstFragment extends Fragment {
 
     @Override
     public void onDestroy() {
+        EventBus.getDefault().unregister(this);
         xfBluetooth.removeBleCallBack(gattCallback);
         super.onDestroy();
         Log.e("JerryZhuMM", "Fragment onDestroy: ");
@@ -185,12 +190,12 @@ public class FirstFragment extends Fragment {
     private void initView() {
 //        getActivity().setTitle("设备管理");
         vDevLv = getView().findViewById(R.id.ble_dev_lv);
-        getView().findViewById(R.id.bt_add_dev).setOnClickListener(new OnClickListener() {
+       /* getView().findViewById(R.id.bt_add_dev).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 addDev();
             }
-        });
+        });*/
 
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle("正在连接设备");
@@ -280,16 +285,6 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    //跳转到添加设备界面
-    public void addDev() {
-        if (!XFBluetooth.getInstance(getActivity()).getAdapter().isEnabled()) {
-            T.show(getActivity(), "请先打开蓝牙再扫描");
-            return;
-        }
-        Intent intent = new Intent(getActivity(), BindDevActivity.class);
-        startActivityForResult(intent, 10);
-    }
-
     private void DelDev(final BleDevConfig bleDevConfig, String address) {
 
         AlertDialog.Builder delDia = new AlertDialog.Builder(getActivity())
@@ -309,5 +304,22 @@ public class FirstFragment extends Fragment {
             .setPositiveButton("取消", null)
             .setCancelable(false);
         delDia.create().show();
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void addDevResultCode200(Event event) {
+        mDevList = LitePal.findAll(BleDevConfig.class);
+        adapter.setDevList(mDevList);
+        Log.e("jerry", "onActivityResult EVentBUS : Fragment notifyDataSetChanged");
+    }
+
+    //跳转到添加设备界面
+    public void addDev() {
+        if (!XFBluetooth.getInstance(getActivity()).getAdapter().isEnabled()) {
+            T.show(getActivity(), "请先打开蓝牙再扫描");
+            return;
+        }
+        Intent intent = new Intent(getActivity(), BindDevActivity.class);
+        startActivityForResult(intent, 200);
     }
 }

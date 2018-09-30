@@ -12,6 +12,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.AssetFileDescriptor;
+import android.content.res.AssetManager;
 import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -179,6 +181,7 @@ public class BlueService extends Service {
             // 解锁，暂不用，保留
         }
     };
+    private MediaPlayer mNetPlayer;
 
     @Override
     public void onCreate() {
@@ -197,6 +200,21 @@ public class BlueService extends Service {
         handler = new ServiceHandler(looper);
         xfBluetooth = XFBluetooth.getInstance(getApplicationContext());
         xfBluetooth.addBleCallBack(gattCallback);
+
+        mNetPlayer = new MediaPlayer();
+        AssetManager assetManager = getAssets();
+        AssetFileDescriptor fileDescriptor = null;
+        try {
+            fileDescriptor = assetManager.openFd("net.mp3");
+            mNetPlayer.setDataSource(fileDescriptor.getFileDescriptor(), fileDescriptor.getStartOffset(),
+                fileDescriptor.getStartOffset());
+
+            mNetPlayer.prepare();
+            mNetPlayer.setLooping(true);
+            mNetPlayer.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /*  PARTIAL_WAKE_LOCK:保持CPU 运转，屏幕和键盘灯有可能是关闭的。
@@ -211,7 +229,7 @@ public class BlueService extends Service {
             PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
             wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK | PowerManager.ON_AFTER_RELEASE, "PostLocationService");
             if (null != wakeLock) {
-                wakeLock.acquire();
+                wakeLock.acquire(120 * 60 * 1000L /*10 minutes*/);
             }
         }
     }
@@ -237,7 +255,7 @@ public class BlueService extends Service {
         mScreenListener = new ScreenReceiverUtil(this);
         mScreenManager = ScreenManager.getScreenManagerInstance(this);
         mScreenListener.setScreenReceiverListener(mScreenListenerer);
-        return super.onStartCommand(intent, flags, startId);
+        return START_STICKY;
     }
 
     /**
@@ -276,9 +294,20 @@ public class BlueService extends Service {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
         releaseWakeLock();
         mScreenListener.stopScreenReceiverListener();
+        try {
+            mNetPlayer.stop();
+            mNetPlayer.release();
+            mNetPlayer = null;
+            mPlayer.stop();
+            mPlayer.release();
+            mPlayer = null;
+        } catch (Exception e) {
+
+        }
+        Log.e("JerryZhu", "Service !!!!!!!!!!!!!!!!!!!!onDestroy:                                                                                            ");
+        super.onDestroy();
     }
 
     //释放设备电源锁

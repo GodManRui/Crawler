@@ -15,13 +15,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
+import reeiss.bonree.ble_test.smarthardware.activity.BindDevActivity;
 import reeiss.bonree.ble_test.smarthardware.adapter.MyFragAdapter;
 import reeiss.bonree.ble_test.smarthardware.fragment.FirstFragment;
 import reeiss.bonree.ble_test.smarthardware.fragment.FourFragment;
@@ -29,6 +34,7 @@ import reeiss.bonree.ble_test.smarthardware.fragment.SecondFragment;
 import reeiss.bonree.ble_test.smarthardware.fragment.ThreeFragment;
 import reeiss.bonree.ble_test.smarthardware.service.BlueService;
 import reeiss.bonree.ble_test.utils.BottomNavigationViewHelper;
+import reeiss.bonree.ble_test.utils.Event;
 import reeiss.bonree.ble_test.utils.T;
 
 public class MainActivity extends AppCompatActivity {
@@ -203,24 +209,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        Log.e("JerryZhuMM", " Main onPause");
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        Log.e("JerryZhuMM", " Main onNewIntent 新的意图");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e("JerryZhuMM", " Main onResume");
-    }
-
-    @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
         Log.e("JerryZhuMM", " Main onRestoreInstanceState(Bundle savedInstanceState)" + savedInstanceState);
@@ -243,5 +231,63 @@ public class MainActivity extends AppCompatActivity {
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
         super.onSaveInstanceState(outState, outPersistentState);
         Log.e("JerryZhuMM", " Main onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) ");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.actionbar, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_add:
+                addDev();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    //跳转到添加设备界面
+    public void addDev() {
+        if (!XFBluetooth.getInstance(this).getAdapter().isEnabled()) {
+            T.show(this, "请先打开蓝牙再扫描");
+            return;
+        }
+        Intent intent = new Intent(this, BindDevActivity.class);
+        startActivityForResult(intent, 200);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == 200) {
+            boolean addBindDev = data.getBooleanExtra("addBindDev", true);
+            if (addBindDev) {
+                EventBus.getDefault().post(new Event());
+            }
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.e("JerryZhuMM", " Main onPause");
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.e("JerryZhuMM", " Main onNewIntent 新的意图");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.e("JerryZhuMM", " Main onResume");
     }
 }

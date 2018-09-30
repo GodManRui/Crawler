@@ -36,6 +36,7 @@ public class BindDevActivity extends AppCompatActivity {
     private ArrayList<DeviceAndRssi> mDevList;
     private XFBluetooth xfBluetooth;
     private ScanResultAdapter adapter;
+    private boolean isHint = false;
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
         @Override
         public void onScanResult(final BluetoothDevice device, final int rssi) {
@@ -63,6 +64,10 @@ public class BindDevActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    if (!isHint) {
+                        T.show(BindDevActivity.this, "点击设备可添加到设备列表内", 3000);
+                        isHint = true;
+                    }
                     mDevList.add(new DeviceAndRssi(device, rssi));
                     adapter.setDevList(mDevList);
                 }
@@ -119,7 +124,7 @@ public class BindDevActivity extends AppCompatActivity {
                     if (save) {
                         addSuccess = true;
 //                        mBindList.add(currentDevConfig);
-                        T.show(BindDevActivity.this, "添加成功！");
+                        T.show(BindDevActivity.this, "添加成功,可返回上一页面进行链接！");
                     }
                 }
             }
