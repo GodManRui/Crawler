@@ -12,6 +12,7 @@ import android.util.Log;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClientOption;
+import com.baidu.location.LocationClientOption.LocationMode;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
@@ -30,6 +31,7 @@ import reeiss.bonree.ble_test.bean.EventBusLocation;
 import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.utils.Utils;
+import tech.linjiang.pandora.Pandora;
 
 /**
  * Wang YaHui
@@ -121,7 +123,7 @@ public class LocationApplication extends Application {
          */
         locationService = new LocationService(getApplicationContext());
         LocationClientOption mOption = locationService.getDefaultLocationClientOption();
-        mOption.setLocationMode(LocationClientOption.LocationMode.Battery_Saving);
+        mOption.setLocationMode(LocationMode.Battery_Saving);
         mOption.setCoorType("bd09ll");
         mOption.setScanSpan(10000);
         mOption.setIsNeedAddress(true);
@@ -134,9 +136,9 @@ public class LocationApplication extends Application {
         SDKInitializer.initialize(getApplicationContext());
         XFBluetooth.getInstance(this);
         LitePal.initialize(this);
-//        Pandora.init(this).enableShakeOpen();
+//       Pandora.init(this).enableShakeOpen();
         try {
-//            Pandora.get().open();
+            Pandora.get().open();
         } catch (Exception e) {
 
         }

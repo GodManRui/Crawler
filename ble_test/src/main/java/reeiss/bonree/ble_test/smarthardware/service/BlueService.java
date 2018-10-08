@@ -53,6 +53,7 @@ import reeiss.bonree.ble_test.utils.ScreenManager;
 import reeiss.bonree.ble_test.utils.ScreenReceiverUtil;
 import reeiss.bonree.ble_test.utils.T;
 
+import static android.bluetooth.BluetoothProfile.STATE_CONNECTED;
 import static reeiss.bonree.ble_test.bean.CommonHelp.getLinkLostAlert;
 import static reeiss.bonree.ble_test.bean.CommonHelp.getOnClick;
 import static reeiss.bonree.ble_test.bean.PreventLosingCommon.Dev_Type_Shuidi;
@@ -303,7 +304,7 @@ public class BlueService extends Service {
             mPlayer.stop();
             mPlayer.release();
             mPlayer = null;
-        } catch (Exception e) {
+        } catch (Exception ignored) {
 
         }
         Log.e("JerryZhu", "Service !!!!!!!!!!!!!!!!!!!!onDestroy:                                                                                            ");
@@ -391,12 +392,18 @@ public class BlueService extends Service {
      * @param newState
      */
     private void connectionStateChange(BleDevConfig currentDevConfig, int status, final int newState) {
+        Log.e("JerryZhu", "Service 处理  : " + status + "   ==   " + newState);
         if (newState == BluetoothProfile.STATE_DISCONNECTED) {
             if (locationApplication != null) {
                 if (locationApplication.locationService.isStart()) {
                     Log.e("jerryzhu", "first 停止定位: ");
                     locationApplication.locationService.stop();
                 }
+            }
+            if (status != STATE_CONNECTED) {
+                //之前的状态不是已连接，说明是133，应该是链接异常或者链接失败
+                T.show(this, "链接异常,可尝试删除后重新添加设备");
+                return;
             }
             if (!dontAlert) { //手动断开为true，不需要报警
                 if (locationApplication != null && locationApplication.mLocation != null &&
@@ -421,7 +428,7 @@ public class BlueService extends Service {
         }
 
         //已连接
-        if (newState == BluetoothProfile.STATE_CONNECTED) {
+        if (newState == STATE_CONNECTED) {
             BluetoothGatt xfBluetoothGatt = xfBluetooth.getXFBluetoothGatt();
             xfBluetoothGatt.discoverServices();
             if (locationApplication != null && !locationApplication.locationService.isStart()) {

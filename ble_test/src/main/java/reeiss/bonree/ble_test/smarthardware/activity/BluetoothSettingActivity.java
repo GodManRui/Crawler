@@ -120,6 +120,7 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         assert mActionBar != null;
         mActionBar.setHomeButtonEnabled(true);
         mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_keyboard_arrow_left_black_24dp);
         setTitle("设备设置");
         currentDevConfig = XFBluetooth.getCurrentDevConfig();
 

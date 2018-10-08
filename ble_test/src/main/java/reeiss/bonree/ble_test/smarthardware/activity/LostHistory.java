@@ -45,6 +45,7 @@ public class LostHistory extends AppCompatActivity {
         assert mActionBar != null;
         mActionBar.setHomeButtonEnabled(true);
         mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_keyboard_arrow_left_black_24dp);
         setTitle("丢失记录");
         lostHistories = LitePal.findAll(Location.class);
         if (lostHistories.size() <= 0) {

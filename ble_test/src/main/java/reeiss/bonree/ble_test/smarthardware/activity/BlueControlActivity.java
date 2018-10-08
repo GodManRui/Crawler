@@ -112,6 +112,7 @@ public class BlueControlActivity extends AppCompatActivity implements OnClickLis
         assert mActionBar != null;
         mActionBar.setHomeButtonEnabled(true);
         mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_keyboard_arrow_left_black_24dp);
         setTitle("设备控制");
     }
 

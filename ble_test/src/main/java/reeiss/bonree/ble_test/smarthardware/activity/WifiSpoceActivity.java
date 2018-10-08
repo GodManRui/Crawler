@@ -48,6 +48,7 @@ public class WifiSpoceActivity extends AppCompatActivity {
         assert mActionBar != null;
         mActionBar.setHomeButtonEnabled(true);
         mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_keyboard_arrow_left_black_24dp);
         setTitle("勿扰区域设置");
         lvWifiList = findViewById(R.id.lv_wifi_list);
         wifiList = LitePal.findAll(WuRaoWifiConfig.class);

@@ -14,6 +14,7 @@ import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.litepal.LitePal;
 
@@ -40,7 +41,7 @@ public class BindDevActivity extends AppCompatActivity {
     private XFBluetoothCallBack gattCallback = new XFBluetoothCallBack() {
         @Override
         public void onScanResult(final BluetoothDevice device, final int rssi) {
-            if (TextUtils.isEmpty(device.getName()) || !device.getName().contains("iTAG")) return;
+//            if (TextUtils.isEmpty(device.getName()) || !device.getName().contains("iTAG")) return;
             Log.e("jerryzhu", "扫描结果: " + device.getName());
             // xfBluetooth.stop();
 
@@ -65,7 +66,7 @@ public class BindDevActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     if (!isHint) {
-                        T.show(BindDevActivity.this, "点击设备可添加到设备列表内", 3000);
+                        Toast.makeText(BindDevActivity.this, "点击设备可添加到设备列表内", Toast.LENGTH_LONG).show();
                         isHint = true;
                     }
                     mDevList.add(new DeviceAndRssi(device, rssi));
@@ -91,6 +92,7 @@ public class BindDevActivity extends AppCompatActivity {
         assert mActionBar != null;
         mActionBar.setHomeButtonEnabled(true);
         mActionBar.setDisplayHomeAsUpEnabled(true);
+        mActionBar.setHomeAsUpIndicator(R.drawable.ic_keyboard_arrow_left_black_24dp);
         imScan = findViewById(R.id.iv_scan);
         vReScan = findViewById(R.id.rl_bd_scan);
         vDevLv = (ListView) findViewById(R.id.lv_bind_dev);
@@ -124,7 +126,7 @@ public class BindDevActivity extends AppCompatActivity {
                     if (save) {
                         addSuccess = true;
 //                        mBindList.add(currentDevConfig);
-                        T.show(BindDevActivity.this, "添加成功,可返回上一页面进行链接！");
+                        Toast.makeText(BindDevActivity.this, "添加成功,可返回上一页面进行链接！", Toast.LENGTH_LONG).show();
                     }
                 }
             }
