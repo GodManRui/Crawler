@@ -132,7 +132,7 @@ public class BlueService extends Service {
 
         //通知操作的回调（此处接收BLE设备返回数据） 点击返回1
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic
-            characteristic) {
+                characteristic) {
             String value = Arrays.toString(characteristic.getValue());
             if (PreventLosingCommon.Dev_Type == Dev_Type_Shuidi) {
                 long currentTimeMillis = System.currentTimeMillis();
@@ -158,7 +158,7 @@ public class BlueService extends Service {
     private ScreenManager mScreenManager;
     // 代码省略...
     private ScreenReceiverUtil.SreenStateListener
-        mScreenListenerer = new ScreenReceiverUtil.SreenStateListener() {
+            mScreenListenerer = new ScreenReceiverUtil.SreenStateListener() {
         @Override
         public void onSreenOn() {
             // 移除"1像素"
@@ -208,7 +208,7 @@ public class BlueService extends Service {
         try {
             fileDescriptor = assetManager.openFd("net.mp3");
             mNetPlayer.setDataSource(fileDescriptor.getFileDescriptor(), fileDescriptor.getStartOffset(),
-                fileDescriptor.getStartOffset());
+                    fileDescriptor.getStartOffset());
 
             mNetPlayer.prepare();
             mNetPlayer.setLooping(true);
@@ -400,14 +400,14 @@ public class BlueService extends Service {
                     locationApplication.locationService.stop();
                 }
             }
-            if (status != STATE_CONNECTED) {
-                //之前的状态不是已连接，说明是133，应该是链接异常或者链接失败
-                T.show(this, "链接异常,可尝试删除后重新添加设备");
+            if (status == 133) {
+                //链接异常或者链接失败
+                T.show(this, "链接异常,请重试或尝试删除后重新添加设备");
                 return;
             }
             if (!dontAlert) { //手动断开为true，不需要报警
                 if (locationApplication != null && locationApplication.mLocation != null &&
-                    !TextUtils.isEmpty(locationApplication.mLocation.getMac())) {
+                        !TextUtils.isEmpty(locationApplication.mLocation.getMac())) {
                     boolean save = locationApplication.mLocation.save();
                     T.show(this, "丢失位置已保存！");
                     if (save)
@@ -469,19 +469,19 @@ public class BlueService extends Service {
 
         AlertDialog.Builder dialogAlert = new AlertDialog.Builder(this, R.style.AlertDialog);
         dialogAlert.setTitle("丢失报警")
-            .setCancelable(false)
-            .setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！")
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (mPlayer != null) {
-                        mPlayer.stop();
-                        mPlayer.release();
-                        mPlayer = null;
+                .setCancelable(false)
+                .setMessage(type == 0 ? "防丢器已断开连接！" : "防丢器位置超出范围！")
+                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (mPlayer != null) {
+                            mPlayer.stop();
+                            mPlayer.release();
+                            mPlayer = null;
+                        }
+                        alertDialog = null;
                     }
-                    alertDialog = null;
-                }
-            });
+                });
         alertDialog = dialogAlert.create();
         alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
         alertDialog.show();

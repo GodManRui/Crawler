@@ -22,6 +22,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -36,7 +37,6 @@ import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
@@ -58,12 +58,12 @@ public class SecondFragment extends Fragment {
         @Override
         public void onPictureTaken(final byte[] data, Camera camera) {
             File pictureDir = Environment
-                .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
 
             picturePath = pictureDir
-                + File.separator
-                + new DateFormat().format("yyyyMMddHHmmss", new Date())
-                .toString() + ".jpg";
+                    + File.separator
+                    + new DateFormat().format("yyyyMMddHHmmss", new Date())
+                    .toString() + ".jpg";
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -77,12 +77,12 @@ public class SecondFragment extends Fragment {
                             bitmap = CameraPreview.rotateBitmapByDegree(bitmap, -90);
                         }
                         BufferedOutputStream bos = new BufferedOutputStream(
-                            new FileOutputStream(file));
+                                new FileOutputStream(file));
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bos);
                         bos.flush();
                         bos.close();
                         bitmap.recycle();
-                        getActivity().runOnUiThread(new Runnable() {
+                        ((AppCompatActivity) context).runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
                                 Uri uri = Uri.fromFile(new File(picturePath));
@@ -103,7 +103,7 @@ public class SecondFragment extends Fragment {
         public void onAutoFocus(boolean success, Camera camera) {
             //success表示对焦成功
             if (success && takePicture) {
-                T.show(getActivity(), "对焦成功，拍照");
+                T.show(context, "对焦成功，拍照");
                 //shutter是快门按下时的回调，raw是获取拍照原始数据的回调，jpeg是获取经过压缩成jpg格式的图像数据的回调。
                 mCamera.takePicture(null, null, mPictureCallback);
                 playSound();
@@ -111,7 +111,7 @@ public class SecondFragment extends Fragment {
                 Log.i("jerry", "成功:success...");
                 //myCamera.setOneShotPreviewCallback(null);
             } else {
-                T.show(getActivity(), "对焦失败");
+                T.show(context, "对焦失败");
                 //未对焦成功
                 Log.i("jerry", "myAutoFocusCallback: 失败了...");
             }
@@ -134,6 +134,13 @@ public class SecondFragment extends Fragment {
         }
     };
     private Camera.Parameters parameters;
+    private Context context;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        this.context = context;
+    }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
@@ -141,11 +148,11 @@ public class SecondFragment extends Fragment {
         Log.e("JerryZhu", "onHiddenChanged: Second");
         if (hidden) {
             releaseCamera();
-            XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
+            XFBluetooth.getInstance(context).removeBleCallBack(gattCallback);
         } else {
-            getActivity().setTitle("拍照");
+            ((AppCompatActivity) context).setTitle("拍照");
             openCamera();
-            XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
+            XFBluetooth.getInstance(context).addBleCallBack(gattCallback);
         }
     }
 
@@ -198,7 +205,7 @@ public class SecondFragment extends Fragment {
                 Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
                 if (bitmap == null) return;
                 //将图片转换为bitmap格式
-                String uriString = MediaStore.Images.Media.insertImage(getActivity().getContentResolver(), bitmap, null, null);
+                String uriString = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, null, null);
                 Uri uri = Uri.parse(uriString);    //将bitmap转换为uri
                 intent.setDataAndType(uri, "image/*");    //设置intent数据和图片格式
                 startActivity(intent);
@@ -209,7 +216,7 @@ public class SecondFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
+        XFBluetooth.getInstance(context).removeBleCallBack(gattCallback);
         super.onDestroy();
     }
 
@@ -233,13 +240,13 @@ public class SecondFragment extends Fragment {
      */
     public void playSound() {
         MediaPlayer mediaPlayer = null;
-        AudioManager audioManager = (AudioManager) getActivity().getSystemService(Context.AUDIO_SERVICE);
+        AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         int volume = audioManager.getStreamVolume(AudioManager.STREAM_NOTIFICATION);
 
         if (volume != 0) {
             if (mediaPlayer == null)
-                mediaPlayer = MediaPlayer.create(getActivity(),
-                    Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
+                mediaPlayer = MediaPlayer.create(context,
+                        Uri.parse("file:///system/media/audio/ui/camera_click.ogg"));
             if (mediaPlayer != null) {
                 mediaPlayer.start();
             }
@@ -262,17 +269,17 @@ public class SecondFragment extends Fragment {
     // 开始预览相机
     //  闪光灯      parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
     private void openCamera() {
-        if (!checkCameraHardware(getActivity())) {
-            T.show(getActivity(), "权限被拒绝！");
+        if (!checkCameraHardware(context)) {
+            T.show(context, "权限被拒绝！");
             return;
         }
         mCamera = getCameraInstance();
-        mPreview = new CameraPreview(getActivity(), mCamera);
+        mPreview = new CameraPreview(context, mCamera);
 
         parameters = mCamera.getParameters();
         parameters.setPictureFormat(PixelFormat.JPEG);
         if (!Build.MODEL.equals("KORIDY H30")) {
-            T.show(getActivity(), "连续对焦");
+            T.show(context, "连续对焦");
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);// 1连续对焦  解开这个注释，并且跟手动对焦冲突，需要删掉手动对焦代码
         } else {
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
@@ -312,7 +319,7 @@ public class SecondFragment extends Fragment {
     // 判断相机是否支持
     private boolean checkCameraHardware(Context context) {
         if (context.getPackageManager().hasSystemFeature(
-            PackageManager.FEATURE_CAMERA)) {
+                PackageManager.FEATURE_CAMERA)) {
             return true;
         } else {
             return false;
@@ -332,13 +339,12 @@ public class SecondFragment extends Fragment {
 
     public void onMyPause() {
         releaseCamera();
-        XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
+        XFBluetooth.getInstance(context).removeBleCallBack(gattCallback);
     }
 
     public void onMyResume() {
-        Objects.requireNonNull(getActivity()).setTitle("拍照");
         openCamera();
-        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
+        XFBluetooth.getInstance(context).addBleCallBack(gattCallback);
     }
 
     /*

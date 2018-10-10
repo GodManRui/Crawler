@@ -60,11 +60,10 @@ public class FirstFragment extends Fragment {
             if (currentDevConfig == null) {
                 currentDevConfig = getCurrentDevConfig(gatt.getDevice().getAddress());
             }
-            final BleDevConfig finalCurrentDevConfig = currentDevConfig;
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    StatusChange(finalCurrentDevConfig, status, newState);
+                    StatusChange(status, newState);
                 }
             });
         }
@@ -78,7 +77,7 @@ public class FirstFragment extends Fragment {
      * @param status
      * @param newState
      */
-    private void StatusChange(BleDevConfig currentDevConfig, int status, final int newState) {
+    private void StatusChange(int status, final int newState) {
         Log.e("jerry", "StatusChange: " + progressDialog);
         if (progressDialog != null)
             progressDialog.dismiss();
@@ -252,20 +251,20 @@ public class FirstFragment extends Fragment {
 
                 if (deviceListBean.getConnectState().equals("已连接") && address.equals(CURRENT_DEV_MAC)) {
                     AlertDialog.Builder seleDia = new AlertDialog.Builder(getActivity())
-                        .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                switch (which) {
-                                    case 0:
-                                        mainActivity.iService.setDontAlert(true);
-                                        xfBluetooth.disconnect();
-                                        break;
-                                    case 1:
-                                        DelDev(deviceListBean, address);
-                                        break;
+                            .setItems(new String[]{"断开连接", "删除设备"}, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    switch (which) {
+                                        case 0:
+                                            mainActivity.iService.setDontAlert(true);
+                                            xfBluetooth.disconnect();
+                                            break;
+                                        case 1:
+                                            DelDev(deviceListBean, address);
+                                            break;
+                                    }
                                 }
-                            }
-                        });
+                            });
                     seleDia.create().show();
                 } else
                     DelDev(deviceListBean, address);
@@ -288,21 +287,21 @@ public class FirstFragment extends Fragment {
     private void DelDev(final BleDevConfig bleDevConfig, String address) {
 
         AlertDialog.Builder delDia = new AlertDialog.Builder(getActivity())
-            .setTitle("删除设备")
-            .setMessage("确认删除" + bleDevConfig.getAlias() + "并清空所有配置信息(包括昵称，定位记录等)？")
-            .setNegativeButton("删除", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    mDevList.remove(bleDevConfig);
-                    adapter.setDevList(mDevList);
-                    if (bleDevConfig.getConnectState().equals("已连接")) {
-                        xfBluetooth.disconnect();
+                .setTitle("删除设备")
+                .setMessage("确认删除" + bleDevConfig.getAlias() + "并清空所有配置信息(包括昵称，定位记录等)？")
+                .setNegativeButton("删除", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mDevList.remove(bleDevConfig);
+                        adapter.setDevList(mDevList);
+                        if (bleDevConfig.getConnectState().equals("已连接")) {
+                            xfBluetooth.disconnect();
+                        }
+                        bleDevConfig.delete();
                     }
-                    bleDevConfig.delete();
-                }
-            })
-            .setPositiveButton("取消", null)
-            .setCancelable(false);
+                })
+                .setPositiveButton("取消", null)
+                .setCancelable(false);
         delDia.create().show();
     }
 
