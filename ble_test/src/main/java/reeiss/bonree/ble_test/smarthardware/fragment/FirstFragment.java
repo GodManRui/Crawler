@@ -29,13 +29,14 @@ import java.util.Objects;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.BleDevConfig;
+import reeiss.bonree.ble_test.bean.EventAddDev;
+import reeiss.bonree.ble_test.bean.EventEditName;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.blehelp.XFBluetoothCallBack;
 import reeiss.bonree.ble_test.smarthardware.MainActivity;
 import reeiss.bonree.ble_test.smarthardware.activity.BindDevActivity;
 import reeiss.bonree.ble_test.smarthardware.activity.BlueControlActivity;
 import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
-import reeiss.bonree.ble_test.utils.Event;
 import reeiss.bonree.ble_test.utils.T;
 
 import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
@@ -103,7 +104,7 @@ public class FirstFragment extends Fragment {
         }
     }
 
-    @Override
+   /* @Override
     public void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == 100) {
@@ -125,7 +126,7 @@ public class FirstFragment extends Fragment {
             Log.e("jerry", "onActivityResult: Fragment notifyDataSetChanged");
 //            adapter.notifyDataSetChanged();
         }
-    }
+    }*/
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -306,10 +307,17 @@ public class FirstFragment extends Fragment {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void addDevResultCode200(Event event) {
+    public void addDevResultCode200(EventAddDev event) {
         mDevList = LitePal.findAll(BleDevConfig.class);
         adapter.setDevList(mDevList);
-        Log.e("jerry", "onActivityResult EVentBUS : Fragment notifyDataSetChanged");
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void editNameResultCode100(EventEditName event) {
+        String newName = event.newName;
+        if (newName == null) return;
+        mDevList.get(position).setAlias(newName);
+        adapter.setDevList(mDevList);
     }
 
     //跳转到添加设备界面

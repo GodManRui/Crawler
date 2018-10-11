@@ -139,13 +139,20 @@ public class SecondFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        Log.e("jerry", "onAttach checkCameraHardware: " + context + "    我=" + this);
         this.context = context;
+    }
+
+    @Override
+    public void onDetach() {
+        Log.e("jerry", "onAttach checkCameraHardware 销毁: " + context + "   我=" + this);
+        super.onDetach();
     }
 
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        Log.e("JerryZhu", "onHiddenChanged: Second");
+        Log.e("JerryZhu", "checkCameraHardware onHiddenChanged: Second");
         if (hidden) {
             releaseCamera();
             XFBluetooth.getInstance(context).removeBleCallBack(gattCallback);
@@ -168,7 +175,6 @@ public class SecondFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         Log.e("jerry", "333 onViewCreated: ");
-
 //        getActivity().setTitle("拍照");
         mCameraLayout = (FrameLayout) getView().findViewById(R.id.camera_preview);
 //        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
@@ -269,8 +275,8 @@ public class SecondFragment extends Fragment {
     // 开始预览相机
     //  闪光灯      parameters.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
     private void openCamera() {
-        if (!checkCameraHardware(context)) {
-            T.show(context, "权限被拒绝！");
+        if (!checkCameraHardware()) {
+//            T.show(context, "权限被拒绝！");
             return;
         }
         mCamera = getCameraInstance();
@@ -317,11 +323,13 @@ public class SecondFragment extends Fragment {
     }
 
     // 判断相机是否支持
-    private boolean checkCameraHardware(Context context) {
-        if (context.getPackageManager().hasSystemFeature(
+    private boolean checkCameraHardware() {
+        Log.e("jerry", "checkCameraHardware: " + context + "   ====   " + getActivity() + "    我=" + this);
+        if (context != null && context.getPackageManager().hasSystemFeature(
                 PackageManager.FEATURE_CAMERA)) {
             return true;
         } else {
+            T.show(getActivity(), "不支持相机");
             return false;
         }
     }

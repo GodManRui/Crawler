@@ -22,9 +22,10 @@ import android.view.MenuItem;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import reeiss.bonree.ble_test.R;
+import reeiss.bonree.ble_test.bean.EventAddDev;
+import reeiss.bonree.ble_test.bean.EventEditName;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.smarthardware.activity.BindDevActivity;
 import reeiss.bonree.ble_test.smarthardware.adapter.MyFragAdapter;
@@ -34,7 +35,6 @@ import reeiss.bonree.ble_test.smarthardware.fragment.SecondFragment;
 import reeiss.bonree.ble_test.smarthardware.fragment.ThreeFragment;
 import reeiss.bonree.ble_test.smarthardware.service.BlueService;
 import reeiss.bonree.ble_test.utils.BottomNavigationViewHelper;
-import reeiss.bonree.ble_test.utils.Event;
 import reeiss.bonree.ble_test.utils.T;
 
 public class MainActivity extends AppCompatActivity {
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     private NoScrollViewPager vpFragment;
-    private List<Fragment> listFragment;
+    private ArrayList<Fragment> listFragment;
     private String currentName;
 
     @Override
@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 //        FragmentFactory.getInstance().exit(null);
         if (savedInstanceState != null) {
             String currentName = savedInstanceState.getString("currentName");
+//            listFragment = (ArrayList<Fragment>) savedInstanceState.getSerializable("listFragment");
             this.currentName = TextUtils.isEmpty(currentName) ? "设备管理" : currentName;
             setTitle(this.currentName);
         }
@@ -107,9 +108,12 @@ public class MainActivity extends AppCompatActivity {
             public void onPageScrollStateChanged(int state) {
             }
         });
+        Log.e("jerry", "checkCameraHardware: 先看是不是空 " + listFragment);
         listFragment = new ArrayList<>();
         listFragment.add(new FirstFragment());
-        listFragment.add(new SecondFragment());
+        SecondFragment secondFragment = new SecondFragment();
+        listFragment.add(secondFragment);
+        Log.e("jerry", "checkCameraHardware new了一个: " + secondFragment);
         listFragment.add(new ThreeFragment());
         listFragment.add(new FourFragment());
         MyFragAdapter myAdapter = new MyFragAdapter(getSupportFragmentManager(), this, listFragment);
@@ -187,6 +191,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putString("currentName", currentName);
+//        outState.putSerializable("listFragment", listFragment);
         super.onSaveInstanceState(outState);
         Log.e("JerryZhuMM", " Main onSaveInstanceState(Bundle outState保存状态)");
     }
@@ -268,8 +273,11 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == 200) {
             boolean addBindDev = data.getBooleanExtra("addBindDev", true);
             if (addBindDev) {
-                EventBus.getDefault().post(new Event());
+                EventBus.getDefault().post(new EventAddDev());
             }
+        } else if (resultCode == 100) {
+            String newName = data.getStringExtra("newName");
+            EventBus.getDefault().post(new EventEditName(newName));
         }
     }
 
