@@ -39,7 +39,6 @@ public class XFBluetooth {
 
         @Override
         public void onLeScan(BluetoothDevice device, int rssi, byte[] scanRecord) {
-            Log.e("jerryzhu", "onLeScan: " + isScaning);
             if (isScaning)
                 for (int i = 0; i < mListCallBack.size(); i++) {
                     mListCallBack.get(i).onScanResult(device, rssi);
@@ -142,7 +141,7 @@ public class XFBluetooth {
         return LitePal.where("mac=?", CURRENT_DEV_MAC).findFirst(BleDevConfig.class);
     }
 
-    public static BleDevConfig getCurrentDevConfig(String mac) {
+    public static BleDevConfig getMacDevConfig(String mac) {
         if (TextUtils.isEmpty(mac)) return null;
         return LitePal.where("mac=?", mac).findFirst(BleDevConfig.class);
     }
@@ -231,7 +230,7 @@ public class XFBluetooth {
 
     }
 
-    public void stop() {
+    public void StopScan() {
         if (mBluetoothAdapter == null || !isScaning) {
             return;
         }

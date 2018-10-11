@@ -72,7 +72,7 @@ public class FourFragment extends Fragment {
                     startActivity(new Intent(getActivity(), WifiSpoceActivity.class));
                 } else {
                     edit.putBoolean("isOpenWuRao", false).apply();
-                 /*   BleDevConfig currentDev = XFBluetooth.getCurrentDevConfig();
+                 /*   BleDevConfig currentDev = XFBluetooth.getMacDevConfig();
                     if (currentDev == null) return;
                     currentDev.setIsWuRao("false");
                     currentDev.update(currentDev.getId());*/

@@ -40,7 +40,6 @@ import reeiss.bonree.ble_test.smarthardware.adapter.DevListAdapter;
 import reeiss.bonree.ble_test.utils.T;
 
 import static reeiss.bonree.ble_test.blehelp.XFBluetooth.CURRENT_DEV_MAC;
-import static reeiss.bonree.ble_test.blehelp.XFBluetooth.getCurrentDevConfig;
 
 public class FirstFragment extends Fragment {
 
@@ -57,10 +56,10 @@ public class FirstFragment extends Fragment {
         @Override
         public void onConnectionStateChange(final BluetoothGatt gatt, final int status, final int newState) {
 
-            BleDevConfig currentDevConfig = getCurrentDevConfig();
+         /*   BleDevConfig currentDevConfig = getMacDevConfig();
             if (currentDevConfig == null) {
-                currentDevConfig = getCurrentDevConfig(gatt.getDevice().getAddress());
-            }
+                currentDevConfig = getMacDevConfig(gatt.getDevice().getAddress());
+            }*/
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -190,12 +189,6 @@ public class FirstFragment extends Fragment {
     private void initView() {
 //        getActivity().setTitle("设备管理");
         vDevLv = getView().findViewById(R.id.ble_dev_lv);
-       /* getView().findViewById(R.id.bt_add_dev).setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addDev();
-            }
-        });*/
 
         progressDialog = new ProgressDialog(getActivity());
         progressDialog.setTitle("正在连接设备");

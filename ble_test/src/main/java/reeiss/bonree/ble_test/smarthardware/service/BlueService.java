@@ -79,7 +79,7 @@ public class BlueService extends Service {
 
             BleDevConfig currentDevConfig = getCurrentDevConfig();
             if (currentDevConfig == null) {
-                currentDevConfig = getCurrentDevConfig(gatt.getDevice().getAddress());
+                currentDevConfig = XFBluetooth.getMacDevConfig(gatt.getDevice().getAddress());
             }
             final BleDevConfig finalCurrentDevConfig = currentDevConfig;
             connectionStateChange(finalCurrentDevConfig, status, newState);

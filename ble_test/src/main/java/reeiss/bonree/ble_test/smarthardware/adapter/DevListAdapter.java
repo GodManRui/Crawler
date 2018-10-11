@@ -1,5 +1,6 @@
 package reeiss.bonree.ble_test.smarthardware.adapter;
 
+import android.bluetooth.BluetoothGatt;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.BleDevConfig;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 
 public class DevListAdapter extends BaseAdapter {
     private List<BleDevConfig> devList;
@@ -50,6 +52,9 @@ public class DevListAdapter extends BaseAdapter {
         TextView tvDevName = convertView.findViewById(R.id.tv_dev_name);
         TextView tvConnectState = convertView.findViewById(R.id.tv_connect_state);
         BleDevConfig device = devList.get(position);
+        if (XFBluetooth.CURRENT_DEV_MAC.equals(device.getMac())) {
+            device.setConnectState(BluetoothGatt.STATE_CONNECTED);
+        }
 //        if ("已连接".equals(device.getConnectState()) && !device.getDevNick().isEmpty()) ;
         tvDevName.setText(device.getAlias());
         tvConnectState.setText(device.getConnectState());

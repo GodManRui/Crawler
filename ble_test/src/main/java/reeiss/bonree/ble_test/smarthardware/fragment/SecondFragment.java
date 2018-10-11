@@ -62,7 +62,7 @@ public class SecondFragment extends Fragment {
 
             picturePath = pictureDir
                     + File.separator
-                    + new DateFormat().format("yyyyMMddHHmmss", new Date())
+                    + new DateFormat().format("yyyy-MM-dd-HH-mm-ss", new Date())
                     .toString() + ".jpg";
             new Thread(new Runnable() {
                 @Override
@@ -177,9 +177,6 @@ public class SecondFragment extends Fragment {
         Log.e("jerry", "333 onViewCreated: ");
 //        getActivity().setTitle("拍照");
         mCameraLayout = (FrameLayout) getView().findViewById(R.id.camera_preview);
-//        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
-        //Button mTakePictureBtn = (Button) getView().findViewById(R.id.button_capture);
-        // Button mChangeCarema = (Button) getView().findViewById(R.id.change);
         getView().findViewById(R.id.button_capture).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

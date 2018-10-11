@@ -106,7 +106,7 @@ public class ThreeFragment extends Fragment {
         EventBus.getDefault().unregister(this);
         // 在activity执行onDestroy时执行mMapView.onDestroy()，实现地图生命周期管理
 //        locationService.unregisterListener(listener);
-//        locationService.stop();
+//        locationService.StopScan();
         map.onDestroy();
     }
 

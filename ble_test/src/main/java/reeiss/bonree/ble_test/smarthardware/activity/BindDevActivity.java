@@ -43,7 +43,7 @@ public class BindDevActivity extends AppCompatActivity {
         public void onScanResult(final BluetoothDevice device, final int rssi) {
             if (TextUtils.isEmpty(device.getName()) || !device.getName().contains("iTAG")) return;
             Log.e("jerryzhu", "扫描结果: " + device.getName());
-            // xfBluetooth.stop();
+            // xfBluetooth.StopScan();
 
             for (int i = 0; i < mDevList.size(); i++) { //已经在扫描列表里了
                 if (mDevList.get(i).getDevice().getAddress().equals(device.getAddress())) {
@@ -102,7 +102,7 @@ public class BindDevActivity extends AppCompatActivity {
         vDevLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                xfBluetooth.stop();
+//                xfBluetooth.StopScan();
                 //添加设备，只是添加到本地数据库中，这里不做连接，过滤已添加的设备
                 DeviceAndRssi deviceListBean = mDevList.get(position);
                 String address = deviceListBean.getDevice().getAddress();
@@ -154,7 +154,7 @@ public class BindDevActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        xfBluetooth.stop();
+        xfBluetooth.StopScan();
         super.onDestroy();
     }
 
@@ -179,7 +179,7 @@ public class BindDevActivity extends AppCompatActivity {
     }
 
     public void btStopScan(View view) {
-        xfBluetooth.stop();
+        xfBluetooth.StopScan();
         finish();
     }
 }
