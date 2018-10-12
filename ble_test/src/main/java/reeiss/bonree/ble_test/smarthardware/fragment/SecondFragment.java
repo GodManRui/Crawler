@@ -18,7 +18,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -59,7 +58,7 @@ public class SecondFragment extends Fragment {
         public void onPictureTaken(final byte[] data, Camera camera) {
             File pictureDir = Environment
                     .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-
+            Log.e("jerry", "onPictureTaken: 拍照了" + picturePath);
             picturePath = pictureDir
                     + File.separator
                     + new DateFormat().format("yyyy-MM-dd-HH-mm-ss", new Date())
@@ -205,13 +204,17 @@ public class SecondFragment extends Fragment {
             public void onClick(View v) {
                 if (picturePath == null || picturePath.isEmpty()) return;
                 Intent intent = new Intent(Intent.ACTION_VIEW);    //打开图片得启动ACTION_VIEW意图
-                Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
+               /*   Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
                 if (bitmap == null) return;
                 //将图片转换为bitmap格式
                 String uriString = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, null, null);
                 Uri uri = Uri.parse(uriString);    //将bitmap转换为uri
                 intent.setDataAndType(uri, "image/*");    //设置intent数据和图片格式
+                startActivity(intent);*/
+                Uri uri = Uri.fromFile(new File(picturePath));
+                intent.setDataAndType(uri, "image/*");
                 startActivity(intent);
+
             }
         });
 //        openCamera();
