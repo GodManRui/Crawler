@@ -36,6 +36,7 @@ import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
@@ -56,13 +57,16 @@ public class SecondFragment extends Fragment {
     private PictureCallback mPictureCallback = new PictureCallback() {
         @Override
         public void onPictureTaken(final byte[] data, Camera camera) {
-            File pictureDir = Environment
-                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-            Log.e("jerry", "onPictureTaken: 拍照了" + picturePath);
+            File pictureDir = new File(Environment
+                    .getExternalStorageDirectory() + "/DCIM/Camera/");
+            if (!pictureDir.exists()) {
+                boolean mkdirs = pictureDir.mkdirs();
+            }
             picturePath = pictureDir
                     + File.separator
-                    + new DateFormat().format("yyyy-MM-dd-HH-mm-ss", new Date())
+                    + new DateFormat().format("yyyy-MM-dd-HH:mm:ss", new Date())
                     .toString() + ".jpg";
+            Log.e("jerry", "onPictureTaken: 拍照了" + picturePath);
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -93,7 +97,7 @@ public class SecondFragment extends Fragment {
                     }
                 }
             }).start();
-
+            Log.e("jerry", "Second CallBack: 开启Pre ");
             mCamera.startPreview();
         }
     };
@@ -148,7 +152,7 @@ public class SecondFragment extends Fragment {
         super.onDetach();
     }
 
-    @Override
+  /*  @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
         Log.e("JerryZhu", "checkCameraHardware onHiddenChanged: Second");
@@ -160,7 +164,7 @@ public class SecondFragment extends Fragment {
             openCamera();
             XFBluetooth.getInstance(context).addBleCallBack(gattCallback);
         }
-    }
+    }*/
 
     @Nullable
     @Override
@@ -226,20 +230,19 @@ public class SecondFragment extends Fragment {
         super.onDestroy();
     }
 
-   /* @Override
+
+    @Override
     public void onResume() {
         super.onResume();
         Objects.requireNonNull(getActivity()).setTitle("拍照");
-        openCamera();
-        XFBluetooth.getInstance(getActivity()).addBleCallBack(gattCallback);
-    }*/
+        onMyResume();
+    }
 
-    /*@Override
+    @Override
     public void onPause() {
         super.onPause();
-        releaseCamera();
-        XFBluetooth.getInstance(getActivity()).removeBleCallBack(gattCallback);
-    }*/
+        onMyPause();
+    }
 
     /**
      * 播放系统拍照声音
@@ -308,6 +311,7 @@ public class SecondFragment extends Fragment {
 
         mCamera.setParameters(parameters);
         mCamera.setDisplayOrientation(90);
+        Log.e("jerry", "Second openCamera: 开启Pre ");
         mCamera.startPreview();
         mCamera.cancelAutoFocus();// 2如果要实现连续的自动对焦，这一句必须加上
 
