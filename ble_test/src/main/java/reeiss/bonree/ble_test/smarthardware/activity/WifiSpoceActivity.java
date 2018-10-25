@@ -1,6 +1,7 @@
 package reeiss.bonree.ble_test.smarthardware.activity;
 
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothGattCharacteristic;
 import android.content.DialogInterface;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -20,8 +21,13 @@ import java.util.List;
 
 import reeiss.bonree.ble_test.R;
 import reeiss.bonree.ble_test.bean.WuRaoWifiConfig;
+import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.smarthardware.adapter.WiFiAdapter;
 import reeiss.bonree.ble_test.utils.T;
+
+import static reeiss.bonree.ble_test.bean.CommonHelp.getLinkLostAlert;
+import static reeiss.bonree.ble_test.bean.PreventLosingCommon.Dev_Type;
+import static reeiss.bonree.ble_test.bean.PreventLosingCommon.Dev_Type_Shuidi;
 
 public class WifiSpoceActivity extends AppCompatActivity {
 
@@ -58,19 +64,19 @@ public class WifiSpoceActivity extends AppCompatActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
                 AlertDialog.Builder del = new AlertDialog.Builder(WifiSpoceActivity.this)
-                    .setTitle("删除此区域")
-                    .setMessage("确认删除此勿扰区域？")
-                    .setCancelable(false)
-                    .setNegativeButton("删除", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            long configId = wifiList.get(position).getId();
-                            LitePal.delete(WuRaoWifiConfig.class, configId);
-                            wifiList.remove(position);
-                            adapter.setData(wifiList);
-                        }
-                    })
-                    .setPositiveButton("取消", null);
+                        .setTitle("删除此区域")
+                        .setMessage("确认删除此勿扰区域？")
+                        .setCancelable(false)
+                        .setNegativeButton("删除", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                long configId = wifiList.get(position).getId();
+                                LitePal.delete(WuRaoWifiConfig.class, configId);
+                                wifiList.remove(position);
+                                adapter.setData(wifiList);
+                            }
+                        })
+                        .setPositiveButton("取消", null);
                 del.create().show();
                 return true;
             }
@@ -113,6 +119,17 @@ public class WifiSpoceActivity extends AppCompatActivity {
                 wuRaoWifiConfig.save();
                 wifiList.add(wuRaoWifiConfig);
                 adapter.setData(wifiList);
+                if (Dev_Type != Dev_Type_Shuidi) {
+                    XFBluetooth xfBluetooth = XFBluetooth.getInstance(WifiSpoceActivity.this);
+                    if (xfBluetooth == null) return;
+                    BluetoothGattCharacteristic linkLostAlert = getLinkLostAlert(xfBluetooth.
+                            getXFBluetoothGatt());
+                    //发送不报警
+                    if (linkLostAlert == null) return;
+                    //说明不是写入开启报警返回的，需要写入开启报警
+                    linkLostAlert.setValue(new byte[]{0});
+                    boolean b = xfBluetooth.getXFBluetoothGatt().writeCharacteristic(linkLostAlert);
+                }
 
             }
         });

@@ -207,6 +207,12 @@ public class SecondFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (picturePath == null || picturePath.isEmpty()) return;
+                File pictureFile = new File(picturePath);
+                if (!pictureFile.exists()) {
+                    T.show(getActivity(), "图片不存在");
+                    imPicture.setImageResource(R.mipmap.widget_bar_device_over);
+                    return;
+                }
                 Intent intent = new Intent(Intent.ACTION_VIEW);    //打开图片得启动ACTION_VIEW意图
                /*   Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
                 if (bitmap == null) return;
@@ -215,7 +221,7 @@ public class SecondFragment extends Fragment {
                 Uri uri = Uri.parse(uriString);    //将bitmap转换为uri
                 intent.setDataAndType(uri, "image/*");    //设置intent数据和图片格式
                 startActivity(intent);*/
-                Uri uri = Uri.fromFile(new File(picturePath));
+                Uri uri = Uri.fromFile(pictureFile);
                 intent.setDataAndType(uri, "image/*");
                 startActivity(intent);
 

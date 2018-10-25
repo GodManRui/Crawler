@@ -256,6 +256,7 @@ public class BlueService extends Service {
         mScreenListener = new ScreenReceiverUtil(this);
         mScreenManager = ScreenManager.getScreenManagerInstance(this);
         mScreenListener.setScreenReceiverListener(mScreenListenerer);
+        locationApplication = (LocationApplication) getApplication();
         return START_STICKY;
     }
 

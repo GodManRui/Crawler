@@ -30,7 +30,7 @@
         android:layout_width="50dp"
         android:layout_height="40dp"
         android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/button_capture"
+        android:layout_alignTop="@id/button_capture"
         android:layout_marginEnd="30dp"
         android:src="@mipmap/widget_bar_device_over" />
 
