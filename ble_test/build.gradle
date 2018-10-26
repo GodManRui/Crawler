@@ -1,13 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
     compileSdkVersion 27
     buildToolsVersion '28.0.2'
 
     defaultConfig {
         applicationId "reeiss.bonree.ble_test"
         minSdkVersion 19
-        targetSdkVersion 22
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
 

@@ -403,7 +403,7 @@ public class BlueService extends Service {
             }
             if (status == 133) {
                 //链接异常或者链接失败
-                T.show(this, "链接异常,请重试或尝试删除后重新添加设备");
+                T.show(this, "链接出现异常,请重试或尝试删除后重新添加设备");
                 return;
             }
             if (!dontAlert) { //手动断开为true，不需要报警
