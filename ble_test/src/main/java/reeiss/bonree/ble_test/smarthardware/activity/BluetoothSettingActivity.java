@@ -129,11 +129,15 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         RelativeLayout rlRing = (RelativeLayout) findViewById(R.id.rl_ring);
         tvRing = (TextView) findViewById(R.id.tv_ring);
         edDevName = (EditText) findViewById(R.id.ed_devName);
-
+        edDevName.setFocusable(true);
         BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
         if (currentDevConfig != null) {
             tvRing.setText(currentDevConfig.getRingName());
-            edDevName.setText(currentDevConfig.getAlias());
+            String alias = currentDevConfig.getAlias();
+            edDevName.setText(alias);
+            edDevName.setSelection(alias.length());
+            edDevName.setSelectAllOnFocus(true);
+            edDevName.requestFocus();
         }
         rlRing.setOnClickListener(this);
         if (PreventLosingCommon.Dev_Type == Dev_Type_Shuidi) {
@@ -250,25 +254,25 @@ public class BluetoothSettingActivity extends AppCompatActivity implements View.
         final int ringPosition = currentDev.getRingPosition();
 
         builder.setSingleChoiceItems(itemName, ringPosition,
-            new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (0 <= which && which <= itemName.length - 1) {
-                        if (itemName[which] != null) {
-                            // T.show(BluetoothSettingActivity.this, itemName[which]);
-                            Integer resID = nameMap.get(itemName[which]);
-                            currentDev.setRingResId(resID);
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (0 <= which && which <= itemName.length - 1) {
+                            if (itemName[which] != null) {
+                                // T.show(BluetoothSettingActivity.this, itemName[which]);
+                                Integer resID = nameMap.get(itemName[which]);
+                                currentDev.setRingResId(resID);
 
-                            if (mp != null) {
-                                mp.reset();
-                                mp.release();
+                                if (mp != null) {
+                                    mp.reset();
+                                    mp.release();
+                                }
+                                mp = MediaPlayer.create(BluetoothSettingActivity.this, resID);//重新设置要播放的音频
+                                mp.start();//开始播放
                             }
-                            mp = MediaPlayer.create(BluetoothSettingActivity.this, resID);//重新设置要播放的音频
-                            mp.start();//开始播放
                         }
                     }
-                }
-            });
+                });
         builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

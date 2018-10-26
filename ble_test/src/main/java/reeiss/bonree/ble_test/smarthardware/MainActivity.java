@@ -18,6 +18,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -123,22 +124,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean onTabItemSelected(int itemId) {
+        View v = findViewById(R.id.action_add);
         switch (itemId) {
             case R.id.tab_menu_home:
                 vpFragment.setCurrentItem(0);
                 setSelectTitle(0);
+                if (v != null && v.getVisibility() == View.GONE)
+                    v.setVisibility(View.VISIBLE);
                 return true;
             case R.id.tab_menu_discovery:
                 vpFragment.setCurrentItem(1);
                 setSelectTitle(1);
+                if (v != null && v.getVisibility() == View.VISIBLE)
+                    v.setVisibility(View.GONE);
                 return true;
             case R.id.tab_menu_attention:
                 vpFragment.setCurrentItem(2);
                 setSelectTitle(2);
+                if (v != null && v.getVisibility() == View.VISIBLE)
+                    v.findViewById(R.id.action_add).setVisibility(View.GONE);
                 return true;
             case R.id.tab_menu_profile:
                 vpFragment.setCurrentItem(3);
                 setSelectTitle(3);
+                if (v != null && v.getVisibility() == View.VISIBLE)
+                    v.findViewById(R.id.action_add).setVisibility(View.GONE);
                 return true;
             default:
                 break;
@@ -243,6 +253,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        Log.e("jerry", "创建actionbar: ");
         // Inflate the menu items for use in the action bar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbar, menu);
