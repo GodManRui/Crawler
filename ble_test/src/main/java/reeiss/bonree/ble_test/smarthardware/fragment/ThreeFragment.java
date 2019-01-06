@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,16 +44,6 @@ public class ThreeFragment extends Fragment {
      * 接收定位结果消息，并显示在地图上
      */
 
-
-    @Override
-    public void onHiddenChanged(boolean hidden) {
-        super.onHiddenChanged(hidden);
-        Log.e("JerryZhu", "onHiddenChanged: Three");
-        if (!hidden) {
-            getActivity().setTitle("定位");
-        }
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -86,18 +75,13 @@ public class ThreeFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        // 在activity执行onResume时执行mMapView. onResume ()，实现地图生命周期管理
-        map.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        // 在activity执行onPause时执行mMapView. onPause ()，实现地图生命周期管理
-        map.onPause();
-
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (isVisibleToUser) {
+            if (map != null)
+                map.onResume();
+            if (getActivity() != null) getActivity().setTitle("定位");
+        } else if (map != null) map.onPause();
     }
 
     @Override

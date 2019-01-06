@@ -21,6 +21,7 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -214,15 +215,15 @@ public class SecondFragment extends Fragment {
                     return;
                 }
                 Intent intent = new Intent(Intent.ACTION_VIEW);    //打开图片得启动ACTION_VIEW意图
-               /*   Bitmap bitmap = BitmapFactory.decodeFile(picturePath);
-                if (bitmap == null) return;
-                //将图片转换为bitmap格式
-                String uriString = MediaStore.Images.Media.insertImage(context.getContentResolver(), bitmap, null, null);
-                Uri uri = Uri.parse(uriString);    //将bitmap转换为uri
-                intent.setDataAndType(uri, "image/*");    //设置intent数据和图片格式
-                startActivity(intent);*/
-                Uri uri = Uri.fromFile(pictureFile);
-                intent.setDataAndType(uri, "image/*");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    Uri contentUri = FileProvider.getUriForFile(context, "reeiss.bonree.ble_test.fileprovider", pictureFile);
+                    intent.setDataAndType(contentUri, "image/*");
+                } else {
+                    Uri uri = Uri.fromFile(pictureFile);
+                    intent.setDataAndType(uri, "image/*");
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                }
                 startActivity(intent);
 
             }
@@ -236,19 +237,16 @@ public class SecondFragment extends Fragment {
         super.onDestroy();
     }
 
-
     @Override
-    public void onResume() {
-        super.onResume();
-        Objects.requireNonNull(getActivity()).setTitle("拍照");
-        onMyResume();
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        Log.e("jerry", "setUserVisibleHint: 拍照 " + isVisibleToUser);
+        if (isVisibleToUser) {
+            Objects.requireNonNull(getActivity()).setTitle("拍照");
+            onMyResume();
+        } else onMyPause();
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        onMyPause();
-    }
 
     /**
      * 播放系统拍照声音

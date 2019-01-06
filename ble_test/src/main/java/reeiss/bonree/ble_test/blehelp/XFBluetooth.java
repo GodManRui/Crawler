@@ -120,8 +120,8 @@ public class XFBluetooth {
         this.context = context;
         //获取蓝牙适配器
         BluetoothManager
-            bluetoothManager = (BluetoothManager) context
-            .getSystemService(Context.BLUETOOTH_SERVICE);
+                bluetoothManager = (BluetoothManager) context
+                .getSystemService(Context.BLUETOOTH_SERVICE);
         assert bluetoothManager != null;
         mBluetoothAdapter = bluetoothManager.getAdapter();
         mListCallBack = new ArrayList<XFBluetoothCallBack>();
@@ -204,7 +204,7 @@ public class XFBluetooth {
     }
 
     public boolean addBleCallBack(XFBluetoothCallBack mXFBluetoothControl) {
-        return mListCallBack.add(mXFBluetoothControl);
+        return !mListCallBack.contains(mXFBluetoothControl) && mListCallBack.add(mXFBluetoothControl);
     }
 
     public boolean removeBleCallBack(XFBluetoothCallBack mXFBluetoothControl) {

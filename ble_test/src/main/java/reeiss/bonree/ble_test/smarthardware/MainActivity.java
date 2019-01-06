@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -68,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
             String currentName = savedInstanceState.getString("currentName");
 //            listFragment = (ArrayList<Fragment>) savedInstanceState.getSerializable("listFragment");
             this.currentName = TextUtils.isEmpty(currentName) ? "设备管理" : currentName;
+            Log.e("jerry", "onCreate: 设置标题: 设备管理");
             setTitle(this.currentName);
         }
         initView();
@@ -109,14 +109,13 @@ public class MainActivity extends AppCompatActivity {
             public void onPageScrollStateChanged(int state) {
             }
         });
-        Log.e("jerry", "checkCameraHardware: 先看是不是空 " + listFragment);
-        listFragment = new ArrayList<>();
-        listFragment.add(new FirstFragment());
-        SecondFragment secondFragment = new SecondFragment();
-        listFragment.add(secondFragment);
-        Log.e("jerry", "checkCameraHardware new了一个: " + secondFragment);
-        listFragment.add(new ThreeFragment());
-        listFragment.add(new FourFragment());
+        if (listFragment == null) {
+            listFragment = new ArrayList<>();
+            listFragment.add(new FirstFragment());
+            listFragment.add(new SecondFragment());
+            listFragment.add(new ThreeFragment());
+            listFragment.add(new FourFragment());
+        }
         MyFragAdapter myAdapter = new MyFragAdapter(getSupportFragmentManager(), this, listFragment);
         vpFragment.setAdapter(myAdapter);
         mBottomNavigationView.setSelectedItemId(R.id.tab_menu_home);
@@ -157,12 +156,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setSelectTitle(int selectTitle) {
-        SecondFragment fragment = (SecondFragment) listFragment.get(1);
+      /*  SecondFragment fragment = (SecondFragment) listFragment.get(1);
         if (selectTitle == 1) {
             fragment.onMyResume();
         } else {
             fragment.onMyPause();
-        }
+        }*/
         switch (selectTitle) {
             case 0:
                 currentName = "设备管理";
@@ -180,17 +179,6 @@ public class MainActivity extends AppCompatActivity {
         setTitle(currentName);
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.e("JerryZhuMM", " Main onStart");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.e("JerryZhuMM", " Main onStop");
-    }
 
     @Override
     protected void onDestroy() {
@@ -226,35 +214,9 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        Log.e("JerryZhuMM", " Main onRestoreInstanceState(Bundle savedInstanceState)" + savedInstanceState);
-    }
-
-    @Override
-    public void onRestoreInstanceState(Bundle savedInstanceState, PersistableBundle persistentState) {
-        super.onRestoreInstanceState(savedInstanceState, persistentState);
-        Log.e("JerryZhuMM", " Main onRestoreInstanceState(Bundle savedInstanceState  PersistableBundle persistentState)");
-
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.e("JerryZhuMM", " Main onRestart");
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        super.onSaveInstanceState(outState, outPersistentState);
-        Log.e("JerryZhuMM", " Main onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) ");
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        Log.e("jerry", "创建actionbar: ");
-        // Inflate the menu items for use in the action bar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.actionbar, menu);
         return super.onCreateOptionsMenu(menu);
@@ -262,7 +224,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle presses on the action bar items
         switch (item.getItemId()) {
             case R.id.action_add:
                 addDev();
@@ -293,23 +254,5 @@ public class MainActivity extends AppCompatActivity {
             String newName = data.getStringExtra("newName");
             EventBus.getDefault().post(new EventEditName(newName));
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.e("JerryZhuMM", " Main onPause");
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        Log.e("JerryZhuMM", " Main onNewIntent 新的意图");
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.e("JerryZhuMM", " Main onResume");
     }
 }

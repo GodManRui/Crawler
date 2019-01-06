@@ -91,7 +91,7 @@ public class FirstFragment extends Fragment {
     @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);
-        Log.e("JerryZhu", "onHiddenChanged: First");
+        Log.e("JerryZhu", "onHiddenChanged: First 设备管理");
         if (!hidden) {
             Objects.requireNonNull(getActivity()).setTitle("设备管理");
         }
@@ -154,22 +154,10 @@ public class FirstFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        Log.e("jerry", "Fragment onResume: ");
-    }
-
-    @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putSerializable("devListData", (ArrayList) mDevList);
         super.onSaveInstanceState(outState);
         Log.e("JerryZhuMM", " Fragment onSaveInstanceState(Bundle outState保存状态)" + outState);
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        Log.e("jerry", "Fragment onDestroyView: ");
     }
 
     @Override

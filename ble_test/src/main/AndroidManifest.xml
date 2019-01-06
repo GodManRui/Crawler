@@ -44,7 +44,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".smarthardware.MainActivity3"
+            android:name=".smarthardware.MainActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -86,6 +86,15 @@
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="qSkCf3BY5oF2sjl5Iuh0lYRdAGzCHwId" />
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="reeiss.bonree.ble_test.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

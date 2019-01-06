@@ -63,7 +63,7 @@ public class LocationApplication extends Application {
                     BleDevConfig currentDevConfig = XFBluetooth.getCurrentDevConfig();
 
                     if (currentDevConfig != null) {
-                        Log.e("JerryZhu", "当前位置Str: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe() + "  ==  " + currentDevConfig.getAlias() + "   MAC =   " + currentDevConfig.getMac());
+//                        Log.e("JerryZhu", "当前位置Str: " + location.getAddrStr() + "    描述：" + location.getLocationDescribe() + "  ==  " + currentDevConfig.getAlias() + "   MAC =   " + currentDevConfig.getMac());
                         mLocation.setMac(currentDevConfig.getMac());
                         mLocation.setName(currentDevConfig.getAlias());
 
