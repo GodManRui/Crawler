@@ -1,10 +1,13 @@
 package reeiss.bonree.ble_test.smarthardware;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -35,7 +38,10 @@ import reeiss.bonree.ble_test.smarthardware.fragment.SecondFragment;
 import reeiss.bonree.ble_test.smarthardware.fragment.ThreeFragment;
 import reeiss.bonree.ble_test.smarthardware.service.BlueService;
 import reeiss.bonree.ble_test.utils.BottomNavigationViewHelper;
+import reeiss.bonree.ble_test.utils.PermissionPageUtils;
 import reeiss.bonree.ble_test.utils.T;
+
+import static reeiss.bonree.ble_test.blehelp.XFBluetooth.HasPermission;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,13 +62,13 @@ public class MainActivity extends AppCompatActivity {
     private NoScrollViewPager vpFragment;
     private ArrayList<Fragment> listFragment;
     private String currentName;
+    private AlertDialog alertDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_mainbaidu);
         Log.e("JerryZhuMM", "Main onCreate: 创建activity实例 " + savedInstanceState);
-//        FragmentFactory.getInstance().exit(null);
         if (savedInstanceState != null) {
             String currentName = savedInstanceState.getString("currentName");
 //            listFragment = (ArrayList<Fragment>) savedInstanceState.getSerializable("listFragment");
@@ -72,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         }
         initView();
 
-
+        HasPermission(this);
         Intent intent = new Intent(this, BlueService.class);
         startService(intent);
         bindService(intent, conn, BIND_AUTO_CREATE);
@@ -82,6 +88,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //授权回调
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1006 && grantResults.length > 0) {
+            for (int grantResult : grantResults) {
+                if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(this).setTitle("权限被拒绝!")
+                            .setMessage("关键权限被拒绝,应用无法正常运行,请去系统设置界面授予应用所需权限")
+                            .setNegativeButton("退出", (dialog, which) -> {
+                                Log.e("jerry", "取消弹窗: " + alertDialog);
+                                if (alertDialog != null) {
+                                    alertDialog.dismiss();
+                                    alertDialog = null;
+                                }
+                                finish();
+                            })
+                            .setPositiveButton("去设置", (dialog, which) -> {
+                                try {
+                                    new PermissionPageUtils(MainActivity.this).jumpPermissionPage();
+                                } catch (Exception ignore) {
+                                    T.show(MainActivity.this, "请手动去设置界面授予权限");
+                                }
+                                new Handler().postDelayed(() -> {
+                                    if (alertDialog != null) {
+                                        alertDialog.cancel();
+                                        alertDialog = null;
+                                    }
+                                    finish();
+                                }, 1000);
+                            })
+                            .setCancelable(false);
+                    alertDialog = builder.show();
+                }
+            }
+        }
+
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private void initView() {
         mBottomNavigationView = (BottomNavigationView) findViewById(R.id.bottom_navigation_view);
@@ -89,12 +134,7 @@ public class MainActivity extends AppCompatActivity {
         vpFragment = (NoScrollViewPager) findViewById(R.id.vp_fragment);
         vpFragment.setScroll(false);
         vpFragment.setOffscreenPageLimit(4);
-        mBottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                return onTabItemSelected(item.getItemId());
-            }
-        });
+        mBottomNavigationView.setOnNavigationItemSelectedListener(item -> onTabItemSelected(item.getItemId()));
         vpFragment.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -183,6 +223,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        try {
+            if (conn != null)
+                unbindService(conn);
+            if (alertDialog != null) {
+                alertDialog.cancel();
+            }
+        } catch (Exception ignore) {
+        }
         Log.e("JerryZhuMM", " Main onDestroy");
     }
 

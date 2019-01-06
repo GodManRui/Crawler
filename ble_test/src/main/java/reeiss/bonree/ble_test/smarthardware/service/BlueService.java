@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -350,22 +351,32 @@ public class BlueService extends Service {
                     mediaPlayer.start();*/
         AlertDialog.Builder b = new AlertDialog.Builder(this, R.style.AlertDialog);
         b.setTitle("寻找手机");
-        b.setMessage(currentDevConfig.getAlias().isEmpty() ? xfBluetooth.getXFBluetoothGatt().getDevice().getName() : currentDevConfig.getAlias());
-        b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (mPlayer != null) {
-                    mPlayer.stop();
-                    mPlayer.release();
-                    mPlayer = null;
-                }
-                T.show(BlueService.this, "取消");
+        String message = currentDevConfig.getAlias().isEmpty() ? xfBluetooth.getXFBluetoothGatt().getDevice().getName() : currentDevConfig.getAlias();
+        b.setMessage(message);
+        b.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+            if (mPlayer != null) {
+                mPlayer.stop();
+                mPlayer.release();
+                mPlayer = null;
             }
         });
-        AlertDialog alertDialog = b.setCancelable(false).create();
-        alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
-        Log.e("jerryzhu", "service 弹窗  ");
-        alertDialog.show();
+        try {
+            AlertDialog alertDialog = b.setCancelable(false).create();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+            } else {
+                alertDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+            }
+            alertDialog.show();
+        } catch (Exception ignore) {
+            ignore.printStackTrace();
+            T.show(this, "没有弹窗权限 \r\n" + message + " 正在寻找手机！");
+            if (mPlayer != null) {
+                mPlayer.stop();
+                mPlayer.release();
+                mPlayer = null;
+            }
+        }
     }
 
     //勿扰是否打开，是否在勿扰区域  在勿扰true 不在false

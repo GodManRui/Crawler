@@ -147,12 +147,6 @@ public class SecondFragment extends Fragment {
         this.context = context;
     }
 
-    @Override
-    public void onDetach() {
-        Log.e("jerry", "onAttach checkCameraHardware 销毁: " + context + "   我=" + this);
-        super.onDetach();
-    }
-
   /*  @Override
     public void onHiddenChanged(boolean hidden) {
         super.onHiddenChanged(hidden);

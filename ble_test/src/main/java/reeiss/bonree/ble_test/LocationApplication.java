@@ -31,7 +31,6 @@ import reeiss.bonree.ble_test.bean.EventBusLocation;
 import reeiss.bonree.ble_test.bean.Location;
 import reeiss.bonree.ble_test.blehelp.XFBluetooth;
 import reeiss.bonree.ble_test.utils.Utils;
-import tech.linjiang.pandora.Pandora;
 
 /**
  * Wang YaHui
@@ -137,11 +136,11 @@ public class LocationApplication extends Application {
         XFBluetooth.getInstance(this);
         LitePal.initialize(this);
 //       Pandora.init(this).enableShakeOpen();
-        try {
+        /*try {
             Pandora.get().open();
         } catch (Exception e) {
 
-        }
+        }*/
     }
 
 
